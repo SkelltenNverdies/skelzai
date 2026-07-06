@@ -1,5 +1,16 @@
 {
   "name": "skelzai",
-  "version": "2.0.0",
-  "private": true
+  "version": "2.0.1",
+  "private": true,
+  "description": "SkelzAI — Intelligent Multi-Model Chat Assistant",
+  "author": "Gabriel Arjun Pangestu",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "start": "vercel dev"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
 }
