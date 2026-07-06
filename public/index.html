@@ -45,9 +45,7 @@
     .afl{animation:fl 4s ease-in-out infinite}.amsi{animation:msi .25s ease-out forwards}
     .td{width:6px;height:6px;border-radius:50%;background:#D4AF37;display:inline-block;margin:0 2px}
     .td:nth-child(1){animation:pd 1.4s infinite ease-in-out}.td:nth-child(2){animation:pd 1.4s infinite ease-in-out .2s}.td:nth-child(3){animation:pd 1.4s infinite ease-in-out .4s}
-    .cb{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08);border-radius:8px;overflow:hidden;margin:8px 0;font-size:13px}
-    .chdr{background:rgba(255,255,255,.04);padding:6px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px;color:#71717a}
-    .cc{padding:12px 16px;overflow-x:auto;font-family:'Courier New',monospace;line-height:1.6;color:#e4e4e7;white-space:pre}
+    /* Code block styles — enhanced version in lower CSS block */
     .cc .kw{color:#c084fc}.cc .st{color:#86efac}.cc .cm{color:#71717a}.cc .fn{color:#93c5fd}.cc .nm{color:#fbbf24}
     .si-i{transition:all .2s;position:relative}.si-i:hover{background:rgba(255,255,255,.05)}
     .si-i:hover .si-d{opacity:1!important}.si-i.act{background:rgba(212,175,55,.08);border-color:rgba(212,175,55,.2)}
@@ -86,6 +84,43 @@
     .att-chip:hover{background:rgba(255,255,255,.06)}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     .spinner{animation:spin 1s linear infinite}
+    /* Typing cursor — blinking gold caret while AI is typing */
+    .typing-cursor{display:inline-block;width:7px;height:1.05em;background:linear-gradient(180deg,#fef08a,#D4AF37);margin-left:2px;vertical-align:text-bottom;border-radius:1px;animation:cursorBlink 1s steps(2) infinite;box-shadow:0 0 6px rgba(212,175,55,.6)}
+    @keyframes cursorBlink{0%,50%{opacity:1}51%,100%{opacity:0}}
+    /* Improved code block — gradient header + better buttons */
+    .cb{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin:10px 0;font-size:13px;box-shadow:0 4px 16px -8px rgba(0,0,0,.6)}
+    .chdr{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));padding:7px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px;color:#a1a1aa}
+    .chdr .lang-label{text-transform:uppercase;letter-spacing:.08em;font-weight:500;color:#D4AF37;font-size:10px}
+    .chdr button{padding:3px 8px;border-radius:6px;transition:all .15s}
+    .chdr button:hover{background:rgba(212,175,55,.1);color:#D4AF37}
+    .cc{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code','Courier New',monospace;line-height:1.65;color:#e4e4e7;white-space:pre;font-size:13px}
+    /* Smooth message fade-in */
+    .mc{transition:opacity .2s}
+    /* Glow ring on focused textarea container */
+    .input-container{transition:all .25s ease-out}
+    .input-container:focus-within{box-shadow:0 0 0 1px rgba(212,175,55,.3),0 0 24px -8px rgba(212,175,55,.4)}
+    /* Better send button — pulsing glow when active */
+    .sbtn.on{background:#D4AF37;color:#050505;box-shadow:0 0 20px -3px rgba(212,175,55,.5);animation:btnPulse 2s ease-in-out infinite}
+    @keyframes btnPulse{0%,100%{box-shadow:0 0 20px -3px rgba(212,175,55,.5)}50%{box-shadow:0 0 28px -3px rgba(212,175,55,.8)}}
+    /* Suggestion chips — better hover with glow */
+    .chip{transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer}
+    .chip:hover{background:rgba(212,175,55,.1);border-color:rgba(212,175,55,.35);color:#D4AF37;transform:translateY(-3px);box-shadow:0 8px 24px -12px rgba(212,175,55,.5)}
+    /* Sidebar item hover — smooth slide */
+    .si-i{transition:all .2s cubic-bezier(.4,0,.2,1);position:relative}
+    .si-i:hover{background:rgba(255,255,255,.05);transform:translateX(2px)}
+    /* Welcome screen logo — subtle glow pulse */
+    .afl{animation:fl 4s ease-in-out infinite,logoGlow 3s ease-in-out infinite}
+    @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(212,175,55,.3))}50%{filter:drop-shadow(0 0 16px rgba(212,175,55,.6))}}
+    /* Better scrollbar — thinner with gold accent */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(212,175,55,.2);border-radius:10px;transition:background .2s}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(212,175,55,.4)}
+    /* Modal overlay fade */
+    .modal-overlay{transition:opacity .2s}
+    /* Action buttons under AI message — better hover */
+    .ma button{transition:all .15s}
+    .ma button:hover{background:rgba(212,175,55,.1);color:#D4AF37;transform:scale(1.1)}
     @media(max-width:1023px){.sp{width:280px}}
     @media(max-width:640px){.chip{padding:10px 12px!important}.msg-pad{padding:10px!important}}
   </style>
@@ -181,10 +216,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.4.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.5.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Llama 3.1 8B / Gemma 2 2B / Nemotron Mini 4B (NVIDIA direct API), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
+        <p><strong class="text-zinc-200">Fitur:</strong> Smooth typing animation, download code block, syntax highlighting</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
       </div>
@@ -254,7 +290,7 @@
           </div>
           <button onclick="removeAttachment()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors flex-shrink-0"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
         </div>
-        <div class="glass-i rounded-2xl px-3 sm:px-4 py-3 flex items-end gap-2 sm:gap-3 transition-all focus-within:border-gold-400/20 focus-within:bg-white/[0.06]">
+        <div class="input-container glass-i rounded-2xl px-3 sm:px-4 py-3 flex items-end gap-2 sm:gap-3 transition-all focus-within:border-gold-400/20 focus-within:bg-white/[0.06]">
           <button type="button" onclick="document.getElementById('FI').click()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors flex-shrink-0 mb-0.5" title="Upload file (foto/PDF/DOCX/teks, maks 20MB)"><span class="iconify text-zinc-500 text-lg" data-icon="mdi:paperclip"></span></button>
           <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg" class="hidden" onchange="handleFile(event)">
           <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 outline-none leading-relaxed py-1" placeholder="Ketik pesan atau lampirkan file (foto/PDF/DOCX/teks)..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
@@ -263,22 +299,19 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.4.0 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.5.0 — by Gabriel Arjun Pangestu</p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — BluesMinds removed, NVIDIA direct + OpenRouter NVIDIA free ===== */
+    /* ===== MODELS — NVIDIA direct API removed, OpenRouter NVIDIA free kept ===== */
     var MODELS=[
       {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
       {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
-      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat',tag:'Groq'},
+      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat & kuat',tag:'Groq'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'meta/llama-3.1-8b-instruct',provider:'nvidia',label:'Llama 3.1 8B',desc:'NVIDIA API — Cepat & gratis',tag:'NVIDIA'},
-      {id:'google/gemma-2-2b-it',provider:'nvidia',label:'Gemma 2 2B',desc:'NVIDIA API — Ringan & gratis',tag:'NVIDIA'},
-      {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'NVIDIA API — Super ringan, gratis',tag:'NVIDIA'},
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR'},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR'},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR'}
@@ -341,7 +374,7 @@
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='nvidia'?'NVIDIA API (Gratis)':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':'';
+          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':'';
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-zinc-600 font-medium">'+pL+'</span></div>';lastP=m.provider;
         }
         var isSel=m.id===selModel.id;
@@ -518,7 +551,9 @@
       return r;
     }
     function parseMD(text){
-      text=text.replace(/```(\w*)\n?([\s\S]*?)```/g,function(_,lang,code){return'<div class="cb"><div class="chdr"><span>'+esc(lang||'code')+'</span><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button></div><div class="cc">'+hlCode(code.trim())+'</div></div>'});
+      text=text.replace(/```(\w*)\n?([\s\S]*?)```/g,function(_,lang,code){
+        return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(lang||'code')+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(code.trim())+'</div></div>'
+      });
       text=text.replace(/`([^`]+)`/g,'<code class="bg-white/[0.06] px-1.5 py-0.5 rounded text-gold-400 text-[13px] font-mono">$1</code>');
       text=text.replace(/^### (.+)$/gm,'<h3>$1</h3>');text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
       text=text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
@@ -539,6 +574,19 @@
         btn.querySelector('.cpl').textContent='Tersalin!';btn.querySelector('.iconify').setAttribute('data-icon','mdi:check');
         setTimeout(function(){btn.querySelector('.cpl').textContent='Salin';btn.querySelector('.iconify').setAttribute('data-icon','mdi:content-copy')},2000);
       }).catch(function(){toast('Gagal menyalin','error')});
+    }
+    function getExtForLang(lang){
+      var l=(lang||'').toLowerCase();var m={javascript:'js',js:'js',jsx:'jsx',typescript:'ts',ts:'ts',tsx:'tsx',node:'js',python:'py',py:'py',html:'html',htm:'html',css:'css',scss:'scss',sass:'sass',less:'less',json:'json',xml:'xml',yaml:'yml',yml:'yml',markdown:'md',md:'md',bash:'sh',sh:'sh',shell:'sh',zsh:'sh',sql:'sql',java:'java',c:'c',cpp:'cpp',csharp:'cs',cs:'cs',go:'go',rust:'rs',rs:'rs',ruby:'rb',rb:'rb',php:'php',swift:'swift',kotlin:'kt',dart:'dart',r:'r',matlab:'m',powershell:'ps1',ps1:'ps1',dockerfile:'dockerfile',ini:'ini',toml:'toml',text:'txt',txt:'txt',plain:'txt',vue:'vue'};
+      return m[l]||'txt';
+    }
+    function dlCode(btn){
+      var cb=btn.closest('.cb');var code=cb.querySelector('.cc').textContent;
+      var lang=cb.querySelector('.lang-label').textContent;var ext=getExtForLang(lang);
+      var filename='skelzai-'+lang+'.'+ext;
+      var blob=new Blob([code],{type:'text/plain;charset=utf-8'});
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+      toast('Code di-download: '+filename,'success');
     }
 
     /* ===== MESSAGE DOM ===== */
@@ -574,24 +622,67 @@
     }
     function hideThinking(){var e=document.getElementById('TI');if(e)e.remove()}
 
-    /* ===== TYPING ANIMATION ===== */
+    /* ===== TYPING ANIMATION — smooth word-by-word with requestAnimationFrame ===== */
     function typeAnim(content){
       return new Promise(function(resolve){
         var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc flex gap-3 asl';
         var idx=chats[curId]?chats[curId].messages.length-1:0;
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-sm text-zinc-300 leading-relaxed"></div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
-        c.appendChild(d);var ta=d.querySelector('.md'),chars=content.split(''),cur='',i=0,spd=Math.max(2,Math.min(8,2500/chars.length)),lastR=0;
-        function tick(){
-          if(abortTyping||i>=chars.length){ta.innerHTML=parseMD(content);scrollBot();abortTyping=false;resolve();return}
-          cur+=chars[i];i++;var now=performance.now();
-          if((i%3===0||i===chars.length)&&now-lastR>30){ta.innerHTML=parseMD(cur);scrollBot();lastR=now}
-          var ch=chars[i-1],dl=spd;
-          if(cur.endsWith('. ')||cur.endsWith('! ')||cur.endsWith('? '))dl=spd*5;
-          else if(cur.endsWith(', ')||cur.endsWith('; ')||cur.endsWith(': '))dl=spd*2.5;
-          else if(ch==='\n')dl=spd*2;
-          setTimeout(tick,dl);
+        c.appendChild(d);
+        var ta=d.querySelector('.md');
+
+        // Tokenize content into word-boundary chunks for smooth flow.
+        // Each token = a word + its trailing whitespace (preserves formatting).
+        var tokens=content.match(/\S+\s*|\s+/g)||[content];
+        var totalChars=content.length;
+
+        // Target duration: scale with content length but cap for snappy feel.
+        // ~3ms per char, min 600ms, max 3500ms.
+        var duration=Math.min(3500,Math.max(600,totalChars*3));
+
+        var startTime=null;
+        var lastRenderTime=0;
+        var renderedLen=0;
+        var tokenIdx=0;
+        var charPos=0;
+
+        function tick(now){
+          if(abortTyping){
+            ta.innerHTML=parseMD(content);scrollBot();abortTyping=false;resolve();return;
+          }
+          if(startTime===null)startTime=now;
+          var elapsed=now-startTime;
+          var progress=Math.min(1,elapsed/duration);
+          // Ease-out cubic for natural deceleration
+          var eased=1-Math.pow(1-progress,3);
+          var targetLen=Math.floor(eased*totalChars);
+
+          // Advance token pointer to the last token that ends at or before targetLen
+          while(tokenIdx<tokens.length && charPos+tokens[tokenIdx].length<=targetLen){
+            charPos+=tokens[tokenIdx].length;
+            tokenIdx++;
+          }
+
+          // Render at most every 16ms (~60fps) to avoid layout thrashing
+          if((now-lastRenderTime>=16||progress>=1)&&charPos>renderedLen){
+            var partial=content.substring(0,charPos);
+            // Show blinking cursor while typing; hide on final render
+            if(progress<1){
+              ta.innerHTML=parseMD(partial)+'<span class="typing-cursor"></span>';
+            }else{
+              ta.innerHTML=parseMD(content);
+            }
+            renderedLen=charPos;
+            lastRenderTime=now;
+            scrollBot();
+          }
+
+          if(progress>=1){
+            ta.innerHTML=parseMD(content);scrollBot();resolve();return;
+          }
+          requestAnimationFrame(tick);
         }
-        tick();
+        requestAnimationFrame(tick);
       });
     }
 

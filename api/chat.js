@@ -3,7 +3,6 @@
 // Required env vars (set in Vercel project settings):
 //   QWEN_API_KEY         — for qwen-turbo / qwen-plus / qwen-max
 //   GROQ_API_KEY         — for Llama models on Groq
-//   NVIDIA_API_KEY       — for NVIDIA direct API (integrate.api.nvidia.com)
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 
 const SYSTEM_PROMPT = {
@@ -50,42 +49,17 @@ const PROVIDERS = {
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 25000,
     buildRequest(apiKey, model, messages) {
-      const maxTokens = model.indexOf('70b') !== -1 ? 8000 : 4000;
+      // Groq max output tokens — push to model limits for maximum potential.
+      // llama-3.3-70b-versatile supports up to 32768 output tokens.
+      // llama-3.1-8b-instant supports up to 8192 output tokens.
+      const maxTokens = model.indexOf('70b') !== -1 ? 16000 : 8000;
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ model, messages, stream: false, max_tokens: maxTokens, temperature: 0.7 })
-      };
-    }
-  },
-  nvidia: {
-    // NVIDIA direct API (integrate.api.nvidia.com) — OpenAI-compatible.
-    // API key embedded as fallback so it works out-of-the-box.
-    // NVIDIA gives 1000 free credits at signup — effectively free for personal use.
-    // Override via NVIDIA_API_KEY env var.
-    envVar: 'NVIDIA_API_KEY',
-    fallbackKey: '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',
-    url: 'https://integrate.api.nvidia.com/v1/chat/completions',
-    timeout: 25000,
-    buildRequest(apiKey, model, messages) {
-      return {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          stream: false,
-          max_tokens: 4096,
-          temperature: 0.7,
-          top_p: 0.9
-        })
+        body: JSON.stringify({ model, messages, stream: false, max_tokens: maxTokens, temperature: 0.7, top_p: 0.9 })
       };
     }
   },
