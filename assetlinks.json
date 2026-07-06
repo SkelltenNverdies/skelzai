@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.skelzai.app",
+        "sha256_cert_fingerprints": ["3C:4C:DD:A7:18:0D:D1:B3:BA:DB:BA:02:A8:43:69:34:B6:F6:C4:A6:32:74:9F:8F:52:BA:5C:C5:20:B1:A6:63"]
+      }
+    }]
