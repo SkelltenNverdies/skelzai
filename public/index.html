@@ -181,9 +181,9 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.3.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.4.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), GLM 4.6 (BluesMinds, token unlimited), Nemotron 70B/Super 49B/Nano 8B (NVIDIA via OpenRouter, gratis)</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Llama 3.1 8B / Gemma 2 2B / Nemotron Mini 4B (NVIDIA direct API), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
@@ -263,23 +263,25 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.3.0 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.4.0 — by Gabriel Arjun Pangestu</p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — GPT-3.5 Turbo removed, GLM-4.6 unlimited tokens, NVIDIA via OpenRouter ===== */
+    /* ===== MODELS — BluesMinds removed, NVIDIA direct + OpenRouter NVIDIA free ===== */
     var MODELS=[
       {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
       {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat',tag:'Groq'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Token unlimited',tag:'GLM'},
-      {id:'nvidia/llama-3.1-nemotron-70b-instruct:free',provider:'openrouter',label:'Nemotron 70B',desc:'NVIDIA — Gratis, paling kuat',tag:'NVIDIA'},
-      {id:'nvidia/llama-3.3-nemotron-super-49b-v1:free',provider:'openrouter',label:'Nemotron Super 49B',desc:'NVIDIA — Gratis, seimbang',tag:'NVIDIA'},
-      {id:'nvidia/llama-3.1-nemotron-nano-8b-v1:free',provider:'openrouter',label:'Nemotron Nano 8B',desc:'NVIDIA — Gratis, super cepat',tag:'NVIDIA'}
+      {id:'meta/llama-3.1-8b-instruct',provider:'nvidia',label:'Llama 3.1 8B',desc:'NVIDIA API — Cepat & gratis',tag:'NVIDIA'},
+      {id:'google/gemma-2-2b-it',provider:'nvidia',label:'Gemma 2 2B',desc:'NVIDIA API — Ringan & gratis',tag:'NVIDIA'},
+      {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'NVIDIA API — Super ringan, gratis',tag:'NVIDIA'},
+      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR'},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR'},
+      {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR'}
     ];
 
     /* ===== STATE ===== */
@@ -339,7 +341,7 @@
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='bluesminds'?'BluesMinds — GLM':'NVIDIA — OpenRouter (Gratis)';
+          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='nvidia'?'NVIDIA API (Gratis)':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':'';
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-zinc-600 font-medium">'+pL+'</span></div>';lastP=m.provider;
         }
         var isSel=m.id===selModel.id;

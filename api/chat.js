@@ -3,7 +3,8 @@
 // Required env vars (set in Vercel project settings):
 //   QWEN_API_KEY         — for qwen-turbo / qwen-plus / qwen-max
 //   GROQ_API_KEY         — for Llama models on Groq
-//   BLUEMINDS_API_KEY    — for glm-4.6 on BluesMinds
+//   NVIDIA_API_KEY       — for NVIDIA direct API (integrate.api.nvidia.com)
+//   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 
 const SYSTEM_PROMPT = {
   role: 'system',
@@ -60,13 +61,16 @@ const PROVIDERS = {
       };
     }
   },
-  bluesminds: {
-    envVar: 'BLUEMINDS_API_KEY',
-    url: 'https://api.bluesminds.com/v1/chat/completions',
+  nvidia: {
+    // NVIDIA direct API (integrate.api.nvidia.com) — OpenAI-compatible.
+    // API key embedded as fallback so it works out-of-the-box.
+    // NVIDIA gives 1000 free credits at signup — effectively free for personal use.
+    // Override via NVIDIA_API_KEY env var.
+    envVar: 'NVIDIA_API_KEY',
+    fallbackKey: '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',
+    url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 25000,
     buildRequest(apiKey, model, messages) {
-      // GLM-4.6: NO max_tokens limit (unlimited) — omit it entirely so the
-      // provider uses its own default maximum.
       return {
         method: 'POST',
         headers: {
@@ -75,11 +79,12 @@ const PROVIDERS = {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          model: model || 'glm-4.6',
+          model,
           messages,
           stream: false,
-          temperature: 0.7
-          // max_tokens intentionally omitted — GLM-4.6 token unlimited
+          max_tokens: 4096,
+          temperature: 0.7,
+          top_p: 0.9
         })
       };
     }
@@ -88,6 +93,9 @@ const PROVIDERS = {
     // OpenRouter — OpenAI-compatible API
     // Default key embedded as fallback so it works out-of-the-box;
     // override via OPENROUTER_API_KEY env var for production use.
+    // NOTE: NVIDIA Nemotron 3 models are reasoning models — they consume
+    // tokens for chain-of-thought before producing final content. We use
+    // a large max_tokens (8192) so the model has room to finish reasoning.
     envVar: 'OPENROUTER_API_KEY',
     fallbackKey: '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',
     url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -105,7 +113,7 @@ const PROVIDERS = {
           model,
           messages,
           stream: false,
-          max_tokens: 4096,
+          max_tokens: 8192,
           temperature: 0.7
         })
       };
@@ -245,10 +253,29 @@ export default async function handler(req, res) {
     });
   }
 
-  // Validate response shape (OpenAI-compatible)
+  // Validate response shape (OpenAI-compatible).
+  // Some reasoning models (NVIDIA Nemotron 3) return content=null on truncated
+  // responses but populate a `reasoning` field. Fall back to that so the user
+  // still gets something useful instead of an empty message.
   const data = parsed.data;
-  if (data && data.choices && Array.isArray(data.choices) && data.choices[0] && data.choices[0].message) {
-    return res.status(200).json(data);
+  if (data && data.choices && Array.isArray(data.choices) && data.choices[0]) {
+    const choice = data.choices[0];
+    const msg = choice.message || {};
+    let content = msg.content;
+    if (!content && msg.reasoning) {
+      content = msg.reasoning;
+    }
+    if (content) {
+      // Mutate the response so the frontend's `choices[0].message.content` lookup works.
+      choice.message = { ...msg, content };
+      return res.status(200).json(data);
+    }
+    // content still empty but finish_reason indicates truncation
+    if (choice.finish_reason === 'length') {
+      return res.status(502).json({
+        error: `${provider}: response truncated (max_tokens reached during reasoning). Coba pertanyaan yang lebih singkat.`
+      });
+    }
   }
 
   if (data && data.error) {
