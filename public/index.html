@@ -2,9 +2,39 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="description" content="SkelzAI — Asisten AI multi-model dengan backend Vercel Serverless. Dibuat oleh Gabriel Arjun Pangestu.">
   <title>SkelzAI — Intelligent Chat Assistant</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Theme color (synced with manifest) -->
+  <meta name="theme-color" content="#D4AF37">
+
+  <!-- iOS PWA support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SkelzAI">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230A0A0A'/%3E%3Crect x='8' y='8' width='84' height='84' rx='16' fill='none' stroke='%23D4AF37' stroke-width='2' opacity='0.3'/%3E%3Ccircle cx='50' cy='36' r='10' fill='none' stroke='%23D4AF37' stroke-width='2.5'/%3E%3Ccircle cx='50' cy='36' r='3.5' fill='%23D4AF37'/%3E%3Cpath d='M32 64 Q41 54 50 54 Q59 54 68 64' stroke='%23D4AF37' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3Cline x1='50' y1='46' x2='50' y2='54' stroke='%23D4AF37' stroke-width='2'/%3E%3Ccircle cx='26' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='74' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='50' cy='78' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3C/svg%3E">
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SkelzAI — Intelligent Chat Assistant">
+  <meta property="og:description" content="Asisten AI multi-model dengan backend Vercel Serverless.">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <meta property="og:locale" content="id_ID">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SkelzAI — Intelligent Chat Assistant">
+  <meta name="twitter:description" content="Asisten AI multi-model dengan backend Vercel Serverless.">
+  <meta name="twitter:image" content="/icons/icon-512.png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -216,13 +246,13 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.5.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.6.1</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-zinc-200">Fitur:</strong> Smooth typing animation, download code block, syntax highlighting</p>
+        <p><strong class="text-zinc-200">Fitur:</strong> Smooth typing animation, download code block, PWA (installable sebagai app Android)</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
-        <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
+        <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
     </div>
   </div>
@@ -299,7 +329,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.5.0 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.6.1 — by Gabriel Arjun Pangestu</p>
       </div>
     </div>
   </main>
@@ -845,6 +875,64 @@
       load();setModelLabel();updHist();updTop();
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
+
+      // Handle PWA shortcut "?action=new" — start fresh chat
+      var params=new URLSearchParams(window.location.search);
+      if(params.get('action')==='new'){
+        // Clean URL
+        window.history.replaceState({},document.title,'/');
+        setTimeout(function(){newChat();},100);
+      }
+
+      // Register service worker for PWA offline support
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('/sw.js').then(function(reg){
+          // console.log('[SW] registered', reg.scope);
+        }).catch(function(err){
+          console.warn('[SW] registration failed:', err);
+        });
+      }
+
+      // PWA install prompt — show custom button when available
+      var deferredPrompt=null;
+      window.addEventListener('beforeinstallprompt',function(e){
+        // Prevent Chrome 67+ from showing the mini-infobar
+        e.preventDefault();
+        deferredPrompt=e;
+        showInstallButton(deferredPrompt);
+      });
+
+      window.addEventListener('appinstalled',function(){
+        toast('SkelzAI berhasil dipasang!','success');
+        hideInstallButton();
+        deferredPrompt=null;
+      });
+
+      function showInstallButton(prompt){
+        var btn=document.getElementById('PWA_INSTALL_BTN');
+        if(!btn){
+          btn=document.createElement('button');
+          btn.id='PWA_INSTALL_BTN';
+          btn.className='amsi fixed bottom-20 right-4 z-[150] glass-s rounded-xl px-4 py-3 flex items-center gap-2.5 text-sm text-gold-400 hover:bg-gold-400/10 transition-all';
+          btn.innerHTML='<span class="iconify text-base" data-icon="mdi:download"></span><span>Pasang App</span>';
+          btn.onclick=function(){
+            prompt.prompt();
+            prompt.userChoice.then(function(choice){
+              if(choice.outcome==='accepted'){
+                toast('Memasang SkelzAI...','success');
+              }
+              hideInstallButton();
+              deferredPrompt=null;
+            });
+          };
+          document.body.appendChild(btn);
+        }
+        btn.style.display='flex';
+      }
+      function hideInstallButton(){
+        var btn=document.getElementById('PWA_INSTALL_BTN');
+        if(btn)btn.style.display='none';
+      }
     });
   </script>
 </body>
