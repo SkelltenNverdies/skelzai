@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SkelzAI — Intelligent Chat Assistant</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230A0A0A'/%3E%3Crect x='8' y='8' width='84' height='84' rx='16' fill='none' stroke='%23D4AF37' stroke-width='2' opacity='0.3'/%3E%3Ccircle cx='50' cy='36' r='10' fill='none' stroke='%23D4AF37' stroke-width='2.5'/%3E%3Ccircle cx='50' cy='36' r='3.5' fill='%23D4AF37'/%3E%3Cpath d='M32 64 Q41 54 50 54 Q59 54 68 64' stroke='%23D4AF37' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3Cline x1='50' y1='46' x2='50' y2='54' stroke='%23D4AF37' stroke-width='2'/%3E%3Ccircle cx='26' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='74' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='50' cy='78' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -63,6 +63,7 @@
     .mo:hover{background:rgba(255,255,255,.04)}.mo.sel{background:rgba(212,175,55,.08)!important;border-color:rgba(212,175,55,.2)!important}
     .eb{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:12px;padding:12px 16px}
     .wb{background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.12);border-radius:12px;padding:12px 16px}
+    .fb-note{display:flex;align-items:center;gap:4px;margin-bottom:6px;font-size:10px;color:rgba(234,179,8,.5)}
     .think-box{display:flex;align-items:center;gap:10px;padding:4px 0}
     .think-orbit{position:relative;width:28px;height:28px;flex-shrink:0}
     .think-orbit-core{position:absolute;top:50%;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#D4AF37;animation:thinkPulse 1.5s ease-in-out infinite}
@@ -70,7 +71,6 @@
     .think-orbit-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#D4AF37;top:-2px;left:50%;margin-left:-2px;animation:orbitPulse 1.2s ease-in-out infinite}
     .think-text{font-size:13px;color:#71717a;animation:thinkPulse 2s ease-in-out infinite}
     .think-text::after{content:'';animation:thinkDots 1.5s steps(4) infinite}
-    .fb-note{display:flex;align-items:center;gap:4px;margin-bottom:6px;font-size:10px;color:rgba(234,179,8,.5)}
     @media(max-width:1023px){.sp{width:280px}}
     @media(max-width:640px){.chip{padding:10px 12px!important}.msg-pad{padding:10px!important}}
   </style>
@@ -168,7 +168,7 @@
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
         <p><strong class="text-zinc-200">Versi:</strong> 2.0.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI (Qwen), Llama (Groq), GLM 4.6, GPT-4o Mini (BluesMinds)</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI, Llama (Groq), GLM 4.6, GPT-3.5 Turbo (BluesMinds)</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
       </div>
@@ -245,21 +245,24 @@
   </main>
 
   <script>
+    /* ===== MODELS — GLM 4.6 + GPT-3.5-turbo-0613 ===== */
     var MODELS=[
       {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
       {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat',tag:'Groq'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Kuat',tag:'GLM'},
-      {id:'gpt-4o-mini',provider:'bluesminds',label:'GPT-4o Mini',desc:'BluesMinds — OpenAI',tag:'GPT'}
+      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Kuat, no fallback',tag:'GLM'},
+      {id:'gpt-3.5-turbo-0613',provider:'bluesminds',label:'GPT-3.5 Turbo',desc:'BluesMinds — OpenAI model',tag:'GPT'}
     ];
 
+    /* ===== STATE ===== */
     var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null;
 
     function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id)}catch(e){}}
     function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}}catch(e){}}
 
+    /* ===== HELPERS ===== */
     function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
     function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
     function scrollBot(){var a=document.getElementById('CA');requestAnimationFrame(function(){a.scrollTop=a.scrollHeight})}
@@ -275,12 +278,12 @@
     function toast(msg,type){
       type=type||'info';var ic={success:'mdi:check-circle',error:'mdi:alert-circle',info:'mdi:information',warning:'mdi:alert'};
       var cl={success:'text-emerald-400',error:'text-red-400',info:'text-gold-400',warning:'text-yellow-400'};
-      var t=document.createElement('div');t.className='te glass-s rounded-xl px-4 py-3 flex items-center gap-2.5 pointer-events-auto';
-      t.style.maxWidth='calc(100vw - 32px)';
+      var t=document.createElement('div');t.className='te glass-s rounded-xl px-4 py-3 flex items-center gap-2.5 pointer-events-auto';t.style.maxWidth='calc(100vw - 32px)';
       t.innerHTML='<span class="iconify '+cl[type]+' text-lg flex-shrink-0" data-icon="'+ic[type]+'"></span><span class="text-sm text-zinc-300">'+msg+'</span>';
       document.getElementById('TC').appendChild(t);setTimeout(function(){t.classList.replace('te','tx');setTimeout(function(){t.remove()},200)},3000);
     }
 
+    /* ===== SIDEBAR ===== */
     function togSB(){
       var sb=document.getElementById('SB'),ov=document.getElementById('SO'),open=!sb.classList.contains('-translate-x-full');
       if(open){sb.classList.add('-translate-x-full');ov.classList.add('opacity-0','pointer-events-none');ov.classList.remove('opacity-100','pointer-events-auto');closePM()}
@@ -296,17 +299,18 @@
     function openNM(){closePM();openM('NM');setTimeout(function(){document.getElementById('NI').focus()},100)}
     function openAM(){closePM();openM('AM')}
     function saveName(){var n=document.getElementById('NI').value.trim();if(n){document.getElementById('UN').textContent=n;save();toast('Nama berhasil diubah!','success')}closeM('NM')}
-    function resetApp(){closePM();showConfirm('Reset Aplikasi','Semua data akan dihapus permanen.',function(){chats={};curId=null;localStorage.clear();document.getElementById('UN').textContent='Guest User';newChat();toast('Aplikasi direset','success')})}
+    function resetApp(){closePM();showConfirm('Reset Aplikasi','Semua data akan dihapus permanen.',function(){chats={};curId=null;localStorage.clear();document.getElementById('UN').textContent='Guest User';newChat();toast('Aplikasi direset','success'})}
 
     /* ===== MODEL SELECTOR ===== */
     function openMP(){buildML();var ol=document.getElementById('MOL');ol.classList.remove('hidden');ol.classList.add('flex')}
     function closeMP(){var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex')}
+
     function buildML(){
       var el=document.getElementById('ML'),html='',lastP='';
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI (Qwen)':m.provider==='groq'?'Groq Cloud — Llama':'BluesMinds — GLM & GPT';
+          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':'BluesMinds — GLM & GPT';
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-zinc-600 font-medium">'+pL+'</span></div>';lastP=m.provider;
         }
         var isSel=m.id===selModel.id;
@@ -320,7 +324,11 @@
       var opts=el.querySelectorAll('.mo');
       for(var j=0;j<opts.length;j++){(function(opt){opt.addEventListener('click',function(e){e.stopPropagation();pickModel(opt.getAttribute('data-mid'))})})(opts[j])}
     }
-    function pickModel(id){for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===id){selModel=MODELS[i];break}document.getElementById('MSL').textContent=selModel.label;document.getElementById('topModel').textContent=selModel.label;closeMP();save();toast('Model: '+selModel.label,'info')}
+    }
+
+    function pickModel(id){for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===id){selModel=MODELS[i];break}
+      document.getElementById('MSL').textContent=selModel.label;document.getElementById('topModel').textContent=selModel.label;closeMP();save();toast('Model: '+selModel.label,'info')}
+  }
 
     /* ===== CHAT ===== */
     function newChat(){curId=null;document.getElementById('WS').classList.remove('hidden');document.getElementById('MC').classList.add('hidden');document.getElementById('MC').innerHTML='';var inp=document.getElementById('CI');inp.value='';inp.style.height='auto';updBtn();updHist();updTop();if(window.innerWidth<1024)togSB();inp.focus()}
@@ -328,7 +336,7 @@
     function loadChat(id){if(!chats[id])return;curId=id;document.getElementById('WS').classList.add('hidden');var c=document.getElementById('MC');c.classList.remove('hidden');c.innerHTML='';for(var i=0;i<chats[id].messages.length;i++){var m=chats[id].messages[i];addMsgDOM(m.role,m.content,false,i,m.fb)}updHist();updTop();scrollBot();save();if(window.innerWidth<1024)togSB()}
     function delChat(id,e){e.stopPropagation();showConfirm('Hapus Chat','"'+chats[id].title+'" akan dihapus.',function(){delete chats[id];if(curId===id)newChat();else{updHist();updTop()}save();toast('Chat dihapus','success')})}
     function clearCurChat(){if(!curId||!chats[curId])return;showConfirm('Hapus Pesan','Semua pesan dalam chat ini akan dihapus.',function(){chats[curId].messages=[];document.getElementById('MC').innerHTML='';document.getElementById('WS').classList.remove('hidden');document.getElementById('MC').classList.add('hidden');updTop();save();toast('Pesan dihapus','success')})}
-    function clearAllChats(){showConfirm('Hapus Semua','Seluruh riwayat akan dihapus.',function(){chats={};curId=null;newChat();save();toast('Semua chat dihapus','success')})}
+    function clearAllChats(){showConfirm('Hapus Semua','Seluruh riwayat akan dihapus.',function(){chats={};curId=null;newChat();save();toast('Semua chat dihapus','success')}}
     function updHist(){
       var el=document.getElementById('CH'),em=document.getElementById('HE'),cb=document.getElementById('clrAllBtn'),ids=Object.keys(chats).sort(function(a,b){return chats[b].created-chats[a].created});
       if(!ids.length){el.innerHTML='';em.classList.remove('hidden');cb.classList.add('hidden');return}
@@ -340,6 +348,7 @@
 
     function exportChat(){if(!curId||!chats[curId])return;var ch=chats[curId],txt='SkelzAI — Export\n'+'='.repeat(40)+'\nJudul: '+ch.title+'\nModel: '+selModel.label+'\nTanggal: '+new Date(ch.created).toLocaleString('id-ID')+'\n'+'='.repeat(40)+'\n\n';for(var i=0;i<ch.messages.length;i++){var m=ch.messages[i];txt+=(m.role==='user'?'Anda':'SkelzAI')+'\n'+'-'.repeat(30)+'\n'+m.content+'\n\n'}var blob=new Blob([txt],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='skelzai-'+ch.title.replace(/[^a-zA-Z0-9]/g,'_')+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);toast('Chat di-export!','success')}
     function handleFile(e){var f=e.target.files[0];if(!f)return;if(f.size>500000){toast('File terlalu besar (maks 500KB)','error');e.target.value='';return}var r=new FileReader();r.onload=function(ev){document.getElementById('CI').value='[File: '+f.name+']\n\n'+ev.target.result;onInput();toast('File "'+f.name+'" dimuat','success')};r.onerror=function(){toast('Gagal membaca file','error')};r.readAsText(f);e.target.value=''}
+  }
 
     /* ===== MARKDOWN ===== */
     function hlCode(code){var r=esc(code);r=r.replace(/(\/\/.*$|#.*$)/gm,'<span class="cm">$1</span>');r=r.replace(/(&quot;.*?&quot;|&#039;.*?&#039;|'[^']*?'|"[^"]*?")/g,'<span class="st">$1</span>');var kws=['function','const','let','var','return','if','else','for','while','class','import','export','from','default','new','this','async','await','try','catch','throw','def','print','self','True','False','None','with','as','in','not','and','or','elif'];for(var i=0;i<kws.length;i++)r=r.replace(new RegExp('\\b('+kws[i]+')\\b','g'),'<span class="kw">$1</span>');r=r.replace(/\b(\d+\.?\d*)\b/g,'<span class="nm">$1</span>');r=r.replace(/\b([a-zA-Z_]\w*)\s*\(/g,'<span class="fn">$1</span>(');return r}
@@ -347,13 +356,16 @@
       text=text.replace(/```(\w*)\n?([\s\S]*?)```/g,function(_,lang,code){return'<div class="cb"><div class="chdr"><span>'+esc(lang||'code')+'</span><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button></div><div class="cc">'+hlCode(code.trim())+'</div></div>'});
       text=text.replace(/`([^`]+)`/g,'<code class="bg-white/[0.06] px-1.5 py-0.5 rounded text-gold-400 text-[13px] font-mono">$1</code>');
       text=text.replace(/^### (.+)$/gm,'<h3>$1</h3>');text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-      text=text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');text=text.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
-      text=text.replace(/^---$/gm,'<hr>');text=text.replace(/^- (.+)$/gm,'::ULI::$1');text=text.replace(/^\d+\. (.+)$/gm,'::OLI::$1');
+      text=text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
+      text=text.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+      text=text.replace(/^---$/gm,'<hr>');
+      text=text.replace(/^- (.+)$/gm,'::ULI::$1');text=text.replace(/^\d+\. (.+)$/gm,'::OLI::$1');
       var blocks=text.split('\n\n'),res=[];
       for(var i=0;i<blocks.length;i++){var b=blocks[i].trim();if(!b)continue;if(b.charAt(0)==='<'){res.push(b);continue}
         if(b.indexOf('::ULI::')!==-1){var it=b.split('\n').map(function(l){return'<li>'+l.replace('::ULI::','')+'</li>'}).join('');res.push('<ul>'+it+'</ul>')}
         else if(b.indexOf('::OLI::')!==-1){var it=b.split('\n').map(function(l){return'<li>'+l.replace('::OLI::','')+'</li>'}).join('');res.push('<ol>'+it+'</ol>')}
-        else{res.push('<p>'+b.replace(/\n/g,'<br>')+'</p>')}}
+        else{res.push('<p>'+b.replace(/\n/g,'<br>')+'</p>')}
+      }
       return res.join('');
     }
     function cpCode(btn){var code=btn.closest('.cb').querySelector('.cc').textContent;navigator.clipboard.writeText(code).then(function(){btn.querySelector('.cpl').textContent='Tersalin!';btn.querySelector('.iconify').setAttribute('data-icon','mdi:check');setTimeout(function(){btn.querySelector('.cpl').textContent='Salin';btn.querySelector('.iconify').setAttribute('data-icon','mdi:content-copy')},2000)}).catch(function(){toast('Gagal menyalin','error')})}
@@ -363,13 +375,14 @@
       var c=document.getElementById('MC'),d=document.createElement('div'),ac=anim?(role==='user'?' asr':' asl'):'';
       d.className='mc flex gap-3'+ac;
       if(role==='user'){
-        d.innerHTML='<div class="flex-1 flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-gold-400/10 border border-gold-400/15 rounded-2xl rounded-tr-md px-4 py-3 msg-pad"><p class="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button></div></div></div><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-wine-900 to-dark-800 border border-white/[0.1] flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-zinc-400 text-xs" data-icon="mdi:account"></span></div>';
+        d.innerHTML='<div class="flex-1 flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-gold-400/10 border border-gold-4.400/15 rounded-2xl rounded-tr-md px-4 py-3 msg-pad"><p class="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button></div></div></div></div><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-wine-900 to-dark-800 border border-white/[0.1] flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-zinc-400 text-xs" data-icon="mdi:account"></span></div>';
       } else {
         var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0">'+fbNote+'<div class="md text-sm text-zinc-300 leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0">'+fbNote+'<div class="md text-sm text-zinc-300 leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
       }
       c.appendChild(d);
     }
+
     function cpMsg(idx){if(!curId||!chats[curId])return;var msg=chats[curId].messages[idx];if(!msg)return;navigator.clipboard.writeText(msg.content).then(function(){toast('Pesan tersalin!','success')}).catch(function(){toast('Gagal menyalin','error')})}
 
     /* ===== THINKING ===== */
@@ -385,7 +398,7 @@
       return new Promise(function(resolve){
         var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc flex gap-3 asl';
         var idx=chats[curId]?chats[curId].messages.length-1:0;
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-sm text-zinc-300 leading-relaxed"></div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-sm text-zinc-300 leading-relaxed"></div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
         c.appendChild(d);var ta=d.querySelector('.md'),chars=content.split(''),cur='',i=0,spd=Math.max(2,Math.min(8,2500/chars.length)),lastR=0;
         function tick(){
           if(abortTyping||i>=chars.length){ta.innerHTML=parseMD(content);scrollBot();abortTyping=false;resolve();return}
@@ -406,7 +419,8 @@
       if(generating||!curId||!chats[curId])return;var msgs=chats[curId].messages;
       if(idx<0||idx>=msgs.length||msgs[idx].role!=='assistant')return;
       var userMsg='';for(var i=idx-1;i>=0;i--)if(msgs[i].role==='user'){userMsg=msgs[i].content;break}
-      if(!userMsg)return;msgs.splice(idx);var c=document.getElementById('MC');while(c.children.length>idx)c.removeChild(c.lastChild);
+      if(!userMsg)return;
+      msgs.splice(idx);var c=document.getElementById('MC');while(c.children.length>idx)c.removeChild(c.lastChild);
       generating=true;updBtn();
       callAPI(userMsg).then(function(resp){if(resp){msgs.push({role:'assistant',content:resp,fb:false});return typeAnim(resp)}}).catch(function(e){addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();toast('Pesan di-regenerasi','success')});
     }
@@ -417,41 +431,42 @@
       var history=[];for(var i=0;i<chats[curId].messages.length;i++){var m=chats[curId].messages[i];if(m.role==='user'||m.role==='assistant')history.push({role:m.role,content:m.content})}
       history.push({role:'user',content:userMsg});
       if(history.length>20)history=history.slice(-20);
-      return fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history})}).then(function(res){if(!res.ok)return res.json().then(function(d){throw new Error(d.error||'Error '+res.status)});return res.json()}).then(function(data){if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;throw new Error('Respons tidak valid dari API')});
+      return fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history})}).then(function(res){if(!res.ok)return res.json().then(function(d){throw new Error(d.error||'Error '+res.status)});return res.json()}).then(function(data){if(data.choices&&data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;throw new Error('Respons tidak valid dari API')});
     }
 
-    /* ===== SMART FALLBACK ===== */
+    /* ===== SMART FALLBACK — HANYA fallback hanya untuk BUKAN GLM-4.6 ====>> Qwen Turbo ===== */
     function callAPIWithFallback(userMsg){
-      var requestedModel=selModel.id;
       return callAPI(userMsg).catch(function(err){
         var isBad=err.message.indexOf('429')!==-1||err.message.indexOf('504')!==-1||err.message.toLowerCase().indexOf('timeout')!==-1||err.message.toLowerCase().indexOf('gateway')!==-1||err.message.toLowerCase().indexOf('ratelimit')!==-1||err.message.toLowerCase().indexOf('使用上限')!==-1;
-        if(isBad&&selModel.provider==='bluesminds'){
+        if(isBad&&selModel.provider==='bluesminds'&&selModel.id!=='glm-4.6'&&process.env.QWEN_API_KEY){
           var saved=selModel;selModel=MODELS[0];
-          document.getElementById('MSL').textContent=selModel.label;document.getElementById('topModel').textContent=selModel.label;
-          toast('GLM/GPT error — auto-switch ke SkelzAI Turbo','warning');
+          document.getElementById('MSL').textContent=scrollBot();document.getElementById('topModel').textContent='SkelzAI Turbo';
+          toast('Model error — auto-switch ke SkelzAI Turbo','warning');
           return callAPI(userMsg).then(function(resp){
             if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:true});return typeAnim(resp)}
-          }).finally(function(){selModel=saved;document.getElementById('MSL').textContent=selModel.label;document.getElementById('topModel').textContent=selModel.label});
-        }
-        throw err;
-      });
+          }).finally(function(){selModel=saved;document.getElementById('MSL').textContent=scrollBot();document.getElementById('topModel').textContent=scrollBot()})
+        });
+      }
+      throw err;
     }
 
     function addError(msg){
       var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc flex gap-3 asr';
       var isRL=msg.indexOf('429')!==-1||msg.toLowerCase().indexOf('ratelimit')!==-1||msg.toLowerCase().indexOf('rate limit')!==-1||msg.toLowerCase().indexOf('使用上限')!==-1;
-      var isTO=msg.indexOf('504')!==-1||msg.toLowerCase().indexOf('timeout')!==-1||msg.toLowerCase().indexOf('gateway')!==-1;
+      var isTO=msg.indexOf('504')!==-1||msg.toLowerCase().indexOf('timeout')!==-1||msg.toLowerCase().indexOf('gateway')!==-1};
       if(isRL||isTO){
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Sistem otomatis beralih ke SkelzAI Turbo.</p></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Sistem otomatis beralih ke SkelzAI Turbo.</p></div></div></div>';
       }else{
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:alert-circle-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">Terjadi Kesalahan</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Tip: Coba ganti model lain.</p></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:alert-circle-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">Terjadi Kesalahan</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Tip: Coba ganti model lain.</p></div></div></div>';
       }
       c.appendChild(d);scrollBot();
     }
 
     /* ===== INPUT ===== */
     function onInput(){var inp=document.getElementById('CI');inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,160)+'px';updBtn()}
-    function updBtn(){var btn=document.getElementById('SBtn'),si=document.getElementById('SIco'),st=document.getElementById('STico');if(generating){btn.classList.add('on');btn.disabled=false;si.classList.add('hidden');st.classList.remove('hidden')}else if(document.getElementById('CI').value.trim()){btn.classList.add('on');btn.disabled=false;si.classList.remove('hidden');st.classList.add('hidden')}else{btn.classList.remove('on');btn.disabled=true;si.classList.remove('hidden');st.classList.add('hidden')}}
+    function updBtn(){var btn=document.getElementById('SBtn'),si=document.getElementById('SIco'),st=document.getElementById('STico');if(generating){btn.classList.add('on');btn.disabled=false;si.classList.add('hidden');st.classList.remove('hidden')}
+    else if(document.getElementById('CI').value.trim()){btn.classList.add('on');btn.disabled=false;si.classList.remove('hidden');st.classList.add('hidden')}
+      else{btn.classList.remove('on');btn.disabled=true;si.classList.remove('hidden');st.classList.add('hidden')}}
     function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(generating){abortTyping=true}else if(!document.getElementById('SBtn').disabled){sendMsg()}}}
     function onSendClick(){if(generating){abortTyping=true}else{sendMsg()}}
     function useSug(chip){document.getElementById('CI').value=chip.querySelector('p').textContent;onInput();sendMsg()}
@@ -470,13 +485,9 @@
       }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save()});
     }
 
-    /* ===== GLOBAL CLOSE HANDLERS ===== */
+    /* ===== GLOBAL ===== */
     document.addEventListener('click',function(e){
-      /* Close profile menu on outside tap (MOBILE FIX) */
-      if(pmOpen){
-        var pa=document.getElementById('profileArea');
-        if(!pa.contains(e.target)){closePM()}
-      }
+      if(pmOpen){var pa=document.getElementById('profileArea');if(!pa.contains(e.target)){closePM()}}
     });
     document.addEventListener('keydown',function(e){
       if(e.key==='Escape'){
@@ -496,4 +507,4 @@
     });
   </script>
 </body>
-</html>
+html>
