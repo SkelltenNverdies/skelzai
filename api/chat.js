@@ -24,11 +24,14 @@ FORMAT OUTPUT:
 4. Tips & best practices`
 };
 
+// Per-request timeout kept at 25s so that 1 retry (worst case 25s + 2s + 25s = 52s)
+// stays well under Vercel Hobby plan's 60s maxDuration. This prevents
+// FUNCTION_INVOCATION_TIMEOUT errors.
 const PROVIDERS = {
   qwen: {
     envVar: 'QWEN_API_KEY',
     url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
-    timeout: 60000,
+    timeout: 25000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -44,11 +47,8 @@ const PROVIDERS = {
   groq: {
     envVar: 'GROQ_API_KEY',
     url: 'https://api.groq.com/openai/v1/chat/completions',
-    timeout: 60000,
+    timeout: 25000,
     buildRequest(apiKey, model, messages) {
-      // Groq has hard limits per model — let us pass through and clamp here
-      // llama-3.3-70b-versatile supports up to 32768 output tokens
-      // llama-3.1-8b-instant supports up to 8192 output tokens
       const maxTokens = model.indexOf('70b') !== -1 ? 8000 : 4000;
       return {
         method: 'POST',
@@ -63,10 +63,10 @@ const PROVIDERS = {
   bluesminds: {
     envVar: 'BLUEMINDS_API_KEY',
     url: 'https://api.bluesminds.com/v1/chat/completions',
-    timeout: 60000,
+    timeout: 25000,
     buildRequest(apiKey, model, messages) {
       // GLM-4.6: NO max_tokens limit (unlimited) — omit it entirely so the
-      // provider uses its own default maximum. This is the user's explicit request.
+      // provider uses its own default maximum.
       return {
         method: 'POST',
         headers: {
@@ -79,7 +79,34 @@ const PROVIDERS = {
           messages,
           stream: false,
           temperature: 0.7
-          // max_tokens intentionally omitted — let GLM-4.6 use its full context budget
+          // max_tokens intentionally omitted — GLM-4.6 token unlimited
+        })
+      };
+    }
+  },
+  openrouter: {
+    // OpenRouter — OpenAI-compatible API
+    // Default key embedded as fallback so it works out-of-the-box;
+    // override via OPENROUTER_API_KEY env var for production use.
+    envVar: 'OPENROUTER_API_KEY',
+    fallbackKey: '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',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    timeout: 25000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://skelzai.vercel.app',
+          'X-Title': 'SkelzAI'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+          max_tokens: 4096,
+          temperature: 0.7
         })
       };
     }
@@ -103,7 +130,6 @@ async function fetchWithTimeout(url, options, timeoutMs) {
 }
 
 // Defensive JSON parse — some upstreams return text errors on 200 OK.
-// Always returns { ok: true, data } or { ok: false, error, status }
 async function safeReadJson(response) {
   const text = await response.text().catch(() => '');
   if (!text || !text.trim()) {
@@ -118,7 +144,6 @@ async function safeReadJson(response) {
       return { ok: false, error: `Upstream returned invalid JSON: ${e.message}`, text };
     }
   }
-  // Not JSON — likely an HTML error page or plain text error from upstream
   return { ok: false, error: `Upstream returned non-JSON: ${trimmed.substring(0, 200)}`, text };
 }
 
@@ -130,7 +155,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Parse body — Vercel usually parses JSON already, but be defensive
   let body;
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
@@ -148,14 +172,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown provider: ${provider}` });
   }
 
-  const apiKey = process.env[config.envVar];
+  // Prefer env var; fall back to embedded default key (only OpenRouter has one).
+  // This lets the app work out-of-the-box without requiring env var setup.
+  let apiKey = process.env[config.envVar];
+  if (!apiKey && config.fallbackKey) {
+    apiKey = config.fallbackKey;
+  }
   if (!apiKey) {
     return res.status(500).json({ error: `${config.envVar} not set on server` });
   }
 
   const finalMessages = [SYSTEM_PROMPT, ...messages];
 
-  // Retry on transient errors (429 / 504 / network)
+  // 1 retry only — keeps total worst case under 60s Vercel limit
   let lastError = null;
   let response = null;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -165,45 +194,39 @@ export default async function handler(req, res) {
 
       if (response.status === 429) {
         lastError = new Error(`Rate limited (429)`);
-        await new Promise(r => setTimeout(r, (attempt + 1) * 4000));
-        continue;
+        if (attempt < 1) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        break;
       }
-      if (response.status === 504) {
-        lastError = new Error(`Gateway timeout (504)`);
-        continue;
+      if (response.status === 504 || response.status === 502) {
+        lastError = new Error(`Gateway error (${response.status})`);
+        if (attempt < 1) {
+          continue;
+        }
+        break;
       }
       break;
     } catch (err) {
       lastError = err;
       if (attempt < 1) {
-        await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+        await new Promise(r => setTimeout(r, 1500));
       }
-    }
-  }
-
-  // Special fallback: if Qwen returned 504 twice, try qwen-turbo as a last resort
-  if (response && response.status === 504 && provider === 'qwen' && model !== 'qwen-turbo') {
-    try {
-      const fallbackOpts = PROVIDERS.qwen.buildRequest(apiKey, 'qwen-turbo', finalMessages);
-      const fr = await fetchWithTimeout(PROVIDERS.qwen.url, fallbackOpts, PROVIDERS.qwen.timeout);
-      if (fr.ok) {
-        const parsed = await safeReadJson(fr);
-        if (parsed.ok) {
-          return res.status(200).json(parsed.data);
-        }
-      }
-    } catch (e) {
-      // ignore — fall through to error response
     }
   }
 
   if (!response) {
-    return res.status(502).json({
-      error: `${provider} unreachable: ${(lastError && lastError.message) || 'Network error'}`
+    const errMsg = (lastError && lastError.message) || 'Network error';
+    const isTimeout = errMsg.toLowerCase().indexOf('abort') !== -1 || errMsg.toLowerCase().indexOf('timeout') !== -1;
+    return res.status(504).json({
+      error: isTimeout
+        ? `${provider} timeout — server membutuhkan waktu terlalu lama (maks 25 detik per percobaan). Coba lagi atau gunakan model lain.`
+        : `${provider} unreachable: ${errMsg}`
     });
   }
 
-  // Read body defensively — works for both OK and error responses
+  // Read body defensively
   const parsed = await safeReadJson(response);
 
   if (!response.ok) {
@@ -217,7 +240,6 @@ export default async function handler(req, res) {
   }
 
   if (!parsed.ok) {
-    // Upstream returned 2xx but body is not JSON — common with BluesMinds on errors
     return res.status(502).json({
       error: `${provider} returned non-JSON response (HTTP ${response.status}): ${parsed.error}`
     });
@@ -229,7 +251,6 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   }
 
-  // Some providers return { error: ... } envelope even on 200 — surface it
   if (data && data.error) {
     const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
     return res.status(502).json({

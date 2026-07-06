@@ -8,6 +8,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <!-- PDF.js for PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Mammoth.js for DOCX text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script>
+    // Configure pdf.js worker
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
   <script>
     tailwind.config={theme:{extend:{colors:{gold:{400:'#D4AF37',500:'#C5A028',600:'#a88620'},wine:{900:'#2C041C',950:'#1A0210'},dark:{950:'#050505',900:'#0A0A0A',800:'#121212',700:'#1C1C1C'}},fontFamily:{serif:['"Cormorant Garamond"','serif'],sans:['"Inter"','sans-serif']}}}}
   </script>
@@ -71,6 +81,11 @@
     .think-orbit-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#D4AF37;top:-2px;left:50%;margin-left:-2px;animation:orbitPulse 1.2s ease-in-out infinite}
     .think-text{font-size:13px;color:#71717a;animation:thinkPulse 2s ease-in-out infinite}
     .think-text::after{content:'';animation:thinkDots 1.5s steps(4) infinite}
+    .att-preview{transition:all .2s}
+    .att-chip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;transition:all .2s}
+    .att-chip:hover{background:rgba(255,255,255,.06)}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .spinner{animation:spin 1s linear infinite}
     @media(max-width:1023px){.sp{width:280px}}
     @media(max-width:640px){.chip{padding:10px 12px!important}.msg-pad{padding:10px!important}}
   </style>
@@ -166,9 +181,10 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.1.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.3.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), GLM 4.6 (BluesMinds, token unlimited)</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), GLM 4.6 (BluesMinds, token unlimited), Nemotron 70B/Super 49B/Nano 8B (NVIDIA via OpenRouter, gratis)</p>
+        <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
       </div>
@@ -230,33 +246,44 @@
             <span class="iconify text-xs" data-icon="mdi:chevron-up"></span>
           </button>
         </div>
+        <div id="AP" class="hidden mb-2 att-preview glass-i rounded-xl p-2.5 flex items-center gap-3">
+          <div id="AP_ICON" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden"></div>
+          <div class="flex-1 min-w-0">
+            <p id="AP_NAME" class="text-sm text-zinc-200 truncate"></p>
+            <p id="AP_SIZE" class="text-[11px] text-zinc-600"></p>
+          </div>
+          <button onclick="removeAttachment()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors flex-shrink-0"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
+        </div>
         <div class="glass-i rounded-2xl px-3 sm:px-4 py-3 flex items-end gap-2 sm:gap-3 transition-all focus-within:border-gold-400/20 focus-within:bg-white/[0.06]">
-          <button type="button" onclick="document.getElementById('FI').click()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors flex-shrink-0 mb-0.5" title="Upload file"><span class="iconify text-zinc-500 text-lg" data-icon="mdi:paperclip"></span></button>
-          <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv" class="hidden" onchange="handleFile(event)">
-          <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 outline-none leading-relaxed py-1" placeholder="Ketik pesan Anda..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
+          <button type="button" onclick="document.getElementById('FI').click()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors flex-shrink-0 mb-0.5" title="Upload file (foto/PDF/DOCX/teks, maks 20MB)"><span class="iconify text-zinc-500 text-lg" data-icon="mdi:paperclip"></span></button>
+          <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg" class="hidden" onchange="handleFile(event)">
+          <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 outline-none leading-relaxed py-1" placeholder="Ketik pesan atau lampirkan file (foto/PDF/DOCX/teks)..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
           <button type="button" id="SBtn" onclick="onSendClick()" class="sbtn w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mb-0.5" disabled>
             <span id="SIco" class="iconify text-base" data-icon="mdi:arrow-up"></span>
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.1.0 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.3.0 — by Gabriel Arjun Pangestu</p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — GPT-3.5 Turbo removed, GLM-4.6 unlimited tokens ===== */
+    /* ===== MODELS — GPT-3.5 Turbo removed, GLM-4.6 unlimited tokens, NVIDIA via OpenRouter ===== */
     var MODELS=[
       {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
       {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat',tag:'Groq'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Token unlimited',tag:'GLM'}
+      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Token unlimited',tag:'GLM'},
+      {id:'nvidia/llama-3.1-nemotron-70b-instruct:free',provider:'openrouter',label:'Nemotron 70B',desc:'NVIDIA — Gratis, paling kuat',tag:'NVIDIA'},
+      {id:'nvidia/llama-3.3-nemotron-super-49b-v1:free',provider:'openrouter',label:'Nemotron Super 49B',desc:'NVIDIA — Gratis, seimbang',tag:'NVIDIA'},
+      {id:'nvidia/llama-3.1-nemotron-nano-8b-v1:free',provider:'openrouter',label:'Nemotron Nano 8B',desc:'NVIDIA — Gratis, super cepat',tag:'NVIDIA'}
     ];
 
     /* ===== STATE ===== */
-    var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null;
+    var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null;
 
     function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id)}catch(e){}}
     function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}}catch(e){}}
@@ -268,6 +295,8 @@
     function openM(id){var e=document.getElementById(id);e.classList.remove('hidden');e.classList.add('flex')}
     function closeM(id){var e=document.getElementById(id);e.classList.add('hidden');e.classList.remove('flex')}
     function setModelLabel(){document.getElementById('MSL').textContent=selModel.label;document.getElementById('topModel').textContent=selModel.label}
+    function formatSize(bytes){if(bytes<1024)return bytes+' B';if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';return (bytes/1048576).toFixed(1)+' MB'}
+    function getFileIcon(name){var ext=name.split('.').pop().toLowerCase();var m={pdf:'mdi:file-pdf',docx:'mdi:file-word',doc:'mdi:file-word',txt:'mdi:file-document',md:'mdi:language-markdown',js:'mdi:language-javascript',ts:'mdi:language-typescript',py:'mdi:language-python',html:'mdi:language-html5',css:'mdi:language-css3',json:'mdi:code-json',csv:'mdi:file-delimited',xml:'mdi:file-xml',yml:'mdi:file-code',yaml:'mdi:file-code',java:'mdi:language-java',c:'mdi:language-c',cpp:'mdi:language-cpp',go:'mdi:language-go',rs:'mdi:language-rust',rb:'mdi:language-ruby',php:'mdi:language-php',sh:'mdi:console',sql:'mdi:database',log:'mdi:file-document',jpg:'mdi:file-image',jpeg:'mdi:file-image',png:'mdi:file-image',gif:'mdi:file-image',webp:'mdi:file-image',bmp:'mdi:file-image',svg:'mdi:file-image'};return m[ext]||'mdi:file'}
 
     function showConfirm(t,m,cb){
       document.getElementById('CM_T').textContent=t;document.getElementById('CM_M').textContent=m;confirmCb=cb;
@@ -310,7 +339,7 @@
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':'BluesMinds — GLM & GPT';
+          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='bluesminds'?'BluesMinds — GLM':'NVIDIA — OpenRouter (Gratis)';
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-zinc-600 font-medium">'+pL+'</span></div>';lastP=m.provider;
         }
         var isSel=m.id===selModel.id;
@@ -340,7 +369,7 @@
     function loadChat(id){
       if(!chats[id])return;curId=id;document.getElementById('WS').classList.add('hidden');
       var c=document.getElementById('MC');c.classList.remove('hidden');c.innerHTML='';
-      for(var i=0;i<chats[id].messages.length;i++){var m=chats[id].messages[i];addMsgDOM(m.role,m.content,false,i,m.fb)}
+      for(var i=0;i<chats[id].messages.length;i++){var m=chats[id].messages[i];addMsgDOM(m.role,m.content,false,i,m.fb,m.attachment)}
       updHist();updTop();scrollBot();save();if(window.innerWidth<1024)togSB();
     }
     function delChat(id,e){e.stopPropagation();showConfirm('Hapus Chat','"'+chats[id].title+'" akan dihapus.',function(){delete chats[id];if(curId===id)newChat();else{updHist();updTop()}save();toast('Chat dihapus','success')})}
@@ -361,14 +390,119 @@
       for(var i=0;i<ch.messages.length;i++){var m=ch.messages[i];txt+=(m.role==='user'?'Anda':'SkelzAI')+'\n'+'-'.repeat(30)+'\n'+m.content+'\n\n'}
       var blob=new Blob([txt],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='skelzai-'+ch.title.replace(/[^a-zA-Z0-9]/g,'_')+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);toast('Chat di-export!','success');
     }
+
+    /* ===== FILE UPLOAD — supports text, image, PDF, DOCX (max 20MB) ===== */
+    var TEXT_EXTS=['txt','md','js','ts','py','html','css','json','csv','xml','yml','yaml','java','c','cpp','go','rs','rb','php','sh','sql','log','vue','jsx','tsx','scss','less','ini','conf','env','gitignore','dockerfile'];
+    var IMAGE_EXTS=['jpg','jpeg','png','gif','webp','bmp','svg'];
+    var MAX_FILE_SIZE=20*1024*1024; // 20MB
+
     function handleFile(e){
       var f=e.target.files[0];if(!f)return;
-      if(f.size>500000){toast('File terlalu besar (maks 500KB)','error');e.target.value='';return}
-      var r=new FileReader();
-      r.onload=function(ev){document.getElementById('CI').value='[File: '+f.name+']\n\n'+ev.target.result;onInput();toast('File "'+f.name+'" dimuat','success')};
-      r.onerror=function(){toast('Gagal membaca file','error')};
-      r.readAsText(f);e.target.value='';
+      if(f.size>MAX_FILE_SIZE){toast('File terlalu besar (maks 20MB)','error');e.target.value='';return}
+      var ext=f.name.split('.').pop().toLowerCase();
+      var isText=TEXT_EXTS.indexOf(ext)!==-1;
+      var isImage=IMAGE_EXTS.indexOf(ext)!==-1;
+      var isPdf=ext==='pdf';
+      var isDocx=ext==='docx'||ext==='doc';
+
+      // Show processing state
+      curAttachment={name:f.name,size:f.size,type:f.type||ext,preview:null,extracted:null,processing:true};
+      showAttachment();
+
+      if(isText){
+        var r=new FileReader();
+        r.onload=function(ev){
+          var text=ev.target.result;
+          if(text.length>100000)text=text.substring(0,100000)+'\n\n[...content truncated at 100KB...]';
+          curAttachment={name:f.name,size:f.size,type:f.type||ext,preview:null,extracted:text,processing:false};
+          showAttachment();
+          toast('File "'+f.name+'" dimuat ('+formatSize(f.size)+')','success');
+        };
+        r.onerror=function(){toast('Gagal membaca file','error');removeAttachment()};
+        r.readAsText(f);
+      }else if(isImage){
+        var r=new FileReader();
+        r.onload=function(ev){
+          curAttachment={name:f.name,size:f.size,type:f.type||ext,preview:ev.target.result,extracted:null,processing:false};
+          showAttachment();
+          toast('Image "'+f.name+'" dimuat ('+formatSize(f.size)+')','success');
+        };
+        r.onerror=function(){toast('Gagal membaca image','error');removeAttachment()};
+        r.readAsDataURL(f);
+      }else if(isPdf){
+        if(typeof pdfjsLib==='undefined'){toast('Library PDF belum dimuat, coba refresh halaman','error');removeAttachment();return}
+        var r=new FileReader();
+        r.onload=async function(ev){
+          try{
+            var typedarray=new Uint8Array(ev.target.result);
+            var pdf=await pdfjsLib.getDocument({data:typedarray}).promise;
+            var text='';
+            var maxPages=Math.min(pdf.numPages,50);
+            for(var i=1;i<=maxPages;i++){
+              var page=await pdf.getPage(i);
+              var content=await page.getTextContent();
+              var pageText=content.items.map(function(item){return item.str}).join(' ');
+              text+='[Halaman '+i+']\n'+pageText+'\n\n';
+              if(text.length>100000){text=text.substring(0,100000)+'\n\n[...content truncated at 100KB...]';break}
+            }
+            curAttachment={name:f.name,size:f.size,type:'application/pdf',preview:null,extracted:text||'[PDF kosong atau tidak ada teks]',processing:false};
+            showAttachment();
+            toast('PDF "'+f.name+'" diproses ('+pdf.numPages+' halaman)','success');
+          }catch(err){
+            toast('Gagal memproses PDF: '+err.message,'error');
+            removeAttachment();
+          }
+        };
+        r.onerror=function(){toast('Gagal membaca PDF','error');removeAttachment()};
+        r.readAsArrayBuffer(f);
+      }else if(isDocx){
+        if(typeof mammoth==='undefined'){toast('Library DOCX belum dimuat, coba refresh halaman','error');removeAttachment();return}
+        var r=new FileReader();
+        r.onload=async function(ev){
+          try{
+            var arrayBuffer=ev.target.result;
+            var result=await mammoth.extractRawText({arrayBuffer:arrayBuffer});
+            var text=result.value||'[DOCX kosong]';
+            if(text.length>100000)text=text.substring(0,100000)+'\n\n[...content truncated at 100KB...]';
+            curAttachment={name:f.name,size:f.size,type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',preview:null,extracted:text,processing:false};
+            showAttachment();
+            toast('DOCX "'+f.name+'" diproses','success');
+          }catch(err){
+            toast('Gagal memproses DOCX: '+err.message,'error');
+            removeAttachment();
+          }
+        };
+        r.onerror=function(){toast('Gagal membaca DOCX','error');removeAttachment()};
+        r.readAsArrayBuffer(f);
+      }else{
+        // Other binary files — just attach filename + size info
+        curAttachment={name:f.name,size:f.size,type:f.type||ext,preview:null,extracted:null,processing:false};
+        showAttachment();
+        toast('File "'+f.name+'" dilampirkan ('+formatSize(f.size)+')','info');
+      }
+      e.target.value='';
     }
+
+    function showAttachment(){
+      var ap=document.getElementById('AP');
+      if(!curAttachment){ap.classList.add('hidden');updBtn();return}
+      ap.classList.remove('hidden');
+      var icon=document.getElementById('AP_ICON');
+      var name=document.getElementById('AP_NAME');
+      var size=document.getElementById('AP_SIZE');
+      name.textContent=curAttachment.name;
+      size.textContent=formatSize(curAttachment.size)+(curAttachment.processing?' — memproses...':'');
+      if(curAttachment.preview){
+        icon.innerHTML='<img src="'+curAttachment.preview+'" class="w-full h-full object-cover" alt="preview">';
+      }else if(curAttachment.processing){
+        icon.innerHTML='<span class="iconify text-gold-400 text-xl spinner" data-icon="mdi:loading"></span>';
+      }else{
+        icon.innerHTML='<span class="iconify text-gold-400 text-xl" data-icon="'+getFileIcon(curAttachment.name)+'"></span>';
+      }
+      updBtn();
+    }
+
+    function removeAttachment(){curAttachment=null;showAttachment()}
 
     /* ===== MARKDOWN ===== */
     function hlCode(code){
@@ -406,11 +540,21 @@
     }
 
     /* ===== MESSAGE DOM ===== */
-    function addMsgDOM(role,content,anim,idx,isFb){
+    function buildAttachmentHTML(att){
+      if(!att)return '';
+      if(att.preview){
+        return '<div class="mb-2"><img src="'+att.preview+'" class="max-w-[200px] max-h-[200px] rounded-lg border border-white/10" alt="'+esc(att.name)+'"><p class="text-[10px] text-zinc-600 mt-1 flex items-center gap-1"><span class="iconify text-[10px]" data-icon="'+getFileIcon(att.name)+'"></span>'+esc(att.name)+' — '+formatSize(att.size)+'</p></div>';
+      }
+      var note=att.extracted?('('+att.extracted.length.toLocaleString()+' karakter diekstrak)'):'(file biner, tidak diekstrak)';
+      return '<div class="mb-2 att-chip flex items-center gap-2.5 px-3 py-2.5 max-w-[300px]"><span class="iconify text-gold-400 text-2xl flex-shrink-0" data-icon="'+getFileIcon(att.name)+'"></span><div class="min-w-0 flex-1"><p class="text-xs text-zinc-300 truncate font-medium">'+esc(att.name)+'</p><p class="text-[10px] text-zinc-600">'+formatSize(att.size)+' — '+note+'</p></div></div>';
+    }
+
+    function addMsgDOM(role,content,anim,idx,isFb,attachment){
       var c=document.getElementById('MC'),d=document.createElement('div'),ac=anim?(role==='user'?' asr':' asl'):'';
       d.className='mc flex gap-3'+ac;
+      var attHTML=attachment?buildAttachmentHTML(attachment):'';
       if(role==='user'){
-        d.innerHTML='<div class="flex-1 flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-gold-400/10 border border-gold-400/15 rounded-2xl rounded-tr-md px-4 py-3 msg-pad"><p class="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button></div></div></div></div><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-wine-900 to-dark-800 border border-white/[0.1] flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-zinc-400 text-xs" data-icon="mdi:account"></span></div>';
+        d.innerHTML='<div class="flex-1 flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-gold-400/10 border border-gold-400/15 rounded-2xl rounded-tr-md px-4 py-3 msg-pad">'+attHTML+'<p class="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button></div></div></div></div><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-wine-900 to-dark-800 border border-white/[0.1] flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-zinc-400 text-xs" data-icon="mdi:account"></span></div>';
       } else {
         var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-gold-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0">'+fbNote+'<div class="md text-sm text-zinc-300 leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Salin"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Bagus"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Kurang"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/5 transition-colors" title="Regenerasi"><span class="iconify text-zinc-600 text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
@@ -546,7 +690,7 @@
     function updBtn(){
       var btn=document.getElementById('SBtn'),si=document.getElementById('SIco'),st=document.getElementById('STico');
       if(generating){btn.classList.add('on');btn.disabled=false;si.classList.add('hidden');st.classList.remove('hidden')}
-      else if(document.getElementById('CI').value.trim()){btn.classList.add('on');btn.disabled=false;si.classList.remove('hidden');st.classList.add('hidden')}
+      else if(document.getElementById('CI').value.trim()||(curAttachment&&!curAttachment.processing)){btn.classList.add('on');btn.disabled=false;si.classList.remove('hidden');st.classList.add('hidden')}
       else{btn.classList.remove('on');btn.disabled=true;si.classList.remove('hidden');st.classList.add('hidden')}
     }
     function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(generating){abortTyping=true}else if(!document.getElementById('SBtn').disabled){sendMsg()}}}
@@ -556,13 +700,32 @@
     /* ===== SEND ===== */
     function sendMsg(){
       if(generating)return;
-      var inp=document.getElementById('CI'),text=inp.value.trim();if(!text)return;
-      if(!curId){createChat(text);document.getElementById('WS').classList.add('hidden');document.getElementById('MC').classList.remove('hidden')}
-      chats[curId].messages.push({role:'user',content:text,fb:false});
-      addMsgDOM('user',text,true,chats[curId].messages.length-1,false);scrollBot();
-      inp.value='';inp.style.height='auto';updBtn();updTop();generating=true;updBtn();
+      var inp=document.getElementById('CI'),text=inp.value.trim();
+      if(!text&&!curAttachment)return;
+      if(curAttachment&&curAttachment.processing){toast('File sedang diproses, tunggu sebentar...','warning');return}
+
+      var attachment=curAttachment;
+      var msgContent=text;
+
+      // Build message content with attachment context
+      if(attachment){
+        var fileHeader='[File: '+attachment.name+' — '+formatSize(attachment.size)+']';
+        if(attachment.extracted){
+          msgContent=fileHeader+'\n\n'+attachment.extracted+'\n\n---\n\n'+(text||'(Tidak ada pesan tambahan)');
+        }else if(attachment.preview){
+          msgContent=fileHeader+'\n\n'+(text||'(Pengguna mengirim foto, tolong deskripsikan/tanyakan apa yang ingin diketahui)');
+        }else{
+          msgContent=fileHeader+'\n\n'+(text||'(File dilampirkan, tetapi konten tidak bisa diekstrak)');
+        }
+      }
+
+      var title=text||(attachment?attachment.name:'New Chat');
+      if(!curId){createChat(title);document.getElementById('WS').classList.add('hidden');document.getElementById('MC').classList.remove('hidden')}
+      chats[curId].messages.push({role:'user',content:msgContent,fb:false,attachment:attachment});
+      addMsgDOM('user',text||(attachment?'':msgContent),true,chats[curId].messages.length-1,false,attachment);scrollBot();
+      inp.value='';inp.style.height='auto';curAttachment=null;showAttachment();updBtn();updTop();generating=true;updBtn();
       showThinking();scrollBot();
-      callAPIWithFallback(text).then(function(resp){
+      callAPIWithFallback(msgContent).then(function(resp){
         if(abortTyping){hideThinking();abortTyping=false;return}
         hideThinking();
         if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:false});return typeAnim(resp)}
