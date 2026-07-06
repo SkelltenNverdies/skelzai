@@ -3,7 +3,7 @@
 // Required env vars (set in Vercel project settings):
 //   QWEN_API_KEY         — for qwen-turbo / qwen-plus / qwen-max
 //   GROQ_API_KEY         — for Llama models on Groq
-//   BLUEMINDS_API_KEY    — for glm-4.6 / gpt-3.5-turbo on BluesMinds
+//   BLUEMINDS_API_KEY    — for glm-4.6 on BluesMinds
 
 const SYSTEM_PROMPT = {
   role: 'system',
@@ -37,7 +37,7 @@ const PROVIDERS = {
           'Authorization': `Bearer ${apiKey}`,
           'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg'
         },
-        body: JSON.stringify({ model, messages, stream: false, max_tokens: 4096, temperature: 0.7 })
+        body: JSON.stringify({ model, messages, stream: false, max_tokens: 8192, temperature: 0.7 })
       };
     }
   },
@@ -46,28 +46,41 @@ const PROVIDERS = {
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 60000,
     buildRequest(apiKey, model, messages) {
+      // Groq has hard limits per model — let us pass through and clamp here
+      // llama-3.3-70b-versatile supports up to 32768 output tokens
+      // llama-3.1-8b-instant supports up to 8192 output tokens
+      const maxTokens = model.indexOf('70b') !== -1 ? 8000 : 4000;
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ model, messages, stream: false, max_tokens: 5000, temperature: 0.7 })
+        body: JSON.stringify({ model, messages, stream: false, max_tokens: maxTokens, temperature: 0.7 })
       };
     }
   },
   bluesminds: {
     envVar: 'BLUEMINDS_API_KEY',
     url: 'https://api.bluesminds.com/v1/chat/completions',
-    timeout: 30000,
+    timeout: 60000,
     buildRequest(apiKey, model, messages) {
+      // GLM-4.6: NO max_tokens limit (unlimited) — omit it entirely so the
+      // provider uses its own default maximum. This is the user's explicit request.
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ model: model || 'glm-4.6', messages, stream: false, max_tokens: 2048, temperature: 0.7 })
+        body: JSON.stringify({
+          model: model || 'glm-4.6',
+          messages,
+          stream: false,
+          temperature: 0.7
+          // max_tokens intentionally omitted — let GLM-4.6 use its full context budget
+        })
       };
     }
   }
@@ -87,6 +100,26 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Defensive JSON parse — some upstreams return text errors on 200 OK.
+// Always returns { ok: true, data } or { ok: false, error, status }
+async function safeReadJson(response) {
+  const text = await response.text().catch(() => '');
+  if (!text || !text.trim()) {
+    return { ok: false, error: 'Empty response body from upstream', text: '' };
+  }
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      const data = JSON.parse(trimmed);
+      return { ok: true, data, text };
+    } catch (e) {
+      return { ok: false, error: `Upstream returned invalid JSON: ${e.message}`, text };
+    }
+  }
+  // Not JSON — likely an HTML error page or plain text error from upstream
+  return { ok: false, error: `Upstream returned non-JSON: ${trimmed.substring(0, 200)}`, text };
 }
 
 export default async function handler(req, res) {
@@ -132,7 +165,7 @@ export default async function handler(req, res) {
 
       if (response.status === 429) {
         lastError = new Error(`Rate limited (429)`);
-        await new Promise(r => setTimeout(r, (attempt + 1) * 5000));
+        await new Promise(r => setTimeout(r, (attempt + 1) * 4000));
         continue;
       }
       if (response.status === 504) {
@@ -143,7 +176,7 @@ export default async function handler(req, res) {
     } catch (err) {
       lastError = err;
       if (attempt < 1) {
-        await new Promise(r => setTimeout(r, (attempt + 1) * 3000));
+        await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
       }
     }
   }
@@ -154,26 +187,57 @@ export default async function handler(req, res) {
       const fallbackOpts = PROVIDERS.qwen.buildRequest(apiKey, 'qwen-turbo', finalMessages);
       const fr = await fetchWithTimeout(PROVIDERS.qwen.url, fallbackOpts, PROVIDERS.qwen.timeout);
       if (fr.ok) {
-        const data = await fr.json();
-        return res.status(200).json(data);
+        const parsed = await safeReadJson(fr);
+        if (parsed.ok) {
+          return res.status(200).json(parsed.data);
+        }
       }
     } catch (e) {
       // ignore — fall through to error response
     }
   }
 
-  if (!response || !response.ok) {
-    const status = response ? response.status : 500;
-    const errText = response ? await response.text().catch(() => '') : (lastError && lastError.message) || 'Unknown error';
-    return res.status(status).json({
-      error: `${provider} error ${status}: ${(errText || '').substring(0, 300)}`
+  if (!response) {
+    return res.status(502).json({
+      error: `${provider} unreachable: ${(lastError && lastError.message) || 'Network error'}`
     });
   }
 
-  try {
-    const data = await response.json();
-    return res.status(200).json(data);
-  } catch (e) {
-    return res.status(502).json({ error: 'Invalid JSON response from upstream provider' });
+  // Read body defensively — works for both OK and error responses
+  const parsed = await safeReadJson(response);
+
+  if (!response.ok) {
+    const status = response.status;
+    const errDetail = parsed.ok
+      ? (parsed.data && (parsed.data.error && (parsed.data.error.message || parsed.data.error))) || JSON.stringify(parsed.data).substring(0, 200)
+      : parsed.error;
+    return res.status(status).json({
+      error: `${provider} error ${status}: ${errDetail}`
+    });
   }
+
+  if (!parsed.ok) {
+    // Upstream returned 2xx but body is not JSON — common with BluesMinds on errors
+    return res.status(502).json({
+      error: `${provider} returned non-JSON response (HTTP ${response.status}): ${parsed.error}`
+    });
+  }
+
+  // Validate response shape (OpenAI-compatible)
+  const data = parsed.data;
+  if (data && data.choices && Array.isArray(data.choices) && data.choices[0] && data.choices[0].message) {
+    return res.status(200).json(data);
+  }
+
+  // Some providers return { error: ... } envelope even on 200 — surface it
+  if (data && data.error) {
+    const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+    return res.status(502).json({
+      error: `${provider} upstream error: ${errMsg.substring(0, 300)}`
+    });
+  }
+
+  return res.status(502).json({
+    error: `${provider} returned unexpected response shape: ${JSON.stringify(data).substring(0, 200)}`
+  });
 }

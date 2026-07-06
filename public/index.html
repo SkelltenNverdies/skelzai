@@ -166,9 +166,9 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.0.1</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.1.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), GLM 4.6, GPT-3.5 Turbo (BluesMinds)</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), GLM 4.6 (BluesMinds, token unlimited)</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions.</p>
       </div>
@@ -239,21 +239,20 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.0.1 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.1.0 — by Gabriel Arjun Pangestu</p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS ===== */
+    /* ===== MODELS — GPT-3.5 Turbo removed, GLM-4.6 unlimited tokens ===== */
     var MODELS=[
       {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
       {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat',tag:'Groq'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Kuat, no fallback',tag:'GLM'},
-      {id:'gpt-3.5-turbo-0613',provider:'bluesminds',label:'GPT-3.5 Turbo',desc:'BluesMinds — OpenAI model',tag:'GPT'}
+      {id:'glm-4.6',provider:'bluesminds',label:'GLM 4.6',desc:'BluesMinds — Token unlimited',tag:'GLM'}
     ];
 
     /* ===== STATE ===== */
@@ -477,20 +476,41 @@
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history})
       }).then(function(res){
-        if(!res.ok){return res.json().then(function(d){throw new Error(d.error||'Error '+res.status)});}
-        return res.json();
+        // Always read body as text first — some upstreams (BluesMinds) return
+        // plain text errors with 200 OK, which would crash res.json().
+        return res.text().then(function(text){
+          var data=null;
+          if(text && text.trim()){
+            try{data=JSON.parse(text)}catch(e){
+              // Body is not JSON — surface a clean error instead of "Unexpected token"
+              var snippet=text.trim().substring(0,150);
+              throw new Error('Server mengembalikan respons non-JSON: '+snippet);
+            }
+          }
+          if(!res.ok){
+            var errMsg=(data && (data.error || (data.message))) || ('HTTP '+res.status);
+            throw new Error(errMsg);
+          }
+          return data;
+        });
       }).then(function(data){
-        if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-        throw new Error('Respons tidak valid dari API');
+        if(data && data.choices && data.choices[0] && data.choices[0].message){
+          return data.choices[0].message.content;
+        }
+        if(data && data.error){
+          throw new Error(data.error);
+        }
+        throw new Error('Respons tidak valid dari API (format tidak dikenali)');
       });
     }
 
-    /* ===== SMART FALLBACK — Only for non-GLM-4.6 BluesMinds models -> SkelzAI Turbo ===== */
+    /* ===== SMART FALLBACK — Groq error -> SkelzAI Turbo (GLM-4.6 tidak pernah di-fallback, token unlimited) ===== */
     function callAPIWithFallback(userMsg){
       return callAPI(userMsg).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
-        var isBad=msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('使用上限')!==-1;
-        if(isBad && selModel.provider==='bluesminds' && selModel.id!=='glm-4.6'){
+        var isBad=msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('使用上限')!==-1||msg.indexOf('non-json')!==-1;
+        // Only Groq models get auto-fallback to SkelzAI Turbo. GLM-4.6 stays put.
+        if(isBad && selModel.provider==='groq'){
           var savedModel=selModel;
           selModel=MODELS[0]; // SkelzAI Turbo
           setModelLabel();
