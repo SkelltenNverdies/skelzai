@@ -299,7 +299,7 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.8.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.8.2</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -382,7 +382,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.8.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.8.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -790,26 +790,28 @@
         if(m.role==='user'||m.role==='assistant')history.push({role:m.role,content:m.content});
       }
       history.push({role:'user',content:userMsg});
-      if(history.length>20)history=history.slice(-20);
+      // Limit to last 10 messages to keep request size small (avoid Groq TPM 413)
+      if(history.length>10)history=history.slice(-10);
       return fetch('/api/chat',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history})
       }).then(function(res){
-        // Always read body as text first — some upstreams (BluesMinds) return
-        // plain text errors with 200 OK, which would crash res.json().
+        // Always read body as text first — some upstreams return text errors
         return res.text().then(function(text){
           var data=null;
           if(text && text.trim()){
             try{data=JSON.parse(text)}catch(e){
-              // Body is not JSON — surface a clean error instead of "Unexpected token"
               var snippet=text.trim().substring(0,150);
               throw new Error('Server mengembalikan respons non-JSON: '+snippet);
             }
           }
           if(!res.ok){
             var errMsg=(data && (data.error || (data.message))) || ('HTTP '+res.status);
-            throw new Error(errMsg);
+            var err=new Error(errMsg);
+            // Attach fallback flag for callAPIWithFallback to detect
+            if(data && data.fallback)err.fallback=true;
+            throw err;
           }
           return data;
         });
@@ -824,17 +826,18 @@
       });
     }
 
-    /* ===== SMART FALLBACK — Groq error -> SkelzAI Turbo (GLM-4.6 tidak pernah di-fallback, token unlimited) ===== */
+    /* ===== SMART FALLBACK — Groq error (413/429/504/timeout) -> SkelzAI Turbo ===== */
     function callAPIWithFallback(userMsg){
       return callAPI(userMsg).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
-        var isBad=msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('使用上限')!==-1||msg.indexOf('non-json')!==-1;
-        // Only Groq models get auto-fallback to SkelzAI Turbo. GLM-4.6 stays put.
+        var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('non-json')!==-1;
+        // Only Groq models get auto-fallback to SkelzAI Turbo.
         if(isBad && selModel.provider==='groq'){
           var savedModel=selModel;
           selModel=MODELS[0]; // SkelzAI Turbo
           setModelLabel();
-          toast('Model error — auto-switch ke SkelzAI Turbo','warning');
+          var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':'Model error';
+          toast(reason+' — auto-switch ke SkelzAI Turbo','warning');
           return callAPI(userMsg).then(function(resp){
             if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:true});}
             return typeAnim(resp).then(function(){
@@ -853,7 +856,10 @@
       var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc flex gap-3 asr';
       var isRL=msg.indexOf('429')!==-1||msg.toLowerCase().indexOf('ratelimit')!==-1||msg.toLowerCase().indexOf('rate limit')!==-1||msg.toLowerCase().indexOf('使用上限')!==-1;
       var isTO=msg.indexOf('504')!==-1||msg.toLowerCase().indexOf('timeout')!==-1||msg.toLowerCase().indexOf('gateway')!==-1;
-      if(isRL||isTO){
+      var isTPM=msg.indexOf('413')!==-1||msg.toLowerCase().indexOf('token limit')!==-1||msg.toLowerCase().indexOf('tpm')!==-1;
+      if(isTPM){
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:clock-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">Token Limit Tercapai</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Free tier Groq punya batas token per menit. Tunggu 1 menit atau pilih model lain (SkelzAI Turbo).</p></div></div></div>';
+      }else if(isRL||isTO){
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Sistem otomatis beralih ke SkelzAI Turbo.</p></div></div></div>';
       }else{
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:alert-circle-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">Terjadi Kesalahan</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Tip: Coba ganti model lain.</p></div></div></div>';

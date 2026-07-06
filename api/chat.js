@@ -35,6 +35,24 @@ GAYA:
 - Jangan gunakan emoji berlebihan — maksimal 1 emoji per jawaban kalau perlu`
 };
 
+// Compact system prompt for token-constrained providers (Groq 8B free tier).
+// Same instructions, just tersely worded to save ~200 tokens per request.
+const SYSTEM_PROMPT_COMPACT = {
+  role: 'system',
+  content: `Kamu SkelzAI, asisten AI bahasa Indonesia yang ramah & to-the-point. Pencipta: Gabriel Arjun Pangestu.
+
+Aturan:
+1. Jawab pakai BAHASA INDONESIA natural, seperti chat teman
+2. JAWAB SIMPLE — jangan over-explain, sesuaikan panjang dengan pertanyaan
+3. JANGAN kasih kode kecuali user explicit minta ("buatkan kode", "tuliskan script")
+4. Kalau ditanya "apa itu X" — jelaskan pakai kalimat biasa, jangan langsung kasih kode
+5. Kalau ambigu, tanya klarifikasi 1 kalimat
+
+Kalau diminta kode: kasih kode LENGKAP (no "..." atau TODO) + penjelasan singkat + cara jalanin.
+
+Gaya: santai tapi profesional, maksimal 1 emoji per jawaban.`
+};
+
 // Per-request timeout kept at 25s so that 1 retry (worst case 25s + 2s + 25s = 52s)
 // stays well under Vercel Hobby plan's 60s maxDuration. This prevents
 // FUNCTION_INVOCATION_TIMEOUT errors.
@@ -59,11 +77,22 @@ const PROVIDERS = {
     envVar: 'GROQ_API_KEY',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 25000,
+    // Groq free tier TPM (Tokens Per Minute) limits:
+    //   llama-3.3-70b-versatile: 12000 TPM
+    //   llama-3.1-8b-instant:    6000 TPM  ← very tight!
+    // Groq counts request size as (input_tokens + max_tokens).
+    // We must keep total < TPM limit to avoid 413 errors.
+    // Strategy: aggressive history trimming + conservative max_tokens.
+    getMaxTokens(model) {
+      return model.indexOf('70b') !== -1 ? 4000 : 2000;
+    },
+    getMaxHistory(model) {
+      // 8B is super tight on TPM — only send last 4 messages (2 exchanges)
+      // 70B has more room — send last 8 messages (4 exchanges)
+      return model.indexOf('70b') !== -1 ? 8 : 4;
+    },
     buildRequest(apiKey, model, messages) {
-      // Groq max output tokens — push to model limits for maximum potential.
-      // llama-3.3-70b-versatile supports up to 32768 output tokens.
-      // llama-3.1-8b-instant supports up to 8192 output tokens.
-      const maxTokens = model.indexOf('70b') !== -1 ? 16000 : 8000;
+      const maxTokens = this.getMaxTokens(model);
       return {
         method: 'POST',
         headers: {
@@ -175,11 +204,55 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: `${config.envVar} not set on server` });
   }
 
-  const finalMessages = [SYSTEM_PROMPT, ...messages];
+  // Build final messages: system prompt + user-supplied history.
+  // For Groq 8B (very tight 6000 TPM), use compact system prompt to save tokens.
+  // For Groq 70B and others, use full system prompt.
+  const useCompact = provider === 'groq' && model.indexOf('70b') === -1;
+  const sysPrompt = useCompact ? SYSTEM_PROMPT_COMPACT : SYSTEM_PROMPT;
 
-  // 1 retry only — keeps total worst case under 60s Vercel limit
+  let finalMessages = [sysPrompt, ...messages];
+
+  // Groq-specific aggressive trimming to avoid 413 TPM errors
+  if (provider === 'groq' && config.getMaxHistory) {
+    const maxHist = config.getMaxHistory(model);
+    // Keep system prompt + last N messages
+    const trimmed = messages.slice(-maxHist);
+    finalMessages = [sysPrompt, ...trimmed];
+  }
+
+  // Rough token estimation (4 chars ≈ 1 token). If estimated input tokens
+  // exceed a safe budget for the provider, trim further.
+  function estimateTokens(msgs) {
+    let chars = 0;
+    for (const m of msgs) {
+      chars += (m.content || '').length;
+    }
+    return Math.ceil(chars / 4);
+  }
+
+  // For Groq 8B (6000 TPM), ensure input tokens + max_tokens < 5500 (safety margin)
+  // For Groq 70B (12000 TPM), ensure input tokens + max_tokens < 11000
+  if (provider === 'groq') {
+    const maxTok = config.getMaxTokens(model);
+    const tpmLimit = model.indexOf('70b') !== -1 ? 12000 : 6000;
+    const safeBudget = tpmLimit - maxTok - 500; // 500 token safety margin
+
+    let estTokens = estimateTokens(finalMessages);
+    // Trim history (keep system prompt + last messages) until under budget
+    while (estTokens > safeBudget && finalMessages.length > 2) {
+      // Remove the 2nd message (first after system prompt) — keeps recent context
+      finalMessages.splice(1, 1);
+      estTokens = estimateTokens(finalMessages);
+    }
+  }
+
+  // 1 retry only — keeps total worst case under 60s Vercel limit.
+  // Special handling: 413 (TPM exceeded) is NOT retried (waiting 60s would
+  // blow Vercel's maxDuration). Instead, we surface a clear error so the
+  // frontend can fallback to SkelzAI Turbo.
   let lastError = null;
   let response = null;
+  let hit413 = false;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const reqOptions = config.buildRequest(apiKey, model, finalMessages);
@@ -191,6 +264,13 @@ export default async function handler(req, res) {
           await new Promise(r => setTimeout(r, 2000));
           continue;
         }
+        break;
+      }
+      if (response.status === 413) {
+        // TPM exceeded on Groq — don't retry, surface immediately so
+        // frontend can fallback to SkelzAI Turbo.
+        hit413 = true;
+        lastError = new Error(`Token limit exceeded (413)`);
         break;
       }
       if (response.status === 504 || response.status === 502) {
@@ -207,6 +287,14 @@ export default async function handler(req, res) {
         await new Promise(r => setTimeout(r, 1500));
       }
     }
+  }
+
+  // If we hit 413, return a clear error so the frontend can fallback.
+  if (hit413) {
+    return res.status(413).json({
+      error: `${provider} token limit tercapai (TPM). Coba lagi dalam 1 menit atau gunakan model lain.`,
+      fallback: true
+    });
   }
 
   if (!response) {
