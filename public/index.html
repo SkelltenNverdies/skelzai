@@ -299,11 +299,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.8.2</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.10.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
+        <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 + VL (OpenRouter), Gemini 2.5 Pro/Flash & 2.0 Flash/Lite (Google — semua support vision)</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-zinc-200">Fitur:</strong> Smooth typing animation, download code block, PWA (installable sebagai app Android)</p>
+        <p><strong class="text-zinc-200">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto</p>
         <p><strong class="text-zinc-200">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-zinc-600 text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -382,22 +382,28 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.8.2 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.10.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — NVIDIA direct API removed, OpenRouter NVIDIA free kept ===== */
+    /* ===== MODELS — added Gemini models with vision support ===== */
     var MODELS=[
-      {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama'},
-      {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang'},
-      {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat'},
-      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat & kuat',tag:'Groq'},
-      {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq'},
-      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR'},
-      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR'},
-      {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR'}
+      {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama',vision:false},
+      {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang',vision:false},
+      {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat',vision:false},
+      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat & kuat',tag:'Groq',vision:false},
+      {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq',vision:false},
+      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR',vision:false},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR',vision:false},
+      {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR',vision:false},
+      {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'OpenRouter — Gratis, ANALISIS FOTO',tag:'VISION',vision:true},
+      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'OpenRouter — Gratis, vision + reasoning',tag:'VISION',vision:true},
+      {id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Google — Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true},
+      {id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Google — Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true},
+      {id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Google — Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true},
+      {id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Google — Super cepat & ringan',tag:'GEMINI',vision:true}
     ];
 
     /* ===== STATE ===== */
@@ -457,12 +463,14 @@
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':'';
+          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':m.provider==='gemini'?'Google Gemini (Gratis)':'';
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-zinc-600 font-medium">'+pL+'</span></div>';lastP=m.provider;
         }
         var isSel=m.id===selModel.id;
         html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+'" data-mid="'+m.id+'">';
-        html+='<div class="flex-1 min-w-0"><p class="text-sm text-zinc-200 truncate">'+esc(m.label)+'</p><p class="text-[11px] text-zinc-600">'+esc(m.desc)+'</p></div>';
+        html+='<div class="flex-1 min-w-0"><p class="text-sm text-zinc-200 truncate flex items-center gap-1.5">'+esc(m.label);
+        if(m.vision)html+='<span class="iconify text-[11px] text-gold-400 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>';
+        html+='</p><p class="text-[11px] text-zinc-600">'+esc(m.desc)+'</p></div>';
         html+='<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-500 border border-white/[0.06] flex-shrink-0">'+m.tag+'</span>';
         if(isSel)html+='<span class="iconify text-gold-400 text-base flex-shrink-0" data-icon="mdi:check"></span>';
         html+='</div>';
@@ -782,14 +790,32 @@
     }
 
     /* ===== API ===== */
-    function callAPI(userMsg){
+    function callAPI(userMsg, imageAttachment){
       if(!curId)return Promise.reject(new Error('Tidak ada chat aktif'));
       var history=[];
       for(var i=0;i<chats[curId].messages.length;i++){
         var m=chats[curId].messages[i];
-        if(m.role==='user'||m.role==='assistant')history.push({role:m.role,content:m.content});
+        if(m.role==='user'||m.role==='assistant'){
+          // For vision models, preserve image attachments in history
+          if(selModel.vision && m.attachment && m.attachment.preview){
+            history.push({role:m.role,content:[
+              {type:'text',text:m.content||''},
+              {type:'image_url',image_url:{url:m.attachment.preview}}
+            ]});
+          }else{
+            history.push({role:m.role,content:m.content});
+          }
+        }
       }
-      history.push({role:'user',content:userMsg});
+      // Current message: if vision model + image attachment, send as multimodal
+      if(selModel.vision && imageAttachment && imageAttachment.preview){
+        history.push({role:'user',content:[
+          {type:'text',text:userMsg||'Tolong analisis foto ini dan kerjakan soalnya.'},
+          {type:'image_url',image_url:{url:imageAttachment.preview}}
+        ]});
+      }else{
+        history.push({role:'user',content:userMsg});
+      }
       // Limit to last 10 messages to keep request size small (avoid Groq TPM 413)
       if(history.length>10)history=history.slice(-10);
       return fetch('/api/chat',{
@@ -809,7 +835,6 @@
           if(!res.ok){
             var errMsg=(data && (data.error || (data.message))) || ('HTTP '+res.status);
             var err=new Error(errMsg);
-            // Attach fallback flag for callAPIWithFallback to detect
             if(data && data.fallback)err.fallback=true;
             throw err;
           }
@@ -827,8 +852,8 @@
     }
 
     /* ===== SMART FALLBACK — Groq error (413/429/504/timeout) -> SkelzAI Turbo ===== */
-    function callAPIWithFallback(userMsg){
-      return callAPI(userMsg).catch(function(err){
+    function callAPIWithFallback(userMsg, imageAttachment){
+      return callAPI(userMsg, imageAttachment).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
         var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('non-json')!==-1;
         // Only Groq models get auto-fallback to SkelzAI Turbo.
@@ -838,6 +863,7 @@
           setModelLabel();
           var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':'Model error';
           toast(reason+' — auto-switch ke SkelzAI Turbo','warning');
+          // Note: imageAttachment is dropped on fallback (SkelzAI Turbo doesn't support vision)
           return callAPI(userMsg).then(function(resp){
             if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:true});}
             return typeAnim(resp).then(function(){
@@ -887,16 +913,43 @@
       if(curAttachment&&curAttachment.processing){toast('File sedang diproses, tunggu sebentar...','warning');return}
 
       var attachment=curAttachment;
+      var isImageAttachment=attachment&&attachment.preview;
       var msgContent=text;
 
-      // Build message content with attachment context
-      if(attachment){
-        var fileHeader='[File: '+attachment.name+' — '+formatSize(attachment.size)+']';
-        if(attachment.extracted){
-          msgContent=fileHeader+'\n\n'+attachment.extracted+'\n\n---\n\n'+(text||'(Tidak ada pesan tambahan)');
-        }else if(attachment.preview){
-          msgContent=fileHeader+'\n\n'+(text||'(Pengguna mengirim foto, tolong deskripsikan/tanyakan apa yang ingin diketahui)');
+      // Check: image attachment + non-vision model → show warning & auto-switch to first vision model
+      if(isImageAttachment && !selModel.vision){
+        // Find first vision-capable model
+        var visionModel=null;
+        for(var i=0;i<MODELS.length;i++){if(MODELS[i].vision){visionModel=MODELS[i];break}}
+        if(visionModel){
+          toast('Model ini tidak support foto — auto-switch ke '+visionModel.label,'warning');
+          selModel=visionModel;
+          setModelLabel();
+          save();
         }else{
+          // No vision model available — fallback: send as note only
+          toast('Tidak ada model vision aktif. Foto dikirim sebagai catatan saja.','warning');
+        }
+      }
+
+      // Build message content
+      // For vision model + image: text only (image sent separately via imageAttachment param)
+      // For non-vision model + image: send note about photo
+      // For text-only: just text
+      if(attachment){
+        if(isImageAttachment && selModel.vision){
+          // Vision model: send text only, image will be passed as imageAttachment
+          msgContent=text||'Tolong analisis foto ini dan kerjakan soalnya.';
+        }else if(attachment.extracted){
+          // Text/PDF/DOCX file: include extracted text
+          var fileHeader='[File: '+attachment.name+' — '+formatSize(attachment.size)+']';
+          msgContent=fileHeader+'\n\n'+attachment.extracted+'\n\n---\n\n'+(text||'(Tidak ada pesan tambahan)');
+        }else if(isImageAttachment){
+          // Image but non-vision model: send as note
+          msgContent='[User mengirim foto: '+attachment.name+']\n\n'+(text||'(Tidak ada pesan tambahan. Catatan: model ini tidak bisa melihat foto.)');
+        }else{
+          // Other binary file
+          var fileHeader='[File: '+attachment.name+' — '+formatSize(attachment.size)+']';
           msgContent=fileHeader+'\n\n'+(text||'(File dilampirkan, tetapi konten tidak bisa diekstrak)');
         }
       }
@@ -907,7 +960,8 @@
       addMsgDOM('user',text||(attachment?'':msgContent),true,chats[curId].messages.length-1,false,attachment);scrollBot();
       inp.value='';inp.style.height='auto';curAttachment=null;showAttachment();updBtn();updTop();generating=true;updBtn();
       showThinking();scrollBot();
-      callAPIWithFallback(msgContent).then(function(resp){
+      var imageArg=isImageAttachment?attachment:null;
+      callAPIWithFallback(msgContent, imageArg).then(function(resp){
         if(abortTyping){hideThinking();abortTyping=false;return}
         hideThinking();
         if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:false});return typeAnim(resp)}

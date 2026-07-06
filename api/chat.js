@@ -4,6 +4,7 @@
 //   QWEN_API_KEY         — for qwen-turbo / qwen-plus / qwen-max
 //   GROQ_API_KEY         — for Llama models on Groq
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
+//   GEMINI_API_KEY       — optional, for Google Gemini models (free tier)
 
 const SYSTEM_PROMPT = {
   role: 'system',
@@ -129,6 +130,32 @@ const PROVIDERS = {
           stream: false,
           max_tokens: 8192,
           temperature: 0.7
+        })
+      };
+    }
+  },
+  gemini: {
+    // Google Gemini via OpenAI-compatible endpoint (generativelanguage.googleapis.com)
+    // Free tier: 15 RPM, 1500 req/day for most models. Vision-capable.
+    // API key embedded as fallback; override via GEMINI_API_KEY env var.
+    envVar: 'GEMINI_API_KEY',
+    fallbackKey: 'AQ.Ab8RN6LfoGs4_qb2AEEiAOpJS3rz_4Ac6UWFc0IN80N4iT26kg',
+    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    timeout: 25000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+          max_tokens: 8192,
+          temperature: 0.7,
+          top_p: 0.9
         })
       };
     }
