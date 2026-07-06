@@ -59,6 +59,29 @@
     .glass-i{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
     .glow-g{box-shadow:0 0 30px -5px rgba(212,175,55,.25)}
     .tg{background:linear-gradient(to right,#D4AF37,#fef08a,#C5A028);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    /* Animated shimmer for brand text — moving gold gradient */
+    .tg-anim{
+      background:linear-gradient(90deg,#a88620 0%,#D4AF37 25%,#fef08a 50%,#D4AF37 75%,#a88620 100%);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:shimmer 3s linear infinite;
+    }
+    @keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+    /* Glow pulse for brand text — soft outer halo */
+    .glow-text{text-shadow:0 0 20px rgba(212,175,55,.4),0 0 40px rgba(212,175,55,.2)}
+    @keyframes textGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(212,175,55,.4))}50%{filter:drop-shadow(0 0 16px rgba(212,175,55,.7))}}
+    .glow-anim{animation:textGlow 2.5s ease-in-out infinite}
+    /* Footer brand subtle shimmer */
+    .footer-brand{
+      background:linear-gradient(90deg,#52525b 0%,#a1a1aa 25%,#fef08a 50%,#a1a1aa 75%,#52525b 100%);
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:shimmer 4s linear infinite;
+    }
     @keyframes fiu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fi{from{opacity:0}to{opacity:1}}
     @keyframes sl{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
@@ -152,7 +175,36 @@
     .ma button{transition:all .15s}
     .ma button:hover{background:rgba(212,175,55,.1);color:#D4AF37;transform:scale(1.1)}
     @media(max-width:1023px){.sp{width:280px}}
-    @media(max-width:640px){.chip{padding:10px 12px!important}.msg-pad{padding:10px!important}}
+    @media(max-width:640px){
+      .chip{padding:10px 12px!important}.msg-pad{padding:10px!important}
+      /* Mobile: larger touch targets */
+      .si-i{padding:14px 12px!important}
+      .mo{padding:14px 12px!important}
+      .chdr button{padding:6px 10px!important;min-height:32px}
+      .ma button{width:32px!important;height:32px!important}
+      /* Mobile: more breathing room */
+      .mc{margin-bottom:14px!important}
+      /* Mobile: bigger send button for easier tap */
+      .sbtn{width:40px!important;height:40px!important}
+      /* Mobile: header taller for thumb reach */
+      header{height:56px!important;min-height:56px!important}
+      /* Mobile: input area more spacious */
+      .input-container{padding:12px!important;border-radius:18px!important}
+      /* Mobile: modal rounded corners smaller, more screen real estate */
+      .glass-s{border-radius:16px!important}
+      /* Mobile: brand text slightly smaller */
+      .brand-mobile{font-size:1.5rem!important}
+    }
+    /* Mobile: safe area insets (notch support) */
+    @supports(padding:max(env(safe-area-inset-top),0)){
+      body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+      header{padding-left:max(env(safe-area-inset-left),1rem)!important;padding-right:max(env(safe-area-inset-right),1rem)!important}
+      .input-container{margin-left:max(env(safe-area-inset-left),0)!important;margin-right:max(env(safe-area-inset-right),0)!important}
+    }
+    /* Mobile: bottom input sticky and above browser chrome */
+    @media(max-width:640px){
+      main{padding-bottom:env(safe-area-inset-bottom)}
+    }
   </style>
 </head>
 <body class="font-sans">
@@ -183,8 +235,8 @@
   <aside id="SB" class="so fixed top-0 left-0 h-full w-[280px] z-50 bg-[#0A0A0A]/95 backdrop-blur-xl border-r border-white/[0.06] flex flex-col -translate-x-full lg:translate-x-0">
     <div class="p-4 flex items-center justify-between border-b border-white/[0.06]">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center"><span class="iconify text-dark-950 text-sm" data-icon="mdi:robot-happy-outline"></span></div>
-        <span class="font-serif text-lg font-medium tg">SkelzAI</span>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center glow-g"><span class="iconify text-dark-950 text-sm" data-icon="mdi:robot-happy-outline"></span></div>
+        <span class="font-serif text-lg font-medium tg-anim glow-anim">SkelzAI</span>
       </div>
       <button onclick="togSB()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400 text-lg" data-icon="mdi:close"></span></button>
     </div>
@@ -217,6 +269,7 @@
       <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden">
         <button onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-zinc-400 hover:bg-white/5 hover:text-zinc-200 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
         <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-zinc-400 hover:bg-white/5 hover:text-zinc-200 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
+        <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-gold-400 hover:bg-gold-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
         <div class="border-t border-white/[0.06]"></div>
         <button onclick="resetApp()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-red-400/70 hover:bg-red-500/5 hover:text-red-400 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Reset Aplikasi</button>
       </div>
@@ -241,12 +294,12 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center"><span class="iconify text-dark-950 text-sm" data-icon="mdi:robot-happy-outline"></span></div>
-          <span class="font-serif text-lg font-medium tg">SkelzAI</span>
+          <span class="font-serif text-lg font-medium tg-anim glow-anim">SkelzAI</span>
         </div>
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.6.1</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.8.0</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 Ultra 550B / Super 120B / Nano 9B V2 (NVIDIA via OpenRouter) — semua gratis</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -291,7 +344,7 @@
         <div class="afl mb-6">
           <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-600/10 border border-gold-400/20 flex items-center justify-center glow-g"><span class="iconify text-gold-400 text-3xl sm:text-4xl" data-icon="mdi:robot-happy-outline"></span></div>
         </div>
-        <h1 class="font-serif text-3xl sm:text-4xl font-light tracking-tight text-center mb-2"><span class="tg">SkelzAI</span></h1>
+        <h1 class="brand-mobile font-serif text-3xl sm:text-4xl font-light tracking-tight text-center mb-2"><span class="tg-anim glow-anim">SkelzAI</span></h1>
         <p class="text-zinc-500 text-sm text-center mb-8 max-w-md px-4">Asisten AI multi-model. Pilih model, lalu tanyakan apa saja.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg px-2">
           <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-gold-400/60 text-sm" data-icon="mdi:code-braces"></span><span class="text-[11px] text-gold-400/60 font-medium uppercase tracking-wider">Koding</span></div><p class="text-sm text-zinc-400 leading-snug">Buatkan fungsi JavaScript untuk debounce</p></button>
@@ -329,7 +382,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-zinc-700 text-center mt-2">SkelzAI v2.6.1 — by Gabriel Arjun Pangestu</p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.8.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -893,45 +946,43 @@
         });
       }
 
-      // PWA install prompt — show custom button when available
+      // PWA install prompt — show item in profile menu when available
       var deferredPrompt=null;
       window.addEventListener('beforeinstallprompt',function(e){
         // Prevent Chrome 67+ from showing the mini-infobar
         e.preventDefault();
         deferredPrompt=e;
-        showInstallButton(deferredPrompt);
+        showInstallMenuItem();
       });
 
       window.addEventListener('appinstalled',function(){
         toast('SkelzAI berhasil dipasang!','success');
-        hideInstallButton();
+        hideInstallMenuItem();
         deferredPrompt=null;
       });
 
-      function showInstallButton(prompt){
-        var btn=document.getElementById('PWA_INSTALL_BTN');
-        if(!btn){
-          btn=document.createElement('button');
-          btn.id='PWA_INSTALL_BTN';
-          btn.className='amsi fixed bottom-20 right-4 z-[150] glass-s rounded-xl px-4 py-3 flex items-center gap-2.5 text-sm text-gold-400 hover:bg-gold-400/10 transition-all';
-          btn.innerHTML='<span class="iconify text-base" data-icon="mdi:download"></span><span>Pasang App</span>';
-          btn.onclick=function(){
-            prompt.prompt();
-            prompt.userChoice.then(function(choice){
-              if(choice.outcome==='accepted'){
-                toast('Memasang SkelzAI...','success');
-              }
-              hideInstallButton();
-              deferredPrompt=null;
-            });
+      function showInstallMenuItem(){
+        var li=document.getElementById('INSTALL_LI');
+        if(li){
+          li.classList.remove('hidden');
+          li.onclick=function(){
+            if(deferredPrompt){
+              deferredPrompt.prompt();
+              deferredPrompt.userChoice.then(function(choice){
+                if(choice.outcome==='accepted'){
+                  toast('Memasang SkelzAI...','success');
+                }
+                hideInstallMenuItem();
+                deferredPrompt=null;
+                closePM();
+              });
+            }
           };
-          document.body.appendChild(btn);
         }
-        btn.style.display='flex';
       }
-      function hideInstallButton(){
-        var btn=document.getElementById('PWA_INSTALL_BTN');
-        if(btn)btn.style.display='none';
+      function hideInstallMenuItem(){
+        var li=document.getElementById('INSTALL_LI');
+        if(li)li.classList.add('hidden');
       }
     });
   </script>
