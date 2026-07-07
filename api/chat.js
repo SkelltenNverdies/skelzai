@@ -155,16 +155,15 @@ const PROVIDERS = {
     // We must keep total < TPM limit to avoid 413 errors.
     // Strategy: aggressive history trimming + conservative max_tokens.
     getMaxTokens(model) {
-      // Larger models (70B+, MoE) → 4000 tokens
-      // Smaller models (8B, 1B, 3B) → 2000 tokens (tight TPM)
-      if (model.indexOf('70b') !== -1 || model.indexOf('maverick') !== -1 || model.indexOf('k2') !== -1) return 4000;
-      if (model.indexOf('oss-120') !== -1) return 4000;
+      // Larger models (70B+, MoE, GPT-OSS) → 4000 tokens
+      // Smaller models (8B, 20B) → 2000 tokens (tight TPM)
+      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 4000;
       return 2000;
     },
     getMaxHistory(model) {
-      // Small models (8B, 1B, 3B, 20B) — tight TPM, only last 4 messages
+      // Small models (8B, 20B) — tight TPM, only last 4 messages
       // Large models (70B+, MoE, 120B) — more room, last 8 messages
-      if (model.indexOf('70b') !== -1 || model.indexOf('maverick') !== -1 || model.indexOf('k2') !== -1 || model.indexOf('oss-120') !== -1) return 8;
+      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 8;
       return 4;
     },
     buildRequest(apiKey, model, messages) {

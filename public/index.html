@@ -290,9 +290,9 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.16.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 2.17.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> SkelzAI Turbo/Plus/Max, 7 model Groq (Llama 3.3/3.1, Llama 4 Scout/Maverick, Kimi K2, GPT-OSS 120B/20B), Nemotron 3 + VL (OpenRouter), GPT-4o mini (GitHub Models) — Gemini dinonaktifkan (key invalid)</p>
+        <p><strong class="text-cream-50">Model:</strong> 21 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Vision AI) — semua gratis, tanpa branding provider</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
         <p><strong class="text-cream-50">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto, Caveman Mode (4 level)</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
@@ -370,37 +370,47 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.16.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.17.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — Gemini temporarily disabled (key invalid, see notes) ===== */
+    /* ===== MODELS — categorized, source hidden, all OpenRouter free verified working ===== */
     var MODELS=[
-      {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'Utama',vision:false},
-      {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'Seimbang',vision:false},
-      {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat',vision:false},
-      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat & kuat',tag:'Groq',vision:false},
-      {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq',vision:false},
-      {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'Groq — MoE 17B, cepat & cerdas',tag:'Groq',vision:false},
-      {id:'meta-llama/llama-4-maverick-17b-128e-instruct',provider:'groq',label:'Llama 4 Maverick 17B',desc:'Groq — MoE 128 experts, paling kuat',tag:'Groq',vision:false},
-      {id:'moonshotai/kimi-k2-instruct',provider:'groq',label:'Kimi K2',desc:'Groq — Moonshot AI, 1T context',tag:'Groq',vision:false},
-      {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'Groq — OpenAI open-source, paling kuat',tag:'Groq',vision:false},
-      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'Groq — OpenAI open-source, cepat',tag:'Groq',vision:false},
-      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR',vision:false},
-      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR',vision:false},
-      {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR',vision:false},
-      {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'OpenRouter — Gratis, ANALISIS FOTO',tag:'VISION',vision:true},
-      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'OpenRouter — Gratis, vision + reasoning',tag:'VISION',vision:true},
-      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'GitHub Models — OpenAI, cepat & vision',tag:'GPT',vision:true}
-      /* Gemini models commented out — API key invalid (format "AQ.Ab8R..." not supported).
+      /* SkelzAI Originals */
+      {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
+      {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
+      {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
+      /* Fast Chat (Groq) */
+      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      /* Premium AI (OpenRouter free) */
+      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B, paling kuat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, seimbang',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'nvidia/nemotron-3-nano-30b-a3b:free',provider:'openrouter',label:'Nemotron 3 Nano 30B',desc:'MoE 30B, hemat token',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'Super cepat & ringan',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'nousresearch/hermes-3-llama-3.1-405b:free',provider:'openrouter',label:'Hermes 3 405B',desc:'405B params, paling besar',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Tencent, multibahasa',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'qwen/qwen3-next-80b-a3b-instruct:free',provider:'openrouter',label:'Qwen3 Next 80B',desc:'MoE 80B, cerdas',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'qwen/qwen3-coder:free',provider:'openrouter',label:'Qwen3 Coder 480B',desc:'Khusus coding, 480B MoE',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'poolside/laguna-m.1:free',provider:'openrouter',label:'Laguna M.1',desc:'Coding specialist',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat',tag:'Premium',vision:false,cat:'Premium AI'},
+      /* Vision AI (analisis foto) */
+      {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'Analisis foto, 12B',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'google/gemma-4-31b-it:free',provider:'openrouter',label:'Gemma 4 31B',desc:'Vision, 31B, 262K context',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI'}
+      /* Gemini models commented out — API key invalid.
          To re-enable: get valid key from https://aistudio.google.com/app/apikey (format: AIza...)
-         then uncomment below and update fallbackKey in api/chat.js
-      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Google — Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true},
-      {id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Google — Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true},
-      {id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Google — Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true},
-      {id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Google — Super cepat & ringan',tag:'GEMINI',vision:true}
+      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
+      {id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
+      {id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
+      {id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Super cepat & ringan',tag:'GEMINI',vision:true,cat:'Vision AI'}
       */
     ];
 
@@ -499,12 +509,11 @@
     function closeMP(){var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex')}
 
     function buildML(){
-      var el=document.getElementById('ML'),html='',lastP='';
+      var el=document.getElementById('ML'),html='',lastCat='';
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
-        if(m.provider!==lastP){
-          var pL=m.provider==='qwen'?'SkelzAI':m.provider==='groq'?'Groq Cloud — Llama':m.provider==='openrouter'?'NVIDIA via OpenRouter (Gratis)':m.provider==='gemini'?'Google Gemini (Gratis)':m.provider==='github'?'GitHub Models (GPT)':'';
-          html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium">'+pL+'</span></div>';lastP=m.provider;
+        if(m.cat!==lastCat){
+          html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium">'+m.cat+'</span></div>';lastCat=m.cat;
         }
         var isSel=m.id===selModel.id;
         html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+'" data-mid="'+m.id+'">';
