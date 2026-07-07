@@ -299,7 +299,7 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"><span class="iconify text-zinc-400" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-zinc-400 leading-relaxed">
-        <p><strong class="text-zinc-200">Versi:</strong> 2.10.0</p>
+        <p><strong class="text-zinc-200">Versi:</strong> 2.10.2</p>
         <p><strong class="text-zinc-200">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-zinc-200">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 + VL (OpenRouter), Gemini 2.5 Pro/Flash & 2.0 Flash/Lite (Google — semua support vision)</p>
         <p><strong class="text-zinc-200">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -382,7 +382,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.10.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.10.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -855,15 +855,15 @@
     function callAPIWithFallback(userMsg, imageAttachment){
       return callAPI(userMsg, imageAttachment).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
-        var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('non-json')!==-1;
-        // Only Groq models get auto-fallback to SkelzAI Turbo.
-        if(isBad && selModel.provider==='groq'){
+        var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('quota')!==-1||msg.indexOf('non-json')!==-1;
+        // Groq & Gemini models get auto-fallback to SkelzAI Turbo on rate-limit errors.
+        // Note: imageAttachment is dropped on fallback (SkelzAI Turbo doesn't support vision).
+        if(isBad && (selModel.provider==='groq' || selModel.provider==='gemini')){
           var savedModel=selModel;
           selModel=MODELS[0]; // SkelzAI Turbo
           setModelLabel();
-          var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':'Model error';
+          var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':msg.indexOf('quota')!==-1?'Quota exceeded':'Rate limit';
           toast(reason+' — auto-switch ke SkelzAI Turbo','warning');
-          // Note: imageAttachment is dropped on fallback (SkelzAI Turbo doesn't support vision)
           return callAPI(userMsg).then(function(resp){
             if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:true});}
             return typeAnim(resp).then(function(){
@@ -883,7 +883,10 @@
       var isRL=msg.indexOf('429')!==-1||msg.toLowerCase().indexOf('ratelimit')!==-1||msg.toLowerCase().indexOf('rate limit')!==-1||msg.toLowerCase().indexOf('使用上限')!==-1;
       var isTO=msg.indexOf('504')!==-1||msg.toLowerCase().indexOf('timeout')!==-1||msg.toLowerCase().indexOf('gateway')!==-1;
       var isTPM=msg.indexOf('413')!==-1||msg.toLowerCase().indexOf('token limit')!==-1||msg.toLowerCase().indexOf('tpm')!==-1;
-      if(isTPM){
+      var isAuth=msg.indexOf('401')!==-1||msg.toLowerCase().indexOf('invalid authentication')!==-1||msg.toLowerCase().indexOf('access_token_type')!==-1;
+      if(isAuth){
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:key-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">API Key Tidak Valid</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Untuk Gemini, dapatkan API key gratis di aistudio.google.com/app/apikey (format: AIza...).</p></div></div></div>';
+      }else if(isTPM){
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:clock-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">Token Limit Tercapai</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Free tier Groq punya batas token per menit. Tunggu 1 menit atau pilih model lain (SkelzAI Turbo).</p></div></div></div>';
       }else if(isRL||isTO){
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-zinc-600 mt-2">Sistem otomatis beralih ke SkelzAI Turbo.</p></div></div></div>';

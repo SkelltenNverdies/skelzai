@@ -138,8 +138,13 @@ const PROVIDERS = {
     // Google Gemini via OpenAI-compatible endpoint (generativelanguage.googleapis.com)
     // Free tier: 15 RPM, 1500 req/day for most models. Vision-capable.
     // API key embedded as fallback; override via GEMINI_API_KEY env var.
+    // NOTE: Google AI Studio now issues keys in two formats:
+    //   - Old format: "AIza..." (39 chars)
+    //   - New format: "AQ.Ab8R..." (longer, OAuth-style but works as API key)
+    // Both formats work with Authorization: Bearer header on the OpenAI-compat endpoint.
+    // If 401 occurs, code falls back to native Gemini API with x-goog-api-key header.
     envVar: 'GEMINI_API_KEY',
-    fallbackKey: 'AQ.Ab8RN6LfoGs4_qb2AEEiAOpJS3rz_4Ac6UWFc0IN80N4iT26kg',
+    fallbackKey: 'AQ.Ab8RN6J9_yC_bHZLwPq8TZs3pIiY60wN3yY28XBAiOvZwWPdwg',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     timeout: 25000,
     buildRequest(apiKey, model, messages) {
@@ -157,6 +162,57 @@ const PROVIDERS = {
           temperature: 0.7,
           top_p: 0.9
         })
+      };
+    },
+    // Alternative auth method (native Gemini API with x-goog-api-key header).
+    // Used as fallback if OpenAI-compat endpoint returns 401.
+    buildNativeRequest(apiKey, model, messages) {
+      // Convert OpenAI-style messages to Gemini native format
+      const contents = [];
+      let systemInstruction = null;
+      for (const m of messages) {
+        if (m.role === 'system') {
+          systemInstruction = { parts: [{ text: m.content }] };
+        } else {
+          const role = m.role === 'assistant' ? 'model' : 'user';
+          // Handle multimodal content (array of {type, text/image_url})
+          let parts;
+          if (Array.isArray(m.content)) {
+            parts = m.content.map(c => {
+              if (c.type === 'text') return { text: c.text };
+              if (c.type === 'image_url') {
+                const url = c.image_url.url || '';
+                const match = url.match(/^data:([^;]+);base64,(.+)$/);
+                if (match) {
+                  return { inline_data: { mime_type: match[1], data: match[2] } };
+                }
+                return { text: '[image url not supported in native mode]' };
+              }
+              return { text: '' };
+            });
+          } else {
+            parts = [{ text: m.content || '' }];
+          }
+          contents.push({ role, parts });
+        }
+      }
+      const body = {
+        contents,
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+          topP: 0.9
+        }
+      };
+      if (systemInstruction) body.systemInstruction = systemInstruction;
+      return {
+        method: 'POST',
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
+        body: JSON.stringify(body)
       };
     }
   }
@@ -316,11 +372,66 @@ export default async function handler(req, res) {
     }
   }
 
+  // Gemini fallback: if OpenAI-compat endpoint returns 401 (auth failed),
+  // try native Gemini API with x-goog-api-key header as alternative.
+  // This handles keys that work with native API but not OpenAI-compat layer.
+  if (provider === 'gemini' && response && response.status === 401 && config.buildNativeRequest) {
+    try {
+      const nativeOpts = config.buildNativeRequest(apiKey, model, finalMessages);
+      const nativeUrl = nativeOpts.url;
+      const nativeReqOpts = {
+        method: nativeOpts.method,
+        headers: nativeOpts.headers,
+        body: nativeOpts.body
+      };
+      const nativeResponse = await fetchWithTimeout(nativeUrl, nativeReqOpts, config.timeout);
+      if (nativeResponse.ok) {
+        // Parse native Gemini response and convert to OpenAI format
+        const nativeData = await nativeResponse.json();
+        const candidate = nativeData.candidates && nativeData.candidates[0];
+        const content = candidate && candidate.content && candidate.content.parts
+          ? candidate.content.parts.map(p => p.text || '').join('')
+          : '';
+        if (content) {
+          return res.status(200).json({
+            choices: [{
+              index: 0,
+              message: { role: 'assistant', content },
+              finish_reason: candidate?.finishReason?.toLowerCase() || 'stop'
+            }],
+            usage: {
+              prompt_tokens: nativeData.usageMetadata?.promptTokenCount || 0,
+              completion_tokens: nativeData.usageMetadata?.candidatesTokenCount || 0,
+              total_tokens: nativeData.usageMetadata?.totalTokenCount || 0
+            }
+          });
+        }
+      }
+      // If native also failed, use the original 401 response for error handling
+    } catch (nativeErr) {
+      // Native fallback failed — fall through to original error handling
+    }
+  }
+
   // If we hit 413, return a clear error so the frontend can fallback.
   if (hit413) {
     return res.status(413).json({
       error: `${provider} token limit tercapai (TPM). Coba lagi dalam 1 menit atau gunakan model lain.`,
       fallback: true
+    });
+  }
+
+  // Gemini 429 (quota exceeded) — surface with fallback flag so frontend
+  // can auto-switch to SkelzAI Turbo. Free tier has tight per-minute limits.
+  if (provider === 'gemini' && response && response.status === 429) {
+    const parsed429 = await safeReadJson(response);
+    const errDetail = parsed429.ok
+      ? (parsed429.data && (parsed429.data.error?.message || JSON.stringify(parsed429.data).substring(0, 200)))
+      : parsed429.error;
+    return res.status(429).json({
+      error: `Gemini quota tercapai (free tier). Tunggu 1 menit atau gunakan model lain.`,
+      fallback: true,
+      detail: errDetail
     });
   }
 
