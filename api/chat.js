@@ -329,16 +329,13 @@ const PROVIDERS = {
     //   nemotron-nano-12b-v2-vl
     //
     // Known issues:
-    // - google/gemma-2-2b-it does NOT support system role → auto-convert to user msg
-    // - Small models (2B, 3B, 4B) have 4096 max context → use conservative max_tokens
+    // - Small models (3B, 4B, 10.7B) have 4096 max context → use conservative max_tokens
     envVar: 'NVIDIA_API_KEY',
     fallbackKey: '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',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 50000,
-    // Models that don't support system role
-    noSystemRole: ['google/gemma-2-2b-it'],
     // Models with small context (4096 tokens total) — need conservative max_tokens
-    smallContext: ['meta/llama-3.2-3b-instruct', 'google/gemma-2-2b-it', 'nvidia/nemotron-mini-4b-instruct'],
+    smallContext: ['meta/llama-3.2-3b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
     buildRequest(apiKey, model, messages) {
       // Check if this model doesn't support system role
       const noSys = (this.noSystemRole || []).indexOf(model) !== -1;
