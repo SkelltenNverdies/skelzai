@@ -215,6 +215,35 @@ const PROVIDERS = {
         body: JSON.stringify(body)
       };
     }
+  },
+  github: {
+    // GitHub Models API (models.inference.ai.azure.com) — OpenAI-compatible.
+    // Free for GitHub users with PAT. Generous daily limits per model.
+    // Supports GPT-4o, GPT-4o-mini, GPT-4.1, GPT-4.1-mini, GPT-4.1-nano, Phi-4, Llama-3.3-70B
+    // All GPT-4o/4.1 models support vision.
+    // Override via GITHUB_TOKEN env var for production use.
+    envVar: 'GITHUB_TOKEN',
+    fallbackKey: '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',
+    url: 'https://models.inference.ai.azure.com/chat/completions',
+    timeout: 25000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+          max_tokens: 4096,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
   }
 };
 
