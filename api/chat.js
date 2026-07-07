@@ -318,6 +318,37 @@ const PROVIDERS = {
         })
       };
     }
+  },
+  nvidia: {
+    // NVIDIA NIM API (integrate.api.nvidia.com) — OpenAI-compatible.
+    // Free 1000 credits at signup. Override via NVIDIA_API_KEY env var.
+    // Tested working models: deepseek-v4-pro/flash, qwen3.5-122b, llama-3.2-1b/3b/70b,
+    //   gemma-2-2b, nemotron-mini-4b, llama-4-maverick, kimi-k2.6, minimax-m3,
+    //   glm-5.2, stockmark-2-100b, mistral-ministral-14b, solar-10.7b, step-3.5-flash,
+    //   seed-oss-36b, llama-3.2-11b-vision, llama-3.2-90b-vision, nemotron-nano-vl-8b,
+    //   nemotron-nano-12b-v2-vl
+    envVar: 'NVIDIA_API_KEY',
+    fallbackKey: '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',
+    url: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    timeout: 50000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+          max_tokens: 4096,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
   }
 };
 

@@ -215,6 +215,11 @@
       </button>
     </div>
     <div class="flex-1 overflow-y-auto px-3 pb-3">
+      <!-- Search bar -->
+      <div class="mb-2 px-2 relative">
+        <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
+        <input id="SRCH" type="text" placeholder="Cari chat..." oninput="updHist()" class="w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-3 py-1.5 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+      </div>
       <div class="mb-2 px-2 flex items-center justify-between">
         <span class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium">Riwayat</span>
         <button id="clrAllBtn" onclick="clearAllChats()" class="text-[10px] uppercase tracking-wider text-[#7C7770] hover:text-red-400 transition-colors hidden cursor-pointer">Hapus Semua</button>
@@ -290,11 +295,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.17.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 2.19.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> 21 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Vision AI) — semua gratis, tanpa branding provider</p>
+        <p><strong class="text-cream-50">Model:</strong> 32 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto, Caveman Mode (4 level)</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Voice input, text-to-speech, search chat, pin favorite, export markdown, keyboard shortcuts, smooth typing, download code, PWA, analisis foto, Caveman Mode</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -314,6 +319,31 @@
     </div>
   </div>
 
+  <!-- SHORTCUTS HELP MODAL -->
+  <div id="SC" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('SC')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:keyboard-outline"></span></div>
+          <span class="text-base font-medium text-cream-50">Keyboard Shortcuts</span>
+        </div>
+        <button onclick="closeM('SC')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Chat baru</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Ctrl + N</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Kirim pesan</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Enter</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Baris baru (tanpa kirim)</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Shift + Enter</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Stop generate / typing</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Esc (saat generate)</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Tutup modal</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Esc</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Voice input (mic)</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">Ctrl + M</kbd></div>
+        <div class="flex items-center justify-between py-1.5"><span class="text-[#C2BFB8]">Bantuan shortcuts</span><kbd class="px-2 py-0.5 rounded-md bg-[#262524] border border-white/[0.06] text-[10px] text-[#E5E3DA] font-mono">?</kbd></div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-white/[0.06] text-[11px] text-[#7C7770] leading-relaxed">
+        Tips: Klik tombol mic untuk voice input, klik speaker di pesan AI untuk dengarkan jawaban, klik pin di history untuk pin chat favorit.
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="lg:ml-[280px] h-full flex flex-col relative z-10">
     <header class="flex items-center justify-between px-4 md:px-6 h-14 min-h-[56px] border-b border-white/[0.06] bg-[#1F1E1D]/85 backdrop-blur-md flex-shrink-0">
@@ -326,7 +356,9 @@
       </div>
       <div class="flex items-center gap-0.5 flex-shrink-0">
         <button onclick="clearCurChat()" id="clrBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Hapus pesan" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:delete-outline"></span></button>
-        <button onclick="exportChat()" id="expBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Export chat" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:download-outline"></span></button>
+        <button onclick="exportChat()" id="expBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Export chat (.txt / .md)" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:download-outline"></span></button>
+        <button onclick="exportMarkdown()" id="mdBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Export Markdown (.md)" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:language-markdown"></span></button>
+        <button onclick="openShortcuts()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group" title="Keyboard shortcuts (?)"><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:keyboard-outline"></span></button>
       </div>
     </header>
 
@@ -365,12 +397,13 @@
           <button type="button" onclick="document.getElementById('FI').click()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0 mb-0.5" title="Upload file (foto/PDF/DOCX/teks, maks 20MB)"><span class="iconify text-[#7C7770] text-lg" data-icon="mdi:paperclip"></span></button>
           <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg" class="hidden" onchange="handleFile(event)">
           <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-cream-50 placeholder-ink-600 outline-none leading-relaxed py-1" placeholder="Ketik pesan atau lampirkan file (foto/PDF/DOCX/teks)..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
+          <button type="button" id="MIC_BTN" onclick="toggleVoiceInput()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0 mb-0.5" title="Voice input (mic)"><span class="iconify text-[#7C7770] text-lg" data-icon="mdi:microphone"></span></button>
           <button type="button" id="SBtn" onclick="onSendClick()" class="sbtn w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mb-0.5" disabled>
             <span id="SIco" class="iconify text-base" data-icon="mdi:arrow-up"></span>
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.17.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.19.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -388,23 +421,35 @@
       {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      /* Premium AI (OpenRouter free) */
+      /* Premium AI (OpenRouter free) — only confirmed stable models */
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B, paling kuat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, seimbang',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-3-nano-30b-a3b:free',provider:'openrouter',label:'Nemotron 3 Nano 30B',desc:'MoE 30B, hemat token',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'Super cepat & ringan',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'nousresearch/hermes-3-llama-3.1-405b:free',provider:'openrouter',label:'Hermes 3 405B',desc:'405B params, paling besar',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Tencent, multibahasa',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'qwen/qwen3-next-80b-a3b-instruct:free',provider:'openrouter',label:'Qwen3 Next 80B',desc:'MoE 80B, cerdas',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'qwen/qwen3-coder:free',provider:'openrouter',label:'Qwen3 Coder 480B',desc:'Khusus coding, 480B MoE',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Multibahasa, 262K context',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'poolside/laguna-m.1:free',provider:'openrouter',label:'Laguna M.1',desc:'Coding specialist',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat',tag:'Premium',vision:false,cat:'Premium AI'},
       /* Vision AI (analisis foto) */
       {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'Analisis foto, 12B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'google/gemma-4-31b-it:free',provider:'openrouter',label:'Gemma 4 31B',desc:'Vision, 31B, 262K context',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI'}
+      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
+      /* Powerful AI (NVIDIA NIM free) */
+      {id:'deepseek-ai/deepseek-v4-pro',provider:'nvidia',label:'DeepSeek V4 Pro',desc:'Paling cerdas, untuk tugas kompleks',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'deepseek-ai/deepseek-v4-flash',provider:'nvidia',label:'DeepSeek V4 Flash',desc:'Cepat & cerdas, hemat token',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'qwen/qwen3.5-122b-a10b',provider:'nvidia',label:'Qwen3.5 122B',desc:'MoE 122B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'moonshotai/kimi-k2.6',provider:'nvidia',label:'Kimi K2.6',desc:'Moonshot AI, long context',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'mistralai/ministral-14b-instruct-2512',provider:'nvidia',label:'Ministral 14B',desc:'Mistral, 14B seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'meta/llama-3.2-3b-instruct',provider:'nvidia',label:'Llama 3.2 3B',desc:'Ringan, hemat token',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'google/gemma-2-2b-it',provider:'nvidia',label:'Gemma 2 2B',desc:'Google, paling ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'}
       /* Gemini models commented out — API key invalid.
          To re-enable: get valid key from https://aistudio.google.com/app/apikey (format: AIza...)
       ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
@@ -551,20 +596,162 @@
     function clearCurChat(){if(!curId||!chats[curId])return;showConfirm('Hapus Pesan','Semua pesan dalam chat ini akan dihapus.',function(){chats[curId].messages=[];document.getElementById('MC').innerHTML='';document.getElementById('WS').classList.remove('hidden');document.getElementById('MC').classList.add('hidden');updTop();save();toast('Pesan dihapus','success')})}
     function clearAllChats(){showConfirm('Hapus Semua','Seluruh riwayat akan dihapus.',function(){chats={};curId=null;newChat();save();toast('Semua chat dihapus','success')})}
     function updHist(){
-      var el=document.getElementById('CH'),em=document.getElementById('HE'),cb=document.getElementById('clrAllBtn'),ids=Object.keys(chats).sort(function(a,b){return chats[b].created-chats[a].created});
-      if(!ids.length){el.innerHTML='';em.classList.remove('hidden');cb.classList.add('hidden');return}
+      var el=document.getElementById('CH'),em=document.getElementById('HE'),cb=document.getElementById('clrAllBtn');
+      var srch=(document.getElementById('SRCH').value||'').toLowerCase().trim();
+      var allIds=Object.keys(chats);
+      // Filter by search keyword (title or message content)
+      var ids=allIds.filter(function(id){
+        if(!srch)return true;
+        var ch=chats[id];
+        if(ch.title.toLowerCase().indexOf(srch)!==-1)return true;
+        for(var i=0;i<ch.messages.length;i++){
+          if((ch.messages[i].content||'').toLowerCase().indexOf(srch)!==-1)return true;
+        }
+        return false;
+      });
+      // Sort: pinned first, then by created date desc
+      ids.sort(function(a,b){
+        var pa=chats[a].pinned?1:0,pb=chats[b].pinned?1:0;
+        if(pa!==pb)return pb-pa;
+        return chats[b].created-chats[a].created;
+      });
+      if(!ids.length){
+        el.innerHTML='';
+        if(allIds.length===0){em.classList.remove('hidden');cb.classList.add('hidden')}
+        else{em.classList.add('hidden');cb.classList.remove('hidden');el.innerHTML='<div class="text-center py-8 text-xs text-[#7C7770]">Tidak ada chat yang cocok</div>'}
+        return;
+      }
       em.classList.add('hidden');cb.classList.remove('hidden');var html='';
-      for(var i=0;i<ids.length;i++){var id=ids[i],ch=chats[id],act=id===curId?' act':'';html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+esc(ch.title)+'</span><span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span></div><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>'}
+      for(var i=0;i<ids.length;i++){
+        var id=ids[i],ch=chats[id],act=id===curId?' act':'';
+        var pinIcon=ch.pinned?'mdi:pin':'mdi:pin-outline';
+        var pinColor=ch.pinned?'text-coral-400':'text-[#7C7770]';
+        html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+esc(ch.title)+'</span><span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span></div><button onclick="togglePin(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-coral-400/10 flex-shrink-0" title="'+(ch.pinned?'Unpin':'Pin')+'"><span class="iconify '+pinColor+' text-xs transition-colors" data-icon="'+pinIcon+'"></span></button><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>';
+      }
       el.innerHTML=html;
     }
-    function updTop(){var has=curId&&chats[curId]&&chats[curId].messages.length>0;document.getElementById('clrBtn').disabled=!has;document.getElementById('expBtn').disabled=!has}
+    function updTop(){var has=curId&&chats[curId]&&chats[curId].messages.length>0;document.getElementById('clrBtn').disabled=!has;document.getElementById('expBtn').disabled=!has;document.getElementById('mdBtn').disabled=!has}
 
     function exportChat(){
       if(!curId||!chats[curId])return;
       var ch=chats[curId],txt='SkelzAI — Export\n'+'='.repeat(40)+'\nJudul: '+ch.title+'\nModel: '+selModel.label+'\nTanggal: '+new Date(ch.created).toLocaleString('id-ID')+'\n'+'='.repeat(40)+'\n\n';
       for(var i=0;i<ch.messages.length;i++){var m=ch.messages[i];txt+=(m.role==='user'?'Anda':'SkelzAI')+'\n'+'-'.repeat(30)+'\n'+m.content+'\n\n'}
-      var blob=new Blob([txt],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='skelzai-'+ch.title.replace(/[^a-zA-Z0-9]/g,'_')+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);toast('Chat di-export!','success');
+      var blob=new Blob([txt],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='skelzai-'+ch.title.replace(/[^a-zA-Z0-9]/g,'_')+'.txt';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);toast('Chat di-export (.txt)!','success');
     }
+
+    /* ===== EXPORT MARKDOWN ===== */
+    function exportMarkdown(){
+      if(!curId||!chats[curId])return;
+      var ch=chats[curId],md='# '+ch.title+'\n\n';
+      md+='> **Model:** '+selModel.label+'  \n> **Tanggal:** '+new Date(ch.created).toLocaleString('id-ID')+'  \n> **Pesan:** '+ch.messages.length+'\n\n---\n\n';
+      for(var i=0;i<ch.messages.length;i++){
+        var m=ch.messages[i];
+        md+='## '+(m.role==='user'?'🧑 Anda':'🤖 SkelzAI')+'\n\n'+m.content+'\n\n';
+      }
+      var blob=new Blob([md],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);a.download='skelzai-'+ch.title.replace(/[^a-zA-Z0-9]/g,'_')+'.md';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+      toast('Chat di-export (.md)!','success');
+    }
+
+    /* ===== VOICE INPUT (Web Speech API) ===== */
+    var voiceRec=null,voiceActive=false;
+    function toggleVoiceInput(){
+      if(voiceActive){stopVoiceInput();return}
+      var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SR){toast('Browser tidak support voice input','error');return}
+      voiceRec=new SR();
+      voiceRec.lang='id-ID';
+      voiceRec.interimResults=true;
+      voiceRec.continuous=false;
+      var inp=document.getElementById('CI');
+      var startText=inp.value;
+      voiceRec.onstart=function(){
+        voiceActive=true;
+        var btn=document.getElementById('MIC_BTN');
+        btn.style.background='rgba(217,119,87,0.2)';
+        btn.querySelector('.iconify').setAttribute('data-icon','mdi:microphone');
+        btn.querySelector('.iconify').style.color='#D97757';
+        toast('Mendengarkan... klik mic lagi untuk stop','info');
+      };
+      voiceRec.onresult=function(e){
+        var final='';
+        var interim='';
+        for(var i=e.resultIndex;i<e.results.length;i++){
+          if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+          else interim+=e.results[i][0].transcript;
+        }
+        inp.value=startText+(startText?' ':'')+final+interim;
+        onInput();
+      };
+      voiceRec.onerror=function(e){
+        toast('Voice error: '+e.error,'error');
+        stopVoiceInput();
+      };
+      voiceRec.onend=function(){stopVoiceInput()};
+      voiceRec.start();
+    }
+    function stopVoiceInput(){
+      if(voiceRec){try{voiceRec.stop()}catch(e){}voiceRec=null}
+      voiceActive=false;
+      var btn=document.getElementById('MIC_BTN');
+      btn.style.background='';
+      btn.querySelector('.iconify').setAttribute('data-icon','mdi:microphone');
+      btn.querySelector('.iconify').style.color='';
+    }
+
+    /* ===== TEXT-TO-SPEECH (Web Speech API) ===== */
+    var ttsUtter=null,ttsActive=false;
+    function speakMsg(idx,btn){
+      if(ttsActive){
+        window.speechSynthesis.cancel();
+        ttsActive=false;
+        if(btn){btn.querySelector('.iconify').setAttribute('data-icon','mdi:volume-high')}
+        return;
+      }
+      if(!curId||!chats[curId])return;
+      var msg=chats[curId].messages[idx];
+      if(!msg)return;
+      // Strip markdown for cleaner speech
+      var text=msg.content.replace(/```[\s\S]*?```/g,' kode ').replace(/[*#`_>\-]/g,' ').replace(/\n+/g,'. ').trim();
+      ttsUtter=new SpeechSynthesisUtterance(text);
+      ttsUtter.lang='id-ID';
+      ttsUtter.rate=1.0;
+      ttsUtter.pitch=1.0;
+      // Find Indonesian voice if available
+      var voices=window.speechSynthesis.getVoices();
+      var idVoice=null;
+      for(var i=0;i<voices.length;i++){
+        if(voices[i].lang.indexOf('id')===0){idVoice=voices[i];break}
+      }
+      if(idVoice)ttsUtter.voice=idVoice;
+      ttsUtter.onstart=function(){
+        ttsActive=true;
+        if(btn){btn.querySelector('.iconify').setAttribute('data-icon','mdi:stop')}
+      };
+      ttsUtter.onend=function(){
+        ttsActive=false;
+        if(btn){btn.querySelector('.iconify').setAttribute('data-icon','mdi:volume-high')}
+      };
+      ttsUtter.onerror=function(){
+        ttsActive=false;
+        if(btn){btn.querySelector('.iconify').setAttribute('data-icon','mdi:volume-high')}
+        toast('TTS error','error');
+      };
+      window.speechSynthesis.speak(ttsUtter);
+    }
+
+    /* ===== PIN CHAT ===== */
+    function togglePin(id,e){
+      e.stopPropagation();
+      if(!chats[id])return;
+      chats[id].pinned=!chats[id].pinned;
+      save();updHist();
+      toast(chats[id].pinned?'Chat di-pin':'Chat unpin','success');
+    }
+
+    /* ===== SHORTCUTS HELP ===== */
+    function openShortcuts(){openM('SC')}
 
     /* ===== FILE UPLOAD — supports text, image, PDF, DOCX (max 20MB) ===== */
     var TEXT_EXTS=['txt','md','js','ts','py','html','css','json','csv','xml','yml','yaml','java','c','cpp','go','rs','rb','php','sh','sql','log','vue','jsx','tsx','scss','less','ini','conf','env','gitignore','dockerfile'];
@@ -749,7 +936,7 @@
       } else {
         // AI message: no bubble, just text with subtle avatar (Claude.ai style)
         var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
-        d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
       }
       c.appendChild(d);
     }
@@ -769,7 +956,7 @@
       return new Promise(function(resolve){
         var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
         var idx=chats[curId]?chats[curId].messages.length-1:0;
-        d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
         c.appendChild(d);
         var ta=d.querySelector('.md');
 
@@ -1032,9 +1219,15 @@
         if(!document.getElementById('NM').classList.contains('hidden')){closeM('NM');return}
         if(!document.getElementById('AM').classList.contains('hidden')){closeM('AM');return}
         if(!document.getElementById('CM').classList.contains('hidden')){closeM('CM');return}
+        if(!document.getElementById('SC').classList.contains('hidden')){closeM('SC');return}
         if(pmOpen){closePM()}
       }
       if((e.ctrlKey||e.metaKey)&&e.key==='n'){e.preventDefault();newChat()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='m'){e.preventDefault();toggleVoiceInput()}
+      // "?" opens shortcuts help (only when not typing in input/textarea)
+      if(e.key==='?'&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)){
+        openShortcuts();
+      }
     });
 
     /* ===== INIT ===== */
