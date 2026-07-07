@@ -25,9 +25,19 @@ SAAT USER MEMINTA KODE (hanya jika diminta):
 - Include error handling yang masuk akal
 - Berikan penjelasan singkat sebelum kode, lalu cara menjalankan setelahnya
 
+SAAT MENGANALISIS FOTO/SOAL DARI GAMBAR:
+- Baca soal/pertanyaan di foto dengan teliti, sebutkan apa yang kamu lihat
+- JAWAB DENGAN BAHASA SEDERHANA & MUDAH DIPAHAMI — hindari istilah rumit
+- Untuk soal matematika/sains: jelaskan langkah per langkah dengan kalimat biasa
+- Jelaskan MENGAPA setiap langkah dilakukan, bukan hanya "bagaimana"
+- Kalau ada rumus, sebutkan rumusnya dan jelaskan artinya dengan kata-kata biasa
+- Akhiri dengan jawaban akhir yang jelas dan ditandai (contoh: "Jadi, jawabannya adalah X")
+- Kalau soalnya tidak jelas dari foto, minta user foto ulang atau ketik ulang soalnya
+
 FORMAT JAWABAN:
 - Untuk pertanyaan biasa: langsung jawab pakai kalimat natural, boleh pakai list singkat kalau perlu
 - Untuk request kode: 1-2 kalimat penjelasan → kode dalam code block → cara menjalankan
+- Untuk analisis foto/soal: apa yang kamu lihat → langkah-langkah sederhana → jawaban akhir
 - Hindari heading berlebihan, hindari template kaku, jangan over-format jawaban singkat
 
 GAYA:
@@ -51,17 +61,78 @@ Aturan:
 
 Kalau diminta kode: kasih kode LENGKAP (no "..." atau TODO) + penjelasan singkat + cara jalanin.
 
+Kalau analisis foto/soal: baca teliti, jawab PAKAI BAHASA SEDERHANA, langkah per langkah, jelaskan kenapa, akhiri dengan jawaban jelas.
+
 Gaya: santai tapi profesional, maksimal 1 emoji per jawaban.`
 };
 
-// Per-request timeout kept at 25s so that 1 retry (worst case 25s + 2s + 25s = 52s)
-// stays well under Vercel Hobby plan's 60s maxDuration. This prevents
-// FUNCTION_INVOCATION_TIMEOUT errors.
+// Caveman mode — inspired by https://github.com/juliusbrussee/caveman
+// Compresses AI output to ~35% of normal size, saving tokens while keeping
+// technical accuracy. Same answer, fewer words.
+//
+// Levels:
+//   lite   — mildly compressed, still readable, ~30% token reduction
+//   full   — default caveman, ~65% reduction (recommended)
+//   ultra  — extreme compression, ~75% reduction, telegraphic style
+//   wenyan — classical Chinese style, ~80% reduction (output in Chinese)
+//
+// All levels keep: code, commands, file paths, URLs, error messages, technical terms.
+// All levels preserve the user's language (Indonesian stays Indonesian).
+const CAVEMAN_LEVELS = {
+  lite: `CAVEMAN MODE (LITE): Mulai sekarang, jawab dengan RINGKAS tapi tetap natural. Buang semua kata pengisi ("saya akan menjelaskan", "mari kita lihat", "pertama-tama", dll). Tetap pakai kalimat lengkap, tapi singkat. Hindari pengulangan. Untuk soal/code: jelaskan inti + jawaban, skip preamble. Output bahasa Indonesia tetap, hanya gaya yang diringkas. Code/commands/paths/URLs tetap utuh.`,
+
+  full: `CAVEMAN MODE (FULL): Mulai sekarang, jawab SANGAT RINGKAS — seperti caveman berbicara. Buang semua kata pengisi dan preamble. Langsung ke inti. Kalimat pendek-pendek, telegraphic. Tetap pakai bahasa Indonesia, tapi gaya caveman (singkat, padat, langsung).
+
+Contoh transformasi:
+- Normal: "Saya akan menjelaskan cara kerja useMemo. useMemo adalah hook React yang..." → Caveman: "useMemo memo nilai. Re-render skip."
+- Normal: "Pertanyaan yang bagus! Mari kita bahas tentang React." → Caveman: "React itu library UI."
+- Normal: "Untuk menyelesaikan masalah ini, Anda perlu melakukan langkah berikut:" → Caveman: "Langkah:"
+
+Aturan:
+- Code, commands, file paths, URLs, error messages: TETAP UTUH, jangan diringkas
+- Penjelasan teknis: tetap akurat, tapi dibuat sesingkat mungkin
+- Tetap jawab pertanyaan user dengan benar — hanya gaya bahasa yang diringkas
+- Maksimal 1-2 kalimat penjelasan sebelum code block (atau langsung kasih code)
+- Untuk soal matematika: langsung langkah + jawaban, tanpa "mari kita selesaikan"`,
+
+  ultra: `CAVEMAN MODE (ULTRA): Mulai sekarang, jawab EXTREMELY RINGKAS. Telegraphic. Buang semua kata. Langsung inti saja. Bahasa Indonesia tetap, tapi gaya super caveman.
+
+Contoh:
+- "useMemo memo nilai, skip re-render"
+- "Bug di line 42. user null. Tambah guard."
+- "Async/await. Hindari callback hell."
+- "Rebase: pindah commit ke base baru. Merge: gabung branch."
+- "Docker multi-stage: image kecil, build cepat"
+
+Aturan:
+- Code/commands/paths/URLs/errors: TETAP UTUH
+- Penjelasan: maksimal 1 kalimat pendek sebelum/sesudah code
+- Untuk soal: langsung langkah + jawaban
+- Skip semua "halo", "mari", "pertama", "saya akan", "berikut", dll
+- Kalau user tanya konsep, jawab 1 kalimat definisi langsung`,
+
+  wenyan: `CAVEMAN MODE (WENYAN): Mulai sekarang, jawab dalam gaya 文言文 (classical Chinese / wenyan). Bahasa Indonesia → ubah ke gaya klasik Tiongkok kuno. Sangat padat, ~80% lebih ringkas dari normal.
+
+Contoh:
+- "useMemo 记值 跳渲染" (memo value, skip re-render)
+- "错在四十二行 用户空 加守" (Bug at line 42, user null, add guard)
+- "React者 组件库也" (React is a component library)
+
+Aturan:
+- Code/commands/paths/URLs/errors: TETAP UTUH dalam format asli
+- Penjelasan: pakai wenyan style (4-6 karakter per phrase, padat)
+- Tetap jawab pertanyaan dengan benar
+- Untuk soal: langsung langkah + jawaban, gaya wenyan`
+};
+
+// Per-request timeout 50s — gives AI models (especially reasoning & vision models)
+// plenty of time to think. NO retry (would exceed 60s Vercel maxDuration).
+// Total worst case: 50s < 60s Vercel limit.
 const PROVIDERS = {
   qwen: {
     envVar: 'QWEN_API_KEY',
     url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
-    timeout: 25000,
+    timeout: 50000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -77,7 +148,7 @@ const PROVIDERS = {
   groq: {
     envVar: 'GROQ_API_KEY',
     url: 'https://api.groq.com/openai/v1/chat/completions',
-    timeout: 25000,
+    timeout: 50000,
     // Groq free tier TPM (Tokens Per Minute) limits:
     //   llama-3.3-70b-versatile: 12000 TPM
     //   llama-3.1-8b-instant:    6000 TPM  ← very tight!
@@ -114,7 +185,7 @@ const PROVIDERS = {
     envVar: 'OPENROUTER_API_KEY',
     fallbackKey: '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',
     url: 'https://openrouter.ai/api/v1/chat/completions',
-    timeout: 25000,
+    timeout: 50000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -146,7 +217,7 @@ const PROVIDERS = {
     envVar: 'GEMINI_API_KEY',
     fallbackKey: 'AQ.Ab8RN6J9_yC_bHZLwPq8TZs3pIiY60wN3yY28XBAiOvZwWPdwg',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-    timeout: 25000,
+    timeout: 50000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -225,7 +296,7 @@ const PROVIDERS = {
     envVar: 'GITHUB_TOKEN',
     fallbackKey: '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',
     url: 'https://models.inference.ai.azure.com/chat/completions',
-    timeout: 25000,
+    timeout: 50000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -296,7 +367,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON body' });
   }
 
-  const { provider = 'qwen', model, messages } = body || {};
+  const { provider = 'qwen', model, messages, caveman = false, cavemanLevel = 'full' } = body || {};
   if (!model || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Invalid request: model & messages required' });
   }
@@ -320,7 +391,15 @@ export default async function handler(req, res) {
   // For Groq 8B (very tight 6000 TPM), use compact system prompt to save tokens.
   // For Groq 70B and others, use full system prompt.
   const useCompact = provider === 'groq' && model.indexOf('70b') === -1;
-  const sysPrompt = useCompact ? SYSTEM_PROMPT_COMPACT : SYSTEM_PROMPT;
+  let sysPrompt = useCompact ? SYSTEM_PROMPT_COMPACT : SYSTEM_PROMPT;
+
+  // Inject Caveman mode instruction if enabled (default level: full)
+  if (caveman && CAVEMAN_LEVELS[cavemanLevel]) {
+    sysPrompt = {
+      role: 'system',
+      content: sysPrompt.content + '\n\n---\n\n' + CAVEMAN_LEVELS[cavemanLevel]
+    };
+  }
 
   let finalMessages = [sysPrompt, ...messages];
 
@@ -358,47 +437,24 @@ export default async function handler(req, res) {
     }
   }
 
-  // 1 retry only — keeps total worst case under 60s Vercel limit.
-  // Special handling: 413 (TPM exceeded) is NOT retried (waiting 60s would
-  // blow Vercel's maxDuration). Instead, we surface a clear error so the
-  // frontend can fallback to SkelzAI Turbo.
+  // SINGLE ATTEMPT only — no retry.
+  // Reason: timeout is 50s per request (gives AI time to think for reasoning/vision).
+  // 1 retry would be 50s + 50s = 100s > 60s Vercel maxDuration → FUNCTION_INVOCATION_TIMEOUT.
+  // Special handling: 413 (TPM exceeded) surfaces immediately so frontend can fallback.
   let lastError = null;
   let response = null;
   let hit413 = false;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const reqOptions = config.buildRequest(apiKey, model, finalMessages);
-      response = await fetchWithTimeout(config.url, reqOptions, config.timeout);
+  try {
+    const reqOptions = config.buildRequest(apiKey, model, finalMessages);
+    response = await fetchWithTimeout(config.url, reqOptions, config.timeout);
 
-      if (response.status === 429) {
-        lastError = new Error(`Rate limited (429)`);
-        if (attempt < 1) {
-          await new Promise(r => setTimeout(r, 2000));
-          continue;
-        }
-        break;
-      }
-      if (response.status === 413) {
-        // TPM exceeded on Groq — don't retry, surface immediately so
-        // frontend can fallback to SkelzAI Turbo.
-        hit413 = true;
-        lastError = new Error(`Token limit exceeded (413)`);
-        break;
-      }
-      if (response.status === 504 || response.status === 502) {
-        lastError = new Error(`Gateway error (${response.status})`);
-        if (attempt < 1) {
-          continue;
-        }
-        break;
-      }
-      break;
-    } catch (err) {
-      lastError = err;
-      if (attempt < 1) {
-        await new Promise(r => setTimeout(r, 1500));
-      }
+    if (response.status === 413) {
+      // TPM exceeded on Groq — surface immediately so frontend can fallback to SkelzAI Turbo.
+      hit413 = true;
+      lastError = new Error(`Token limit exceeded (413)`);
     }
+  } catch (err) {
+    lastError = err;
   }
 
   // Gemini fallback: if OpenAI-compat endpoint returns 401 (auth failed),

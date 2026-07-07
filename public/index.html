@@ -53,110 +53,117 @@
   </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    body{font-family:'Inter',system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;height:100dvh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-    ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(217,119,87,.18);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.35)}
-    /* Glass surfaces — subtle warm dark */
-    .glass-s{background:rgba(38,37,36,.85);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.06);box-shadow:0 8px 32px -8px rgba(0,0,0,.4)}
-    .glass-i{background:rgba(38,37,36,.6);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.05)}
-    .glow-c{box-shadow:0 0 32px -6px rgba(217,119,87,.3)}
+    html,body{height:100%}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
+    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.3)}
+    /* Glass surfaces — subtle, warm dark */
+    .glass-s{background:rgba(38,37,36,.92);backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.07);box-shadow:0 12px 40px -12px rgba(0,0,0,.5)}
+    .glass-i{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06)}
+    .glow-c{box-shadow:0 0 24px -6px rgba(217,119,87,.25)}
     /* Brand text — coral serif shimmer */
     .tg{background:linear-gradient(135deg,#D97757 0%,#E8A48D 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .tg-anim{background:linear-gradient(135deg,#D97757 0%,#E8A48D 50%,#D97757 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
+    .tg-anim{background:linear-gradient(110deg,#D97757 0%,#E8A48D 50%,#D97757 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite}
     @keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
-    .glow-text{text-shadow:0 0 20px rgba(217,119,87,.2)}
+    .glow-text{text-shadow:0 0 20px rgba(217,119,87,.15)}
     .glow-anim{animation:textGlow 3s ease-in-out infinite}
-    @keyframes textGlow{0%,100%{filter:drop-shadow(0 0 4px rgba(217,119,87,.25))}50%{filter:drop-shadow(0 0 12px rgba(217,119,87,.5))}}
-    .footer-brand{background:linear-gradient(90deg,#7C7770 0%,#D97757 50%,#7C7770 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite}
-    @keyframes fiu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes textGlow{0%,100%{filter:drop-shadow(0 0 3px rgba(217,119,87,.2))}50%{filter:drop-shadow(0 0 8px rgba(217,119,87,.4))}}
+    .footer-brand{background:linear-gradient(90deg,#7C7770 0%,#D97757 50%,#7C7770 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 6s linear infinite}
+    @keyframes fiu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fi{from{opacity:0}to{opacity:1}}
-    @keyframes sl{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes sr{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes pd{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-    @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    @keyframes msi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    @keyframes sl{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes sr{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes pd{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+    @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes msi{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
     @keyframes thinkPulse{0%,100%{opacity:.4;transform:scale(.95)}50%{opacity:1;transform:scale(1)}}
     @keyframes thinkDots{0%,20%{content:''}40%{content:'.'}60%{content:'..'}80%,100%{content:'...'}}
     @keyframes orbitSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes orbitPulse{0%,100%{opacity:.3}50%{opacity:.8}}
-    @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(217,119,87,.35))}50%{filter:drop-shadow(0 0 18px rgba(217,119,87,.65))}}
-    .afu{animation:fiu .4s ease-out forwards}.afi{animation:fi .3s ease-out forwards}
-    .asl{animation:sl .3s ease-out forwards}.asr{animation:sr .3s ease-out forwards}
-    .afl{animation:fl 4s ease-in-out infinite,logoGlow 3s ease-in-out infinite}.amsi{animation:msi .25s ease-out forwards}
-    .td{width:6px;height:6px;border-radius:50%;background:#D97757;display:inline-block;margin:0 2px}
+    @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(217,119,87,.3))}50%{filter:drop-shadow(0 0 12px rgba(217,119,87,.5))}}
+    .afu{animation:fiu .35s cubic-bezier(.4,0,.2,1) forwards}.afi{animation:fi .25s ease-out forwards}
+    .asl{animation:sl .3s cubic-bezier(.4,0,.2,1) forwards}.asr{animation:sr .3s cubic-bezier(.4,0,.2,1) forwards}
+    .afl{animation:fl 4s ease-in-out infinite,logoGlow 3s ease-in-out infinite}.amsi{animation:msi .2s cubic-bezier(.4,0,.2,1) forwards}
+    .td{width:5px;height:5px;border-radius:50%;background:#D97757;display:inline-block;margin:0 2px}
     .td:nth-child(1){animation:pd 1.4s infinite ease-in-out}.td:nth-child(2){animation:pd 1.4s infinite ease-in-out .2s}.td:nth-child(3){animation:pd 1.4s infinite ease-in-out .4s}
-    /* Code blocks — slightly lighter dark, subtle border */
-    .cb{background:#161514;border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;margin:14px 0;font-size:13px;box-shadow:0 2px 12px -4px rgba(0,0,0,.4)}
-    .chdr{background:rgba(255,255,255,.03);padding:7px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:#9C9590}
-    .chdr .lang-label{text-transform:uppercase;letter-spacing:.08em;font-weight:500;color:#D97757;font-size:10px}
-    .chdr button{padding:3px 8px;border-radius:6px;transition:all .15s;color:#9C9590}
-    .chdr button:hover{background:rgba(217,119,87,.12);color:#D97757}
-    .cc{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code','Courier New',monospace;line-height:1.65;color:#E5E3DA;white-space:pre;font-size:13px}
+    /* Code blocks — Claude.ai style: subtle dark, rounded */
+    .cb{background:#161514;border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin:14px 0;font-size:13px}
+    .chdr{background:rgba(255,255,255,.025);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:#9C9590}
+    .chdr .lang-label{text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:#D97757;font-size:10px}
+    .chdr button{padding:4px 10px;border-radius:6px;transition:all .15s;color:#9C9590;font-size:11px}
+    .chdr button:hover{background:rgba(217,119,87,.1);color:#D97757}
+    .cc{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code','SF Mono',Consolas,monospace;line-height:1.6;color:#E5E3DA;white-space:pre;font-size:13px}
     .cc .kw{color:#E8A48D}.cc .st{color:#A8C8A0}.cc .cm{color:#7C7770;font-style:italic}.cc .fn{color:#8FAFD9}.cc .nm{color:#E8A48D}
-    .si-i{transition:all .2s;position:relative}.si-i:hover{background:rgba(255,255,255,.04)}
-    .si-i:hover .si-d{opacity:1!important}.si-i.act{background:rgba(217,119,87,.08);border-color:rgba(217,119,87,.18)}
+    /* Sidebar items — Claude.ai minimal */
+    .si-i{transition:background .15s ease-out;position:relative;border-radius:8px;margin:1px 0}
+    .si-i:hover{background:rgba(255,255,255,.04)}
+    .si-i:hover .si-d{opacity:1!important}.si-i.act{background:rgba(255,255,255,.06)}
     .si-d{opacity:0;transition:opacity .15s}
-    .ma{opacity:0;transition:opacity .2s}.mc:hover .ma{opacity:1}
+    .ma{opacity:0;transition:opacity .15s}.mc:hover .ma{opacity:.6}
+    .ma:hover{opacity:1!important}
     .ci{resize:none;max-height:160px;min-height:24px;scrollbar-width:none}.ci::-webkit-scrollbar{display:none}
-    .te{animation:fiu .3s ease-out forwards}.tx{animation:fiu .2s ease-out reverse forwards}
-    /* Send button — coral with soft glow when active */
-    .sbtn{transition:all .25s cubic-bezier(.4,0,.2,1);background:rgba(217,119,87,.08);color:#7C7770}
-    .sbtn.on{background:#D97757;color:#fff;box-shadow:0 4px 16px -3px rgba(217,119,87,.55);animation:btnPulse 2.5s ease-in-out infinite}
-    .sbtn:not(.on):disabled{background:rgba(255,255,255,.03);color:rgba(124,119,112,.4)}
-    @keyframes btnPulse{0%,100%{box-shadow:0 4px 16px -3px rgba(217,119,87,.55)}50%{box-shadow:0 4px 24px -3px rgba(217,119,87,.8)}}
-    /* Suggestion chips — subtle dark cards */
-    .chip{transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}
-    .chip:hover{background:rgba(217,119,87,.06);border-color:rgba(217,119,87,.25);transform:translateY(-2px);box-shadow:0 6px 20px -10px rgba(217,119,87,.3)}
-    .so{transition:transform .3s}.sp{transition:opacity .3s}
-    /* Markdown styling — cream text */
-    .md p{margin-bottom:10px}.md p:last-child{margin-bottom:0}
+    .te{animation:fiu .3s cubic-bezier(.4,0,.2,1) forwards}.tx{animation:fi .2s ease-out reverse forwards}
+    /* Send button — Claude.ai style: subtle when idle, coral when active */
+    .sbtn{transition:all .2s cubic-bezier(.4,0,.2,1);background:rgba(255,255,255,.05);color:#7C7770}
+    .sbtn.on{background:#D97757;color:#fff;box-shadow:0 2px 12px -3px rgba(217,119,87,.5)}
+    .sbtn:not(.on):disabled{background:rgba(255,255,255,.03);color:rgba(124,119,112,.3)}
+    .sbtn.on:active{transform:scale(.95)}
+    /* Suggestion chips — Claude.ai style: minimal cards */
+    .chip{transition:all .2s cubic-bezier(.4,0,.2,1);cursor:pointer;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+    .chip:hover{background:rgba(255,255,255,.05);border-color:rgba(217,119,87,.2);transform:translateY(-1px)}
+    .chip:active{transform:translateY(0)}
+    .so{transition:transform .25s cubic-bezier(.4,0,.2,1)}.sp{transition:opacity .25s}
+    /* Markdown styling — Claude.ai clean text */
+    .md p{margin-bottom:12px;line-height:1.7}.md p:last-child{margin-bottom:0}
     .md strong{color:#FAF9F5;font-weight:600}.md em{color:#C2BFB8;font-style:italic}
-    .md ul,.md ol{padding-left:20px;margin:8px 0}.md li{margin:4px 0;line-height:1.7}
+    .md ul,.md ol{padding-left:22px;margin:10px 0}.md li{margin:5px 0;line-height:1.7}
     .md ul li::marker{color:#D97757}.md ol li::marker{color:#D97757;font-weight:500}
-    .md a{color:#E8A48D;text-decoration:underline;text-underline-offset:3px}
-    .md h3{color:#FAF9F5;font-size:15px;font-weight:600;margin:14px 0 6px}
-    .md blockquote{border-left:2px solid rgba(217,119,87,.4);padding-left:12px;margin:8px 0;color:#C2BFB8;font-style:italic}
-    .md hr{border:none;border-top:1px solid rgba(255,255,255,.06);margin:14px 0}
-    .md code:not(.cc code){background:rgba(217,119,87,.1);padding:2px 6px;border-radius:4px;color:#E8A48D;font-size:13px;font-family:'JetBrains Mono',monospace}
-    .bg-o{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.25}
+    .md a{color:#E8A48D;text-decoration:underline;text-underline-offset:2px}
+    .md h3{color:#FAF9F5;font-size:15px;font-weight:600;margin:16px 0 8px}
+    .md blockquote{border-left:2px solid rgba(217,119,87,.4);padding-left:14px;margin:10px 0;color:#C2BFB8;font-style:italic}
+    .md hr{border:none;border-top:1px solid rgba(255,255,255,.06);margin:16px 0}
+    .md code:not(.cc code){background:rgba(217,119,87,.08);padding:2px 6px;border-radius:4px;color:#E8A48D;font-size:13px;font-family:'JetBrains Mono',monospace}
+    .bg-o{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;opacity:.15}
     .mp{max-height:55vh;overflow-y:auto}.mp::-webkit-scrollbar{width:3px}.mp::-webkit-scrollbar-thumb{background:rgba(217,119,87,.2);border-radius:10px}
-    .mo{transition:all .15s;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,.02)}
-    .mo:hover{background:rgba(255,255,255,.04)}.mo.sel{background:rgba(217,119,87,.08)!important;border-color:rgba(217,119,87,.2)!important}
-    .eb{background:rgba(193,74,58,.08);border:1px solid rgba(193,74,58,.2);border-radius:12px;padding:12px 16px}
-    .wb{background:rgba(217,119,87,.06);border:1px solid rgba(217,119,87,.15);border-radius:12px;padding:12px 16px}
+    .mo{transition:all .15s;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,.02);border-radius:8px;margin:2px 0}
+    .mo:hover{background:rgba(255,255,255,.05)}.mo.sel{background:rgba(217,119,87,.08)!important;border-color:rgba(217,119,87,.2)!important}
+    .eb{background:rgba(193,74,58,.08);border:1px solid rgba(193,74,58,.2);border-radius:10px;padding:12px 16px}
+    .wb{background:rgba(217,119,87,.06);border:1px solid rgba(217,119,87,.15);border-radius:10px;padding:12px 16px}
     .fb-note{display:flex;align-items:center;gap:4px;margin-bottom:6px;font-size:10px;color:rgba(217,119,87,.5)}
     .think-box{display:flex;align-items:center;gap:10px;padding:4px 0}
-    .think-orbit{position:relative;width:28px;height:28px;flex-shrink:0}
-    .think-orbit-core{position:absolute;top:50%;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#D97757;animation:thinkPulse 1.5s ease-in-out infinite}
+    .think-orbit{position:relative;width:24px;height:24px;flex-shrink:0}
+    .think-orbit-core{position:absolute;top:50%;left:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#D97757;animation:thinkPulse 1.5s ease-in-out infinite}
     .think-orbit-ring{position:absolute;inset:0;border:1.5px solid rgba(217,119,87,.15);border-top-color:rgba(217,119,87,.6);border-radius:50%;animation:orbitSpin 1.2s linear infinite}
     .think-orbit-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#D97757;top:-2px;left:50%;margin-left:-2px;animation:orbitPulse 1.2s ease-in-out infinite}
     .think-text{font-size:13px;color:#9C9590;animation:thinkPulse 2s ease-in-out infinite}
     .think-text::after{content:'';animation:thinkDots 1.5s steps(4) infinite}
     .att-preview{transition:all .2s}
     .att-chip{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;transition:all .2s}
-    .att-chip:hover{background:rgba(255,255,255,.06)}
+    .att-chip:hover{background:rgba(255,255,255,.05)}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     .spinner{animation:spin 1s linear infinite}
-    .typing-cursor{display:inline-block;width:7px;height:1.05em;background:#D97757;margin-left:2px;vertical-align:text-bottom;border-radius:1px;animation:cursorBlink 1s steps(2) infinite;box-shadow:0 0 6px rgba(217,119,87,.5)}
+    .typing-cursor{display:inline-block;width:6px;height:1.05em;background:#D97757;margin-left:1px;vertical-align:text-bottom;border-radius:1px;animation:cursorBlink 1s steps(2) infinite;box-shadow:0 0 4px rgba(217,119,87,.4)}
     @keyframes cursorBlink{0%,50%{opacity:1}51%,100%{opacity:0}}
     .mc{transition:opacity .2s}
-    .input-container{transition:all .25s ease-out}
-    .input-container:focus-within{box-shadow:0 0 0 1px rgba(217,119,87,.3),0 4px 24px -8px rgba(217,119,87,.25);border-color:rgba(217,119,87,.3)!important;background:rgba(38,37,36,.85)!important}
+    /* Input container — Claude.ai pill style */
+    .input-container{transition:all .2s cubic-bezier(.4,0,.2,1)}
+    .input-container:focus-within{box-shadow:0 0 0 1px rgba(217,119,87,.25),0 4px 24px -8px rgba(217,119,87,.2);border-color:rgba(217,119,87,.25)!important;background:rgba(38,37,36,.9)!important}
     .ma button{transition:all .15s;color:#7C7770}
-    .ma button:hover{background:rgba(217,119,87,.1);color:#D97757;transform:scale(1.1)}
+    .ma button:hover{background:rgba(217,119,87,.08);color:#D97757;transform:scale(1.08)}
     .modal-overlay{transition:opacity .2s}
+    /* Mobile-first responsive */
     @media(max-width:1023px){.sp{width:280px}}
     @media(max-width:640px){
-      .chip{padding:10px 12px!important}.msg-pad{padding:10px!important}
-      .si-i{padding:14px 12px!important}
-      .mo{padding:14px 12px!important}
+      .chip{padding:12px!important}.msg-pad{padding:10px 14px!important}
+      .si-i{padding:13px 12px!important}
+      .mo{padding:13px 12px!important}
       .chdr button{padding:6px 10px!important;min-height:32px}
       .ma button{width:32px!important;height:32px!important}
-      .mc{margin-bottom:14px!important}
-      .sbtn{width:40px!important;height:40px!important}
-      header{height:56px!important;min-height:56px!important}
-      .input-container{padding:12px!important;border-radius:18px!important}
-      .glass-s{border-radius:16px!important}
-      .brand-mobile{font-size:2.25rem!important}
+      .mc{margin-bottom:16px!important}
+      .sbtn{width:38px!important;height:38px!important}
+      header{height:54px!important;min-height:54px!important}
+      .input-container{padding:10px 12px!important;border-radius:20px!important}
+      .glass-s{border-radius:14px!important}
+      .brand-mobile{font-size:2rem!important}
     }
     @supports(padding:max(env(safe-area-inset-top),0)){
       body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
@@ -232,6 +239,29 @@
         <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
         <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
         <div class="border-t border-white/[0.06]"></div>
+        <!-- Caveman Mode Toggle -->
+        <div class="px-3 py-2.5">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2.5">
+              <span class="iconify text-base text-coral-400" data-icon="mdi:emoticon-cool-outline"></span>
+              <span class="text-sm text-[#C2BFB8]">Caveman Mode</span>
+            </div>
+            <button id="CAVEMAN_TOGGLE" onclick="toggleCaveman()" class="relative w-11 h-6 rounded-full transition-colors flex-shrink-0">
+              <span id="CAVEMAN_KNOB" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+            </button>
+          </div>
+          <div id="CAVEMAN_LEVEL_WRAP" class="flex items-center gap-1.5 mt-2">
+            <span class="text-[10px] text-[#7C7770] flex-shrink-0">Level:</span>
+            <div class="flex gap-1 flex-1">
+              <button onclick="setCavemanLevel('lite')" data-level="lite" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Lite</button>
+              <button onclick="setCavemanLevel('full')" data-level="full" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Full</button>
+              <button onclick="setCavemanLevel('ultra')" data-level="ultra" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Ultra</button>
+              <button onclick="setCavemanLevel('wenyan')" data-level="wenyan" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">文言</button>
+            </div>
+          </div>
+          <p class="text-[10px] text-[#7C7770] mt-2 leading-relaxed">Ringkas jawaban AI ~65%, hemat token. Code/path/URL tetap utuh.</p>
+        </div>
+        <div class="border-t border-white/[0.06]"></div>
         <button onclick="resetApp()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-red-400/70 hover:bg-red-500/5 hover:text-red-400 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Reset Aplikasi</button>
       </div>
     </div>
@@ -260,11 +290,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.13.2</p>
+        <p><strong class="text-cream-50">Versi:</strong> 2.15.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 + VL (OpenRouter), GPT-4o mini (GitHub Models, vision) — Gemini dinonaktifkan (key invalid)</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto, Caveman Mode (4 level)</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -302,19 +332,16 @@
 
     <div id="CA" class="flex-1 overflow-y-auto overscroll-contain">
       <div id="WS" class="h-full flex flex-col items-center justify-center px-5 py-10">
-        <div class="afl mb-6">
-          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/25 flex items-center justify-center glow-c"><span class="iconify text-coral-400 text-3xl sm:text-4xl" data-icon="mdi:robot-happy-outline"></span></div>
-        </div>
-        <h1 class="brand-mobile font-serif text-4xl sm:text-5xl font-light tracking-tight text-center mb-3 italic" style="font-family:'Cormorant Garamond',Georgia,serif"><span class="tg-anim">Halo, senang bertemu</span></h1>
-        <p class="text-[#7C7770] text-sm text-center mb-8 max-w-md px-4">Pilih model AI di bawah, lalu tanyakan apa saja — dari koding hingga analisis foto.</p>
+        <h1 class="brand-mobile font-serif text-4xl sm:text-5xl md:text-6xl text-center mb-4" style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:400"><span class="tg-anim">Halo, senang bertemu</span></h1>
+        <p class="text-[#9C9590] text-sm sm:text-base text-center mb-10 max-w-md px-4 font-light">Pilih model AI di bawah, lalu tanyakan apa saja.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg px-2">
-          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:code-braces"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Koding</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Buatkan fungsi JavaScript untuk debounce</p></button>
-          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:pencil-outline"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Menulis</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Tulis email profesional untuk meeting</p></button>
-          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:lightbulb-outline"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Ide</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Berikan ide konten untuk media sosial</p></button>
-          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:chart-line"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Analisis</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Jelaskan machine learning dengan sederhana</p></button>
+          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3.5 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:code-braces"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Koding</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Buatkan fungsi JavaScript untuk debounce</p></button>
+          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3.5 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:pencil-outline"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Menulis</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Tulis email profesional untuk meeting</p></button>
+          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3.5 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:lightbulb-outline"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Ide</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Berikan ide konten untuk media sosial</p></button>
+          <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3.5 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:chart-line"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Analisis</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Jelaskan machine learning dengan sederhana</p></button>
         </div>
       </div>
-      <div id="MC" class="hidden max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-5"></div>
+      <div id="MC" class="hidden max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-6"></div>
     </div>
 
     <div class="flex-shrink-0 border-t border-white/[0.06] bg-[#1F1E1D]/85 backdrop-blur-md px-3 sm:px-4 md:px-6 py-3">
@@ -343,7 +370,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.13.2 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.15.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -373,10 +400,10 @@
     ];
 
     /* ===== STATE ===== */
-    var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null;
+    var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null,cavemanEnabled=true,cavemanLevel='full';
 
-    function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id)}catch(e){}}
-    function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}}catch(e){}}
+    function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id);localStorage.setItem('sk_caveman',cavemanEnabled?'1':'0');localStorage.setItem('sk_caveman_level',cavemanLevel)}catch(e){}}
+    function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl}catch(e){}}
 
     /* ===== HELPERS ===== */
     function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -419,6 +446,48 @@
     function openAM(){closePM();openM('AM')}
     function saveName(){var n=document.getElementById('NI').value.trim();if(n){document.getElementById('UN').textContent=n;save();toast('Nama berhasil diubah!','success')}closeM('NM')}
     function resetApp(){closePM();showConfirm('Reset Aplikasi','Semua data akan dihapus permanen.',function(){chats={};curId=null;localStorage.clear();document.getElementById('UN').textContent='Guest User';newChat();toast('Aplikasi direset','success')})}
+
+    /* ===== CAVEMAN MODE ===== */
+    function toggleCaveman(){
+      cavemanEnabled=!cavemanEnabled;
+      save();
+      updateCavemanUI();
+      toast(cavemanEnabled?('Caveman ON ('+cavemanLevel+')'):'Caveman OFF — normal mode',cavemanEnabled?'success':'info');
+    }
+    function setCavemanLevel(level){
+      cavemanLevel=level;
+      save();
+      updateCavemanUI();
+      if(cavemanEnabled)toast('Caveman level: '+level,'info');
+    }
+    function updateCavemanUI(){
+      var toggle=document.getElementById('CAVEMAN_TOGGLE');
+      var knob=document.getElementById('CAVEMAN_KNOB');
+      var levelWrap=document.getElementById('CAVEMAN_LEVEL_WRAP');
+      if(cavemanEnabled){
+        toggle.style.background='#D97757';
+        knob.style.transform='translateX(20px)';
+        levelWrap.style.opacity='1';
+        levelWrap.style.pointerEvents='auto';
+      }else{
+        toggle.style.background='rgba(255,255,255,0.1)';
+        knob.style.transform='translateX(0)';
+        levelWrap.style.opacity='0.4';
+        levelWrap.style.pointerEvents='none';
+      }
+      // Highlight active level button
+      var btns=document.querySelectorAll('.caveman-lvl');
+      for(var i=0;i<btns.length;i++){
+        var b=btns[i];
+        if(b.getAttribute('data-level')===cavemanLevel && cavemanEnabled){
+          b.style.background='rgba(217,119,87,0.15)';
+          b.style.color='#D97757';
+        }else{
+          b.style.background='rgba(255,255,255,0.03)';
+          b.style.color='#7C7770';
+        }
+      }
+    }
 
     /* ===== MODEL SELECTOR ===== */
     function openMP(){buildML();var ol=document.getElementById('MOL');ol.classList.remove('hidden');ol.classList.add('flex')}
@@ -657,14 +726,16 @@
     }
 
     function addMsgDOM(role,content,anim,idx,isFb,attachment){
-      var c=document.getElementById('MC'),d=document.createElement('div'),ac=anim?(role==='user'?' asr':' asl'):'';
-      d.className='mc flex gap-3'+ac;
+      var c=document.getElementById('MC'),d=document.createElement('div'),ac=anim?(role==='user'?' asr':' afu'):'';
+      d.className='mc'+ac;
       var attHTML=attachment?buildAttachmentHTML(attachment):'';
       if(role==='user'){
-        d.innerHTML='<div class="flex-1 flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-coral-400/10 border border-coral-400/20 rounded-2xl rounded-tr-md px-4 py-3 msg-pad">'+attHTML+'<p class="text-sm text-cream-50 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button></div></div></div></div><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-[#C2BFB8] text-xs" data-icon="mdi:account"></span></div>';
+        // User message: subtle bg, right-aligned, no avatar (Claude.ai style)
+        d.innerHTML='<div class="flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-white/[0.04] rounded-2xl px-4 py-3 msg-pad">'+attHTML+'<p class="text-sm text-cream-50 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button></div></div></div>';
       } else {
+        // AI message: no bubble, just text with subtle avatar (Claude.ai style)
         var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/25 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-coral-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0">'+fbNote+'<div class="md text-sm text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
       }
       c.appendChild(d);
     }
@@ -673,8 +744,8 @@
 
     /* ===== THINKING ===== */
     function showThinking(){
-      var c=document.getElementById('MC'),d=document.createElement('div');d.id='TI';d.className='mc flex gap-3 afi';
-      d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/25 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-coral-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="think-box"><div class="think-orbit"><div class="think-orbit-core"></div><div class="think-orbit-ring"></div><div class="think-orbit-dot"></div></div><span class="think-text">Sedang berpikir</span></div></div>';
+      var c=document.getElementById('MC'),d=document.createElement('div');d.id='TI';d.className='mc afi';
+      d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="think-box"><div class="think-orbit"><div class="think-orbit-core"></div><div class="think-orbit-ring"></div><div class="think-orbit-dot"></div></div><span class="think-text">Sedang berpikir</span></div></div></div>';
       c.appendChild(d);scrollBot();
     }
     function hideThinking(){var e=document.getElementById('TI');if(e)e.remove()}
@@ -682,9 +753,9 @@
     /* ===== TYPING ANIMATION — smooth word-by-word with requestAnimationFrame ===== */
     function typeAnim(content){
       return new Promise(function(resolve){
-        var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc flex gap-3 asl';
+        var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
         var idx=chats[curId]?chats[curId].messages.length-1:0;
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/25 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-coral-400 text-xs" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-sm text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
         c.appendChild(d);
         var ta=d.querySelector('.md');
 
@@ -787,7 +858,7 @@
       return fetch('/api/chat',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history})
+        body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history,caveman:cavemanEnabled,cavemanLevel:cavemanLevel})
       }).then(function(res){
         // Always read body as text first — some upstreams return text errors
         return res.text().then(function(text){
@@ -957,6 +1028,7 @@
       load();setModelLabel();updHist();updTop();
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
+      updateCavemanUI();
 
       // Handle PWA shortcut "?action=new" — start fresh chat
       var params=new URLSearchParams(window.location.search);
