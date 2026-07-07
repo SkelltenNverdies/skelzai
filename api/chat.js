@@ -327,11 +327,46 @@ const PROVIDERS = {
     //   glm-5.2, stockmark-2-100b, mistral-ministral-14b, solar-10.7b, step-3.5-flash,
     //   seed-oss-36b, llama-3.2-11b-vision, llama-3.2-90b-vision, nemotron-nano-vl-8b,
     //   nemotron-nano-12b-v2-vl
+    //
+    // Known issues:
+    // - google/gemma-2-2b-it does NOT support system role → auto-convert to user msg
+    // - Small models (2B, 3B, 4B) have 4096 max context → use conservative max_tokens
     envVar: 'NVIDIA_API_KEY',
     fallbackKey: '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',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 50000,
+    // Models that don't support system role
+    noSystemRole: ['google/gemma-2-2b-it'],
+    // Models with small context (4096 tokens total) — need conservative max_tokens
+    smallContext: ['meta/llama-3.2-3b-instruct', 'google/gemma-2-2b-it', 'nvidia/nemotron-mini-4b-instruct'],
     buildRequest(apiKey, model, messages) {
+      // Check if this model doesn't support system role
+      const noSys = (this.noSystemRole || []).indexOf(model) !== -1;
+      let finalMsgs = messages;
+      if (noSys) {
+        // Convert system message to first user message prefix
+        finalMsgs = [];
+        let sysContent = '';
+        for (const m of messages) {
+          if (m.role === 'system') {
+            sysContent = m.content + '\n\n';
+          } else if (m.role === 'user') {
+            // Prepend system content to first user message
+            if (typeof m.content === 'string') {
+              finalMsgs.push({ role: 'user', content: sysContent + m.content });
+            } else {
+              // Multimodal: prepend as text
+              finalMsgs.push({ role: 'user', content: [{ type: 'text', text: sysContent }, ...m.content] });
+            }
+            sysContent = ''; // Only prepend once
+          } else {
+            finalMsgs.push(m);
+          }
+        }
+      }
+      // Set max_tokens based on model context
+      const isSmall = (this.smallContext || []).indexOf(model) !== -1;
+      const maxTokens = isSmall ? 1500 : 4096;
       return {
         method: 'POST',
         headers: {
@@ -341,9 +376,9 @@ const PROVIDERS = {
         },
         body: JSON.stringify({
           model,
-          messages,
+          messages: finalMsgs,
           stream: false,
-          max_tokens: 4096,
+          max_tokens: maxTokens,
           temperature: 0.7,
           top_p: 0.9
         })
