@@ -290,9 +290,9 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.15.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 2.16.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> SkelzAI Turbo/Plus/Max, Llama (Groq), Nemotron 3 + VL (OpenRouter), GPT-4o mini (GitHub Models, vision) — Gemini dinonaktifkan (key invalid)</p>
+        <p><strong class="text-cream-50">Model:</strong> SkelzAI Turbo/Plus/Max, 7 model Groq (Llama 3.3/3.1, Llama 4 Scout/Maverick, Kimi K2, GPT-OSS 120B/20B), Nemotron 3 + VL (OpenRouter), GPT-4o mini (GitHub Models) — Gemini dinonaktifkan (key invalid)</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
         <p><strong class="text-cream-50">Fitur:</strong> Smooth typing, download code, PWA, analisis soal via foto, Caveman Mode (4 level)</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
@@ -370,7 +370,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.15.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.16.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -383,6 +383,11 @@
       {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'Kuat',vision:false},
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Groq — Sangat cepat & kuat',tag:'Groq',vision:false},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Groq — Super instan',tag:'Groq',vision:false},
+      {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'Groq — MoE 17B, cepat & cerdas',tag:'Groq',vision:false},
+      {id:'meta-llama/llama-4-maverick-17b-128e-instruct',provider:'groq',label:'Llama 4 Maverick 17B',desc:'Groq — MoE 128 experts, paling kuat',tag:'Groq',vision:false},
+      {id:'moonshotai/kimi-k2-instruct',provider:'groq',label:'Kimi K2',desc:'Groq — Moonshot AI, 1T context',tag:'Groq',vision:false},
+      {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'Groq — OpenAI open-source, paling kuat',tag:'Groq',vision:false},
+      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'Groq — OpenAI open-source, cepat',tag:'Groq',vision:false},
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'OpenRouter — Gratis, paling kuat (MoE)',tag:'NVIDIA-OR',vision:false},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'OpenRouter — Gratis, seimbang (MoE)',tag:'NVIDIA-OR',vision:false},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'OpenRouter — Gratis, super cepat',tag:'NVIDIA-OR',vision:false},

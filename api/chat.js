@@ -147,21 +147,25 @@ const PROVIDERS = {
   },
   groq: {
     envVar: 'GROQ_API_KEY',
+    fallbackKey: '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',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 50000,
-    // Groq free tier TPM (Tokens Per Minute) limits:
-    //   llama-3.3-70b-versatile: 12000 TPM
-    //   llama-3.1-8b-instant:    6000 TPM  ← very tight!
+    // Groq free tier TPM (Tokens Per Minute) limits — varies per model.
     // Groq counts request size as (input_tokens + max_tokens).
     // We must keep total < TPM limit to avoid 413 errors.
     // Strategy: aggressive history trimming + conservative max_tokens.
     getMaxTokens(model) {
-      return model.indexOf('70b') !== -1 ? 4000 : 2000;
+      // Larger models (70B+, MoE) → 4000 tokens
+      // Smaller models (8B, 1B, 3B) → 2000 tokens (tight TPM)
+      if (model.indexOf('70b') !== -1 || model.indexOf('maverick') !== -1 || model.indexOf('k2') !== -1) return 4000;
+      if (model.indexOf('oss-120') !== -1) return 4000;
+      return 2000;
     },
     getMaxHistory(model) {
-      // 8B is super tight on TPM — only send last 4 messages (2 exchanges)
-      // 70B has more room — send last 8 messages (4 exchanges)
-      return model.indexOf('70b') !== -1 ? 8 : 4;
+      // Small models (8B, 1B, 3B, 20B) — tight TPM, only last 4 messages
+      // Large models (70B+, MoE, 120B) — more room, last 8 messages
+      if (model.indexOf('70b') !== -1 || model.indexOf('maverick') !== -1 || model.indexOf('k2') !== -1 || model.indexOf('oss-120') !== -1) return 8;
+      return 4;
     },
     buildRequest(apiKey, model, messages) {
       const maxTokens = this.getMaxTokens(model);
