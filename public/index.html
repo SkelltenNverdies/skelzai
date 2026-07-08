@@ -467,8 +467,9 @@
         <div id="AUTH_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
       </div>
       <button id="AUTH_BTN" onclick="authSubmit()" class="w-full mt-5 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Masuk</button>
-      <div class="text-center mt-4">
+      <div class="text-center mt-3 flex items-center justify-between">
         <button id="AUTH_TOGGLE" onclick="toggleAuthMode()" class="text-xs text-coral-400 hover:underline transition-colors">Belum punya akun? Daftar</button>
+        <button id="AUTH_FORGOT" onclick="openForgot()" class="text-xs text-[#7C7770] hover:text-coral-400 transition-colors">Lupa Password?</button>
       </div>
       <div class="mt-4 pt-4 border-t border-white/[0.06] text-center">
         <button onclick="closeM('AUTH')" class="text-xs text-[#7C7770] hover:text-[#C2BFB8] transition-colors">Lanjut sebagai Guest (model terbatas)</button>
@@ -476,9 +477,91 @@
     </div>
   </div>
 
+  <!-- FORGOT PASSWORD MODAL -->
+  <div id="FORGOT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('FORGOT')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi">
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:key-reset"></span></div>
+        <h3 class="text-xl font-semibold text-cream-50 mb-1">Lupa Password</h3>
+        <p class="text-xs text-[#7C7770]">Pilih metode reset password</p>
+      </div>
+
+      <!-- Mode tabs -->
+      <div class="flex gap-1 mb-4 p-1 bg-[#262524]/60 rounded-lg">
+        <button id="FORGOT_TAB_RECOVERY" onclick="setForgotMode('recovery')" class="flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors bg-coral-400/15 text-coral-400">Pakai Kode Recovery</button>
+        <button id="FORGOT_TAB_DELETE" onclick="setForgotMode('delete')" class="flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors text-[#7C7770] hover:text-[#C2BFB8]">Hapus Akun</button>
+      </div>
+
+      <!-- Mode: Recovery code -->
+      <div id="FORGOT_RECOVERY_PANEL" class="space-y-3">
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Username</label>
+          <input id="FORGOT_USER" type="text" maxlength="20" placeholder="Masukkan username..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+        </div>
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Kode Recovery (8 karakter)</label>
+          <input id="FORGOT_CODE" type="text" maxlength="8" placeholder="ABCD1234" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors uppercase tracking-widest font-mono" oninput="this.value=this.value.toUpperCase()">
+          <p class="text-[10px] text-[#7C7770] mt-1">Kode didapat saat pendaftaran akun</p>
+        </div>
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Password Baru (min 4 karakter)</label>
+          <input id="FORGOT_NEWPASS" type="password" maxlength="50" placeholder="Masukkan password baru..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+        </div>
+        <div id="FORGOT_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
+        <button id="FORGOT_BTN" onclick="submitForgotRecovery()" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Reset Password</button>
+        <p class="text-[10px] text-[#7C7770] text-center">Semua session di device lain akan logout otomatis</p>
+      </div>
+
+      <!-- Mode: Delete account -->
+      <div id="FORGOT_DELETE_PANEL" class="hidden space-y-3">
+        <div class="bg-red-500/5 border border-red-500/15 rounded-lg p-3">
+          <p class="text-xs text-red-300 font-medium mb-1.5 flex items-center gap-1.5"><span class="iconify" data-icon="mdi:alert-circle-outline"></span>Peringatan</p>
+          <p class="text-[11px] text-red-400/80 leading-relaxed">Tindakan ini akan <strong>menghapus permanen</strong> akun beserta semua chat, riwayat, dan pengaturan. Username bisa dipakai daftar ulang. <strong>Tidak bisa dibatalkan.</strong></p>
+        </div>
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Username yang ingin dihapus</label>
+          <input id="FORGOT_DEL_USER" type="text" maxlength="20" placeholder="Masukkan username..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-red-400/30 transition-colors">
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="FORGOT_DEL_CONFIRM" type="checkbox" class="w-4 h-4 rounded accent-red-400">
+          <label for="FORGOT_DEL_CONFIRM" class="text-xs text-[#C2BFB8] select-none cursor-pointer">Saya mengerti, hapus akun ini permanen</label>
+        </div>
+        <div id="FORGOT_DEL_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
+        <button id="FORGOT_DEL_BTN" onclick="submitDeleteAccount()" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"><span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen</button>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-white/[0.06] text-center">
+        <button onclick="closeM('FORGOT')" class="text-xs text-[#7C7770] hover:text-[#C2BFB8] transition-colors">← Kembali ke Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOVERY CODE MODAL (shown once after register) -->
+  <div id="RECOVERY" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this){/* force user to save */}">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20">
+      <div class="text-center mb-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/30 flex items-center justify-center mx-auto mb-3 glow-c"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:shield-key-outline"></span></div>
+        <h3 class="text-xl font-semibold text-cream-50 mb-1">Simpan Kode Recovery</h3>
+        <p class="text-xs text-[#7C7770]">Pakai kode ini kalau lupa password. <strong class="text-coral-400">Tidak akan ditampilkan lagi!</strong></p>
+      </div>
+
+      <div class="bg-gradient-to-br from-coral-400/10 to-coral-500/5 border border-coral-400/25 rounded-xl p-5 my-4 text-center">
+        <p class="text-[10px] text-[#7C7770] uppercase tracking-wider mb-2">Kode Recovery Anda</p>
+        <p id="RECOVERY_CODE" class="text-3xl font-mono font-bold text-coral-400 tracking-[0.3em] select-all">XXXXXXXX</p>
+        <button onclick="copyRecoveryCode()" class="mt-3 text-[11px] text-coral-400 hover:underline flex items-center gap-1 mx-auto"><span class="iconify" data-icon="mdi:content-copy"></span>Copy kode</button>
+      </div>
+
+      <div class="bg-yellow-500/5 border border-yellow-500/15 rounded-lg p-3 mb-4">
+        <p class="text-[11px] text-yellow-300/80 leading-relaxed"><span class="iconify inline" data-icon="mdi:lightbulb-outline"></span> <strong>Tips:</strong> Screenshot, tulis di kertas, atau simpan di password manager. Tanpa kode ini, Anda tidak bisa reset password — satu-satunya cara adalah hapus akun dan daftar ulang.</p>
+      </div>
+
+      <button onclick="closeM('RECOVERY')" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Saya sudah simpan, lanjut</button>
+    </div>
+  </div>
+
   <!-- REDEEM MODAL -->
   <div id="REDEEM" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('REDEEM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi max-h-[85vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:ticket-outline"></span></div>
@@ -492,12 +575,82 @@
         <button onclick="closeM('REDEEM');openAuth('login')" class="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Masuk / Daftar</button>
       </div>
       <div id="REDEEM_FORM" class="hidden">
-        <p class="text-xs text-[#7C7770] mb-3 leading-relaxed">Masukkan kode redeem untuk unlock model AI premium. Kode bisa digunakan untuk unlock kategori: Premium AI, Vision AI, Powerful AI, atau Skelz Premium.</p>
-        <input id="REDEEM_INPUT" type="text" maxlength="30" placeholder="Masukkan kode redeem..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors uppercase" onkeydown="if(event.key==='Enter')doRedeem()">
+        <!-- WhatsApp CTA for buying codes -->
+        <a href="https://wa.me/6285727246118?text=Halo%20SkelzAI,%20saya%20mau%20beli%20redeem%20code" target="_blank" rel="noopener" class="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-3 mb-3 hover:bg-emerald-500/15 transition-colors group">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0"><span class="iconify text-emerald-400 text-lg" data-icon="mdi:whatsapp"></span></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-emerald-300">Beli Redeem Code Resmi</p>
+            <p class="text-[11px] text-emerald-400/70">WhatsApp: 0857-2724-6118</p>
+          </div>
+          <span class="iconify text-emerald-400/60 text-sm group-hover:translate-x-0.5 transition-transform" data-icon="mdi:chevron-right"></span>
+        </a>
+
+        <p class="text-xs text-[#7C7770] mb-3 leading-relaxed">Masukkan kode redeem (format: <code class="text-coral-400 font-mono text-[10px]">SKELZ-XXX-XXX-XXXXXX</code>) untuk unlock model AI premium.</p>
+        <input id="REDEEM_INPUT" type="text" maxlength="22" placeholder="SKELZ-XXX-XXX-XXXXXX" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors uppercase font-mono tracking-wider" onkeydown="if(event.key==='Enter')doRedeem()" oninput="this.value=this.value.toUpperCase()">
         <div id="REDEEM_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mt-2"></div>
         <div id="REDEEM_SUCCESS" class="hidden text-xs text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-lg px-3 py-2 mt-2"></div>
         <button onclick="doRedeem()" id="REDEEM_BTN" class="w-full mt-4 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Redeem</button>
         <div id="REDEEM_STATUS" class="mt-4 pt-4 border-t border-white/[0.06]"></div>
+
+        <!-- Admin panel trigger — 7 quick taps on the title icon -->
+        <div class="mt-4 pt-3 border-t border-white/[0.06] text-center">
+          <p class="text-[10px] text-[#7C7770]/60">Admin? <button onclick="openAdmin()" class="text-[#7C7770] hover:text-coral-400/70 transition-colors underline">Login panel</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL MODAL (for generating codes) -->
+  <div id="ADMIN" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)closeM('ADMIN')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:shield-account-outline"></span></div>
+          <span class="text-base font-medium text-cream-50">Admin Panel</span>
+        </div>
+        <button onclick="closeM('ADMIN')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
+      </div>
+
+      <!-- Step 1: Admin secret login -->
+      <div id="ADMIN_LOGIN">
+        <p class="text-xs text-[#7C7770] mb-3 leading-relaxed">Masukkan admin secret untuk generate & kelola redeem code. Set env var <code class="text-coral-400 font-mono">ADMIN_SECRET</code> di Vercel untuk mengubah default.</p>
+        <input id="ADMIN_SECRET_INPUT" type="password" placeholder="Admin secret..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors" onkeydown="if(event.key==='Enter')adminLogin()">
+        <div id="ADMIN_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mt-2"></div>
+        <button onclick="adminLogin()" class="w-full mt-3 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Login Admin</button>
+        <p class="text-[10px] text-[#7C7770] mt-3 text-center">Default secret: <code class="text-[#7C7770]/70 font-mono">skelz_admin_change_me</code> — ubah via env var!</p>
+      </div>
+
+      <!-- Step 2: Admin dashboard (hidden until login) -->
+      <div id="ADMIN_DASH" class="hidden">
+        <!-- Generate code -->
+        <div class="bg-[#262524]/40 border border-white/[0.06] rounded-xl p-4 mb-4">
+          <p class="text-xs font-medium text-cream-50 mb-3 flex items-center gap-1.5"><span class="iconify text-coral-400" data-icon="mdi:plus-circle-outline"></span>Generate Kode Baru</p>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Tier (jenis unlock)</label>
+          <select id="ADMIN_TIER" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-cream-50 outline-none focus:border-coral-400/30 transition-colors mb-3">
+            <option value="premium">Premium AI — Unlock Premium AI models</option>
+            <option value="vision">Vision AI — Unlock Vision AI models (analisis foto)</option>
+            <option value="powerful">Powerful AI — Unlock Powerful AI models</option>
+            <option value="skelz_premium">Skelz Premium — Unlock Skelz premium models</option>
+            <option value="all">ALL ACCESS — Unlock SEMUA model premium</option>
+          </select>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Max penggunaan</label>
+          <input id="ADMIN_MAXUSES" type="number" min="1" max="1000" value="1" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-cream-50 outline-none focus:border-coral-400/30 transition-colors mb-3">
+          <button onclick="adminGenerate()" id="ADMIN_GEN_BTN" class="w-full px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Generate Kode</button>
+          <div id="ADMIN_GEN_RESULT" class="hidden mt-3 bg-emerald-500/5 border border-emerald-500/15 rounded-lg p-3"></div>
+        </div>
+
+        <!-- List existing codes -->
+        <div class="bg-[#262524]/40 border border-white/[0.06] rounded-xl p-4 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-medium text-cream-50 flex items-center gap-1.5"><span class="iconify text-coral-400" data-icon="mdi:list-box-outline"></span>Kode Aktif</p>
+            <button onclick="adminList()" class="text-[10px] text-coral-400 hover:underline">Refresh</button>
+          </div>
+          <div id="ADMIN_CODE_LIST" class="space-y-2 max-h-64 overflow-y-auto">
+            <p class="text-[11px] text-[#7C7770] text-center py-4">Klik Refresh untuk load</p>
+          </div>
+        </div>
+
+        <button onclick="adminLogout()" class="w-full px-4 py-2.5 rounded-xl text-xs text-[#7C7770] hover:text-red-400 hover:bg-red-500/5 transition-colors">Logout Admin</button>
       </div>
     </div>
   </div>
@@ -1168,6 +1321,9 @@
         var d=await r.json();
         redeemedCodes=d.redeemed||[];
         localStorage.setItem('sk_redeemed',JSON.stringify(redeemedCodes));
+        // Cache unlocked tiers + models for isModelUnlocked()
+        window._unlockedCategories=d.unlockedCategories||[];
+        window._unlockedModels=d.unlockedModels||[];
         if(d.unlockedCategories&&d.unlockedCategories.length>0){
           if(d.unlockedCategories.indexOf('all')!==-1){
             statusEl.innerHTML='<div class="text-[11px] text-emerald-400 flex items-center gap-1.5"><span class="iconify text-sm" data-icon="mdi:check-circle"></span>SEMUA model AI terbuka!</div>';
@@ -1183,20 +1339,168 @@
     }
     function isModelUnlocked(model){
       if(!model.redeem)return true;
-      if(!isGuest()&&redeemedCodes.length===0)return false;
-      // Check if user has "all access"
-      if(redeemedCodes.indexOf('SKELZ-ALL-ACCESS-2025')!==-1)return true;
-      // Check specific unlock
-      for(var i=0;i<redeemedCodes.length;i++){
-        var code=redeemedCodes[i];
-        // Map code to unlock type
-        if(code==='SKELZ-PREMIUM-2025'&&model.redeem==='premium')return true;
-        if(code==='SKELZ-VISION-2025'&&model.redeem==='vision')return true;
-        if(code==='SKELZ-POWER-2025'&&model.redeem==='powerful')return true;
-        if(code==='SKELZ-PRO-2025'&&model.redeem==='skelz_premium')return true;
-        if(code==='SKELZ-MAX-2025'&&model.id==='qwen-max')return true;
-      }
+      // Guest can never unlock redeem models
+      if(isGuest())return false;
+      // Check "all access"
+      var cats=window._unlockedCategories||[];
+      if(cats.indexOf('all')!==-1)return true;
+      // Check tier match (model.redeem = 'premium' | 'vision' | 'powerful' | 'skelz_premium')
+      // Map tier to category name (matches TIER_INFO keys)
+      var tierToCat={premium:'Premium AI',vision:'Vision AI',powerful:'Powerful AI',skelz_premium:'Skelz Premium'};
+      var catName=tierToCat[model.redeem];
+      if(catName&&cats.indexOf(catName)!==-1)return true;
+      // Check explicit model list (for codes that unlock specific models)
+      var models=window._unlockedModels||[];
+      if(models.indexOf(model.id)!==-1)return true;
       return false;
+    }
+
+    /* ===== ADMIN PANEL (generate & manage redeem codes) ===== */
+    var adminSecret=null;
+    function openAdmin(){
+      // Hide admin dashboard, show login form
+      document.getElementById('ADMIN_LOGIN').classList.remove('hidden');
+      document.getElementById('ADMIN_DASH').classList.add('hidden');
+      document.getElementById('ADMIN_ERR').classList.add('hidden');
+      document.getElementById('ADMIN_SECRET_INPUT').value=adminSecret||'';
+      // Clear previous result
+      document.getElementById('ADMIN_GEN_RESULT').classList.add('hidden');
+      document.getElementById('ADMIN_CODE_LIST').innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Klik Refresh untuk load</p>';
+      openM('ADMIN');
+      setTimeout(function(){document.getElementById('ADMIN_SECRET_INPUT').focus()},100);
+    }
+    function adminLogin(){
+      var secret=document.getElementById('ADMIN_SECRET_INPUT').value;
+      var err=document.getElementById('ADMIN_ERR');
+      if(!secret){err.textContent='Masukkan admin secret';err.classList.remove('hidden');return}
+      // Test secret by trying to list codes
+      err.classList.add('hidden');
+      fetch('/api/redeem',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'list',adminSecret:secret})
+      }).then(function(r){return r.json()}).then(function(d){
+        if(d.error&&d.error.indexOf('Admin secret salah')!==-1){
+          err.textContent='Admin secret salah';err.classList.remove('hidden');
+        }else{
+          // Login OK
+          adminSecret=secret;
+          document.getElementById('ADMIN_LOGIN').classList.add('hidden');
+          document.getElementById('ADMIN_DASH').classList.remove('hidden');
+          adminRenderList(d.codes||[]);
+        }
+      }).catch(function(){
+        err.textContent='Koneksi gagal';err.classList.remove('hidden');
+      });
+    }
+    function adminLogout(){
+      adminSecret=null;
+      closeM('ADMIN');
+      toast('Logout admin berhasil','info');
+    }
+    async function adminGenerate(){
+      var tier=document.getElementById('ADMIN_TIER').value;
+      var maxUses=parseInt(document.getElementById('ADMIN_MAXUSES').value,10)||1;
+      var btn=document.getElementById('ADMIN_GEN_BTN');
+      var result=document.getElementById('ADMIN_GEN_RESULT');
+      btn.disabled=true;btn.textContent='Generate...';
+      try{
+        var r=await fetch('/api/redeem',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'generate',adminSecret:adminSecret,tier:tier,maxUses:maxUses})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          result.innerHTML='<div class="text-xs text-red-400">✗ '+(d.error||'Gagal generate')+'</div>';
+          result.classList.remove('hidden');
+        }else{
+          result.innerHTML='<div class="text-xs text-emerald-300 mb-2 flex items-center gap-1.5"><span class="iconify" data-icon="mdi:check-circle"></span>Kode berhasil dibuat!</div>'+
+            '<div class="bg-coral-400/10 border border-coral-400/25 rounded-lg p-2.5 text-center mb-2"><p class="text-base font-mono font-bold text-coral-400 tracking-wider select-all">'+d.code+'</p></div>'+
+            '<div class="flex items-center justify-between gap-2">'+
+              '<p class="text-[10px] text-[#7C7770]">Tier: '+d.tier+' • Max: '+d.maxUses+'x</p>'+
+              '<button onclick="adminCopyCode(\''+d.code+'\')" class="text-[10px] text-coral-400 hover:underline flex items-center gap-1"><span class="iconify" data-icon="mdi:content-copy"></span>Copy</button>'+
+            '</div>';
+          result.classList.remove('hidden');
+          toast('Kode dibuat: '+d.code,'success');
+          // Refresh list
+          adminList();
+        }
+      }catch(e){
+        result.innerHTML='<div class="text-xs text-red-400">Koneksi gagal</div>';
+        result.classList.remove('hidden');
+      }
+      btn.disabled=false;btn.textContent='Generate Kode';
+    }
+    function adminCopyCode(code){
+      try{
+        navigator.clipboard.writeText(code);
+        toast('Kode disalin','success');
+      }catch(e){
+        // Fallback
+        var ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');toast('Kode disalin','success')}catch(_){toast('Gagal copy','error')}
+        document.body.removeChild(ta);
+      }
+    }
+    async function adminList(){
+      var listEl=document.getElementById('ADMIN_CODE_LIST');
+      listEl.innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Loading...</p>';
+      try{
+        var r=await fetch('/api/redeem',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'list',adminSecret:adminSecret})
+        });
+        var d=await r.json();
+        if(!r.ok){listEl.innerHTML='<p class="text-[11px] text-red-400 text-center py-2">'+(d.error||'Gagal load')+'</p>';return}
+        adminRenderList(d.codes||[]);
+      }catch(e){
+        listEl.innerHTML='<p class="text-[11px] text-red-400 text-center py-2">Koneksi gagal</p>';
+      }
+    }
+    function adminRenderList(codes){
+      var listEl=document.getElementById('ADMIN_CODE_LIST');
+      if(!codes.length){
+        listEl.innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Belum ada kode. Generate di atas.</p>';
+        return;
+      }
+      var tierColors={premium:'coral-400',vision:'coral-400',powerful:'coral-400',skelz_premium:'coral-400',all:'emerald-400'};
+      var html='';
+      for(var i=0;i<codes.length;i++){
+        var c=codes[i];
+        var date=new Date(c.created||0).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        var usedTxt=c.usedCount+'/'+c.maxUses;
+        var isMaxed=c.usedCount>=c.maxUses;
+        var tierLabel=c.tier.toUpperCase();
+        html+='<div class="bg-[#262524]/60 border border-white/[0.06] rounded-lg p-2.5">';
+        html+='<div class="flex items-center justify-between gap-2 mb-1.5">';
+        html+='<p class="text-[11px] font-mono text-cream-50 select-all truncate flex-1">'+c.code+'</p>';
+        html+='<button onclick="adminDeleteCode(\''+c.code+'\')" class="text-[10px] text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0" title="Hapus"><span class="iconify" data-icon="mdi:trash-can-outline"></span></button>';
+        html+='</div>';
+        html+='<div class="flex items-center justify-between text-[9px] text-[#7C7770]">';
+        html+='<span class="px-1.5 py-0.5 rounded bg-coral-400/10 text-coral-400 font-medium">'+tierLabel+'</span>';
+        html+='<span class="'+(isMaxed?'text-yellow-400':'text-emerald-400')+'">Used: '+usedTxt+'</span>';
+        html+='</div>';
+        html+='<p class="text-[9px] text-[#7C7770]/60 mt-1">'+date+'</p>';
+        html+='</div>';
+      }
+      listEl.innerHTML=html;
+    }
+    function adminDeleteCode(code){
+      showConfirm('Hapus Kode','Kode "'+code+'" akan dihapus. User yang sudah redeem tetap punya unlock-nya.',async function(){
+        try{
+          var r=await fetch('/api/redeem',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'delete',adminSecret:adminSecret,code:code})
+          });
+          var d=await r.json();
+          if(!r.ok){toast(d.error||'Gagal hapus','error');return}
+          toast('Kode dihapus','success');
+          adminList();
+        }catch(e){toast('Koneksi gagal','error')}
+      });
     }
 
     /* ===== SETTINGS ===== */
@@ -1599,6 +1903,10 @@
         toast(d.message||'Berhasil!','success');
         // Load user data from server
         loadUserData(d.token);
+        // If register returned a recovery code, show it ONCE in a modal
+        if(authMode==='register'&&d.recoveryCode){
+          setTimeout(function(){showRecoveryModal(d.recoveryCode)},400);
+        }
       }catch(e){
         authShowError('Koneksi gagal. Periksa internet Anda.');
       }
@@ -1625,6 +1933,141 @@
         save();
         toast('Anda telah keluar','info');
       });
+    }
+
+    /* ===== FORGOT PASSWORD + RECOVERY CODE ===== */
+    var forgotMode='recovery';
+    function openForgot(){
+      closeM('AUTH');
+      // Reset form
+      document.getElementById('FORGOT_USER').value='';
+      document.getElementById('FORGOT_CODE').value='';
+      document.getElementById('FORGOT_NEWPASS').value='';
+      document.getElementById('FORGOT_DEL_USER').value='';
+      document.getElementById('FORGOT_DEL_CONFIRM').checked=false;
+      document.getElementById('FORGOT_ERR').classList.add('hidden');
+      document.getElementById('FORGOT_DEL_ERR').classList.add('hidden');
+      setForgotMode('recovery');
+      openM('FORGOT');
+      setTimeout(function(){document.getElementById('FORGOT_USER').focus()},100);
+    }
+    function setForgotMode(mode){
+      forgotMode=mode||'recovery';
+      var tabR=document.getElementById('FORGOT_TAB_RECOVERY');
+      var tabD=document.getElementById('FORGOT_TAB_DELETE');
+      var pR=document.getElementById('FORGOT_RECOVERY_PANEL');
+      var pD=document.getElementById('FORGOT_DELETE_PANEL');
+      if(forgotMode==='recovery'){
+        tabR.className='flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors bg-coral-400/15 text-coral-400';
+        tabD.className='flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors text-[#7C7770] hover:text-[#C2BFB8]';
+        pR.classList.remove('hidden');
+        pD.classList.add('hidden');
+      }else{
+        tabR.className='flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors text-[#7C7770] hover:text-[#C2BFB8]';
+        tabD.className='flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors bg-red-500/15 text-red-400';
+        pR.classList.add('hidden');
+        pD.classList.remove('hidden');
+      }
+    }
+    function forgotShowError(msg){
+      var err=document.getElementById('FORGOT_ERR');
+      err.textContent=msg;
+      err.classList.remove('hidden');
+    }
+    function forgotDelShowError(msg){
+      var err=document.getElementById('FORGOT_DEL_ERR');
+      err.textContent=msg;
+      err.classList.remove('hidden');
+    }
+    async function submitForgotRecovery(){
+      var user=document.getElementById('FORGOT_USER').value.trim();
+      var code=document.getElementById('FORGOT_CODE').value.trim().toUpperCase();
+      var newpass=document.getElementById('FORGOT_NEWPASS').value;
+      var err=document.getElementById('FORGOT_ERR');
+      var btn=document.getElementById('FORGOT_BTN');
+      err.classList.add('hidden');
+      if(!user||user.length<3){forgotShowError('Username minimal 3 karakter');return}
+      if(!code||code.length<8){forgotShowError('Kode recovery harus 8 karakter');return}
+      if(!newpass||newpass.length<4){forgotShowError('Password baru minimal 4 karakter');return}
+      btn.disabled=true;
+      btn.textContent='Memproses...';
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'forgot_password',username:user,recoveryCode:code,newPassword:newpass})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          forgotShowError(d.error||'Terjadi kesalahan');
+          btn.disabled=false;
+          btn.textContent='Reset Password';
+          return;
+        }
+        closeM('FORGOT');
+        toast('Password berhasil direset! Silakan login.','success');
+        // Open login modal prefilled
+        setTimeout(function(){openAuth('login');document.getElementById('AUTH_USER').value=user},300);
+      }catch(e){
+        forgotShowError('Koneksi gagal. Periksa internet Anda.');
+      }
+      btn.disabled=false;
+      btn.textContent='Reset Password';
+    }
+    async function submitDeleteAccount(){
+      var user=document.getElementById('FORGOT_DEL_USER').value.trim();
+      var confirm=document.getElementById('FORGOT_DEL_CONFIRM').checked;
+      var err=document.getElementById('FORGOT_DEL_ERR');
+      var btn=document.getElementById('FORGOT_DEL_BTN');
+      err.classList.add('hidden');
+      if(!user||user.length<3){forgotDelShowError('Username minimal 3 karakter');return}
+      if(!confirm){forgotDelShowError('Centang konfirmasi untuk menghapus akun');return}
+      // Double confirm
+      showConfirm('Hapus Akun Permanen','Akun "'+user+'" dan SEMUA data akan dihapus permanen. Yakin?',async function(){
+        btn.disabled=true;
+        btn.textContent='Menghapus...';
+        try{
+          var r=await fetch('/api/auth',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'delete_account',username:user})
+          });
+          var d=await r.json();
+          if(!r.ok){
+            forgotDelShowError(d.error||'Terjadi kesalahan');
+            btn.disabled=false;
+            btn.innerHTML='<span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen';
+            return;
+          }
+          closeM('FORGOT');
+          toast('Akun dihapus. Silakan daftar ulang dengan username yang sama.','success');
+          // Open register modal prefilled
+          setTimeout(function(){openAuth('register');document.getElementById('AUTH_USER').value=user},300);
+        }catch(e){
+          forgotDelShowError('Koneksi gagal. Periksa internet Anda.');
+        }
+        btn.disabled=false;
+        btn.innerHTML='<span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen';
+      });
+    }
+    function copyRecoveryCode(){
+      var code=document.getElementById('RECOVERY_CODE').textContent;
+      try{
+        navigator.clipboard.writeText(code);
+        toast('Kode recovery disalin!','success');
+      }catch(e){
+        // Fallback — select text
+        var range=document.createRange();
+        range.selectNode(document.getElementById('RECOVERY_CODE'));
+        var sel=window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        toast('Kode di-highlight, tekan Ctrl+C','info');
+      }
+    }
+    function showRecoveryModal(code){
+      document.getElementById('RECOVERY_CODE').textContent=code;
+      openM('RECOVERY');
     }
 
     /* ===== FILE UPLOAD — supports text, image, PDF, DOCX (max 20MB) ===== */
