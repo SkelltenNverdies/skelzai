@@ -252,7 +252,7 @@ const PROVIDERS = {
   },
   github: {
     envVar: 'GITHUB_TOKEN',
-    fallbackKey: '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',
+    fallbackKey: null, // GitHub auto-revokes PATs embedded in code. Set GITHUB_TOKEN env var in Vercel.
     url: 'https://models.inference.ai.azure.com/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -464,13 +464,20 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown provider: ${provider}` });
   }
 
-  // Prefer env var; fall back to embedded default key (only OpenRouter has one).
-  // This lets the app work out-of-the-box without requiring env var setup.
+  // Prefer env var; fall back to embedded default key (only some providers have one).
+  // NOTE: GitHub PATs cannot be embedded — GitHub's secret scanning auto-revokes
+  // any `ghp_*` token that appears in deployed code. Use the GITHUB_TOKEN env var.
   let apiKey = process.env[config.envVar];
   if (!apiKey && config.fallbackKey) {
     apiKey = config.fallbackKey;
   }
   if (!apiKey) {
+    // Provider-specific helpful error message
+    if (provider === 'github') {
+      return res.status(500).json({
+        error: 'GitHub token belum diset. Buat PAT baru di https://github.com/settings/tokens (classic, scope: repo) lalu tambahkan sebagai Environment Variable GITHUB_TOKEN di Vercel project settings. GitHub auto-revoke PAT yang di-embed di kode.'
+      });
+    }
     return res.status(500).json({ error: `${config.envVar} not set on server` });
   }
 
