@@ -295,11 +295,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.19.3</p>
+        <p><strong class="text-cream-50">Versi:</strong> 2.20.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 28 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Voice input, text-to-speech, search chat, pin favorite, export markdown, keyboard shortcuts, smooth typing, download code, PWA, analisis foto, Caveman Mode</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Real-time streaming (AI mengetik langsung), voice input, text-to-speech, search chat, pin favorite, export markdown, keyboard shortcuts, download code, PWA, analisis foto, Caveman Mode</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -403,7 +403,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.19.3 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.20.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1019,18 +1019,23 @@
       var userMsg='';for(var i=idx-1;i>=0;i--)if(msgs[i].role==='user'){userMsg=msgs[i].content;break}
       if(!userMsg)return;
       msgs.splice(idx);var c=document.getElementById('MC');while(c.children.length>idx)c.removeChild(c.lastChild);
-      generating=true;updBtn();
-      callAPI(userMsg).then(function(resp){if(resp){msgs.push({role:'assistant',content:resp,fb:false});return typeAnim(resp)}}).catch(function(e){addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();toast('Pesan di-regenerasi','success')});
+      generating=true;updBtn();abortTyping=false;
+      showThinking();scrollBot();
+      callAPIStreamWithFallback(userMsg,null).then(function(result){
+        if(result&&result.content){msgs.push({role:'assistant',content:result.content,fb:!!result.fallback})}
+      }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();streamAbortController=null;toast('Pesan di-regenerasi','success')});
     }
 
     /* ===== API ===== */
-    function callAPI(userMsg, imageAttachment){
-      if(!curId)return Promise.reject(new Error('Tidak ada chat aktif'));
+    /* ===== API STREAMING — real-time token streaming like ChatGPT/Claude ===== */
+    var streamAbortController=null;
+
+    function buildHistory(userMsg, imageAttachment){
+      if(!curId)return null;
       var history=[];
       for(var i=0;i<chats[curId].messages.length;i++){
         var m=chats[curId].messages[i];
         if(m.role==='user'||m.role==='assistant'){
-          // For vision models, preserve image attachments in history
           if(selModel.vision && m.attachment && m.attachment.preview){
             history.push({role:m.role,content:[
               {type:'text',text:m.content||''},
@@ -1041,7 +1046,6 @@
           }
         }
       }
-      // Current message: if vision model + image attachment, send as multimodal
       if(selModel.vision && imageAttachment && imageAttachment.preview){
         history.push({role:'user',content:[
           {type:'text',text:userMsg||'Tolong analisis foto ini dan kerjakan soalnya.'},
@@ -1050,59 +1054,154 @@
       }else{
         history.push({role:'user',content:userMsg});
       }
-      // Limit to last 10 messages to keep request size small (avoid Groq TPM 413)
       if(history.length>10)history=history.slice(-10);
-      return fetch('/api/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({provider:selModel.provider,model:selModel.id,messages:history,caveman:cavemanEnabled,cavemanLevel:cavemanLevel})
-      }).then(function(res){
-        // Always read body as text first — some upstreams return text errors
-        return res.text().then(function(text){
-          var data=null;
-          if(text && text.trim()){
-            try{data=JSON.parse(text)}catch(e){
-              var snippet=text.trim().substring(0,150);
-              throw new Error('Server mengembalikan respons non-JSON: '+snippet);
+      return history;
+    }
+
+    // Stream API: creates AI message DOM, streams tokens in real-time, returns promise with full content
+    function callAPIStream(userMsg, imageAttachment, isFallback){
+      return new Promise(function(resolve, reject){
+        var history=buildHistory(userMsg, imageAttachment);
+        if(!history){reject(new Error('Tidak ada chat aktif'));return}
+
+        var provider=selModel.provider, model=selModel.id;
+        streamAbortController=new AbortController();
+
+        fetch('/api/chat',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({provider:provider,model:model,messages:history,caveman:cavemanEnabled,cavemanLevel:cavemanLevel}),
+          signal:streamAbortController.signal
+        }).then(function(response){
+          // Check content type — if JSON (error), parse as JSON
+          var ct=response.headers.get('content-type')||'';
+          if(ct.indexOf('text/event-stream')===-1){
+            // Non-streaming response (error) — parse as JSON
+            return response.text().then(function(text){
+              var data=null;
+              try{data=JSON.parse(text)}catch(e){
+                throw new Error('Server error: '+text.substring(0,150));
+              }
+              var errMsg=(data&&(data.error||data.message))||('HTTP '+response.status);
+              var err=new Error(errMsg);
+              if(data&&data.fallback)err.fallback=true;
+              throw err;
+            });
+          }
+
+          // Streaming response — read SSE chunks
+          hideThinking();
+          // Create AI message DOM element for streaming
+          var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
+          var idx=chats[curId]?chats[curId].messages.length:0;
+          d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+          c.appendChild(d);
+          var ta=d.querySelector('.md');
+          var fullContent='';
+          var reasoningContent='';
+
+          var reader=response.body.getReader();
+          var decoder=new TextDecoder();
+          var buffer='';
+
+          function processChunk(text){
+            buffer+=text;
+            var lines=buffer.split('\n');
+            buffer=lines.pop();
+            for(var i=0;i<lines.length;i++){
+              var line=lines[i].trim();
+              if(!line.startsWith('data:'))continue;
+              var data=line.slice(5).trim();
+              if(!data)continue;
+              try{
+                var parsed=JSON.parse(data);
+                if(parsed.done){
+                  return true;
+                }
+                if(parsed.error){
+                  fullContent='[Error: '+parsed.error+']';
+                  ta.innerHTML=parseMD(fullContent);
+                  scrollBot();
+                  return true;
+                }
+                if(parsed.reasoning){
+                  reasoningContent+=parsed.reasoning;
+                  // Show reasoning as subtle muted text while thinking
+                  if(!fullContent){
+                    ta.innerHTML='<div style="color:#7C7770;font-style:italic;font-size:13px;margin-bottom:8px">'+esc(reasoningContent.substring(reasoningContent.length-200))+'<span class="typing-cursor"></span></div>';
+                    scrollBot();
+                  }
+                }
+                if(parsed.content){
+                  // First content chunk — clear reasoning display
+                  if(!fullContent && reasoningContent){
+                    ta.innerHTML='';
+                  }
+                  fullContent+=parsed.content;
+                  // Render markdown incrementally (throttled)
+                  ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                  scrollBot();
+                }
+              }catch(e){/* skip */}
             }
+            return false;
           }
-          if(!res.ok){
-            var errMsg=(data && (data.error || (data.message))) || ('HTTP '+res.status);
-            var err=new Error(errMsg);
-            if(data && data.fallback)err.fallback=true;
-            throw err;
+
+          function pump(){
+            reader.read().then(function(result){
+              if(result.done){
+                // Process remaining buffer
+                if(buffer.trim())processChunk('\n'+buffer+'\n');
+                ta.innerHTML=parseMD(fullContent||reasoningContent);
+                scrollBot();
+                // If no content but reasoning exists, use reasoning
+                if(!fullContent && reasoningContent)fullContent=reasoningContent;
+                resolve({content:fullContent, fallback:isFallback});
+                return;
+              }
+              var done=processChunk(decoder.decode(result.value,{stream:true}));
+              if(done){
+                ta.innerHTML=parseMD(fullContent||reasoningContent);
+                scrollBot();
+                if(!fullContent && reasoningContent)fullContent=reasoningContent;
+                resolve({content:fullContent, fallback:isFallback});
+                return;
+              }
+              pump();
+            }).catch(function(err){
+              if(err.name==='AbortError'){
+                ta.innerHTML=parseMD(fullContent)+' <span style="color:#7C7770;font-style:italic">[dihentikan]</span>';
+                resolve({content:fullContent, fallback:isFallback});
+              }else{
+                reject(err);
+              }
+            });
           }
-          return data;
+          pump();
+        }).catch(function(err){
+          if(err.name==='AbortError'){
+            resolve({content:'', fallback:isFallback, aborted:true});
+          }else{
+            reject(err);
+          }
         });
-      }).then(function(data){
-        if(data && data.choices && data.choices[0] && data.choices[0].message){
-          return data.choices[0].message.content;
-        }
-        if(data && data.error){
-          throw new Error(data.error);
-        }
-        throw new Error('Respons tidak valid dari API (format tidak dikenali)');
       });
     }
 
-    /* ===== SMART FALLBACK — Groq error (413/429/504/timeout) -> SkelzAI Turbo ===== */
-    function callAPIWithFallback(userMsg, imageAttachment){
-      return callAPI(userMsg, imageAttachment).catch(function(err){
+    /* ===== SMART FALLBACK — Groq/Gemini error -> SkelzAI Turbo ===== */
+    function callAPIStreamWithFallback(userMsg, imageAttachment){
+      return callAPIStream(userMsg, imageAttachment, false).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
-        var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('quota')!==-1||msg.indexOf('non-json')!==-1;
-        // Groq & Gemini models get auto-fallback to SkelzAI Turbo on rate-limit errors.
-        // Note: imageAttachment is dropped on fallback (SkelzAI Turbo doesn't support vision).
+        var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('quota')!==-1;
         if(isBad && (selModel.provider==='groq' || selModel.provider==='gemini')){
           var savedModel=selModel;
-          selModel=MODELS[0]; // SkelzAI Turbo
+          selModel=MODELS[0];
           setModelLabel();
           var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':msg.indexOf('quota')!==-1?'Quota exceeded':'Rate limit';
           toast(reason+' — auto-switch ke SkelzAI Turbo','warning');
-          return callAPI(userMsg).then(function(resp){
-            if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:true});}
-            return typeAnim(resp).then(function(){
-              selModel=savedModel;setModelLabel();
-            });
+          return callAPIStream(userMsg, null, true).then(function(result){
+            selModel=savedModel;setModelLabel();
+            return result;
           }).catch(function(fbErr){
             selModel=savedModel;setModelLabel();
             throw fbErr;
@@ -1138,9 +1237,13 @@
       else if(document.getElementById('CI').value.trim()||(curAttachment&&!curAttachment.processing)){btn.classList.add('on');btn.disabled=false;si.classList.remove('hidden');st.classList.add('hidden')}
       else{btn.classList.remove('on');btn.disabled=true;si.classList.remove('hidden');st.classList.add('hidden')}
     }
-    function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(generating){abortTyping=true}else if(!document.getElementById('SBtn').disabled){sendMsg()}}}
-    function onSendClick(){if(generating){abortTyping=true}else{sendMsg()}}
+    function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(generating){abortStream()}else if(!document.getElementById('SBtn').disabled){sendMsg()}}}
+    function onSendClick(){if(generating){abortStream()}else{sendMsg()}}
     function useSug(chip){document.getElementById('CI').value=chip.querySelector('p').textContent;onInput();sendMsg()}
+    function abortStream(){
+      if(streamAbortController){try{streamAbortController.abort()}catch(e){}streamAbortController=null}
+      abortTyping=true;
+    }
 
     /* ===== SEND ===== */
     function sendMsg(){
@@ -1195,14 +1298,14 @@
       if(!curId){createChat(title);document.getElementById('WS').classList.add('hidden');document.getElementById('MC').classList.remove('hidden')}
       chats[curId].messages.push({role:'user',content:msgContent,fb:false,attachment:attachment});
       addMsgDOM('user',text||(attachment?'':msgContent),true,chats[curId].messages.length-1,false,attachment);scrollBot();
-      inp.value='';inp.style.height='auto';curAttachment=null;showAttachment();updBtn();updTop();generating=true;updBtn();
+      inp.value='';inp.style.height='auto';curAttachment=null;showAttachment();updBtn();updTop();generating=true;updBtn();abortTyping=false;
       showThinking();scrollBot();
       var imageArg=isImageAttachment?attachment:null;
-      callAPIWithFallback(msgContent, imageArg).then(function(resp){
-        if(abortTyping){hideThinking();abortTyping=false;return}
-        hideThinking();
-        if(resp){chats[curId].messages.push({role:'assistant',content:resp,fb:false});return typeAnim(resp)}
-      }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save()});
+      callAPIStreamWithFallback(msgContent, imageArg).then(function(result){
+        if(result&&result.content){
+          chats[curId].messages.push({role:'assistant',content:result.content,fb:!!result.fallback});
+        }
+      }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();streamAbortController=null});
     }
 
     /* ===== GLOBAL ===== */

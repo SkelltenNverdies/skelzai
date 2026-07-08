@@ -141,7 +141,7 @@ const PROVIDERS = {
           'Authorization': `Bearer ${apiKey}`,
           'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg'
         },
-        body: JSON.stringify({ model, messages, stream: false, max_tokens: 8192, temperature: 0.7 })
+        body: JSON.stringify({ model, messages, stream: true, max_tokens: 8192, temperature: 0.7 })
       };
     }
   },
@@ -174,7 +174,7 @@ const PROVIDERS = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ model, messages, stream: false, max_tokens: maxTokens, temperature: 0.7, top_p: 0.9 })
+        body: JSON.stringify({ model, messages, stream: true, max_tokens: maxTokens, temperature: 0.7, top_p: 0.9 })
       };
     }
   },
@@ -201,7 +201,7 @@ const PROVIDERS = {
         body: JSON.stringify({
           model,
           messages,
-          stream: false,
+          stream: true,
           max_tokens: 8192,
           temperature: 0.7
         })
@@ -231,7 +231,7 @@ const PROVIDERS = {
         body: JSON.stringify({
           model,
           messages,
-          stream: false,
+          stream: true,
           max_tokens: 8192,
           temperature: 0.7,
           top_p: 0.9
@@ -311,7 +311,7 @@ const PROVIDERS = {
         body: JSON.stringify({
           model,
           messages,
-          stream: false,
+          stream: true,
           max_tokens: 4096,
           temperature: 0.7,
           top_p: 0.9
@@ -374,7 +374,7 @@ const PROVIDERS = {
         body: JSON.stringify({
           model,
           messages: finalMsgs,
-          stream: false,
+          stream: true,
           max_tokens: maxTokens,
           temperature: 0.7,
           top_p: 0.9
@@ -586,68 +586,85 @@ export default async function handler(req, res) {
     });
   }
 
+  // ===== STREAMING RESPONSE =====
+  // Stream SSE chunks from upstream to client in real-time.
+  // This prevents timeout — AI starts "typing" as soon as first token arrives.
+  if (response && response.ok && response.body) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    function sendSSE(obj) {
+      try { res.write(`data: ${JSON.stringify(obj)}\n\n`); } catch(e) {}
+    }
+
+    function processLine(line) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data:')) return false;
+      const data = trimmed.slice(5).trim();
+      if (data === '[DONE]') return true; // signal done
+      try {
+        const parsed = JSON.parse(data);
+        const delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta || {};
+        if (delta.content) sendSSE({ content: delta.content });
+        if (delta.reasoning) sendSSE({ reasoning: delta.reasoning });
+      } catch(e) { /* skip unparseable */ }
+      return false;
+    }
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete line
+        for (const line of lines) {
+          if (processLine(line)) { sendSSE({ done: true }); res.end(); return; }
+        }
+      }
+      // Process remaining buffer
+      if (buffer.trim()) {
+        processLine(buffer);
+      }
+      sendSSE({ done: true });
+      res.end();
+    } catch (err) {
+      sendSSE({ error: err.message });
+      sendSSE({ done: true });
+      try { res.end(); } catch(e) {}
+    }
+    return;
+  }
+
+  // ===== NON-OK RESPONSE: return JSON error =====
   if (!response) {
     const errMsg = (lastError && lastError.message) || 'Network error';
     const isTimeout = errMsg.toLowerCase().indexOf('abort') !== -1 || errMsg.toLowerCase().indexOf('timeout') !== -1;
     return res.status(504).json({
       error: isTimeout
-        ? `${provider} timeout — server membutuhkan waktu terlalu lama (maks 25 detik per percobaan). Coba lagi atau gunakan model lain.`
+        ? `${provider} timeout. Coba lagi atau gunakan model lain.`
         : `${provider} unreachable: ${errMsg}`
     });
   }
 
-  // Read body defensively
-  const parsed = await safeReadJson(response);
+  // Read error body
+  const errText = await response.text().catch(() => '');
+  let errDetail = errText.substring(0, 300);
+  try {
+    const errJson = JSON.parse(errText);
+    if (errJson.error) errDetail = typeof errJson.error === 'string' ? errJson.error : (errJson.error.message || JSON.stringify(errJson.error)).substring(0, 300);
+    else if (errJson.detail) errDetail = errJson.detail;
+    else if (errJson.message) errDetail = errJson.message;
+  } catch(e) {}
 
-  if (!response.ok) {
-    const status = response.status;
-    const errDetail = parsed.ok
-      ? (parsed.data && (parsed.data.error && (parsed.data.error.message || parsed.data.error))) || JSON.stringify(parsed.data).substring(0, 200)
-      : parsed.error;
-    return res.status(status).json({
-      error: `${provider} error ${status}: ${errDetail}`
-    });
-  }
-
-  if (!parsed.ok) {
-    return res.status(502).json({
-      error: `${provider} returned non-JSON response (HTTP ${response.status}): ${parsed.error}`
-    });
-  }
-
-  // Validate response shape (OpenAI-compatible).
-  // Some reasoning models (NVIDIA Nemotron 3) return content=null on truncated
-  // responses but populate a `reasoning` field. Fall back to that so the user
-  // still gets something useful instead of an empty message.
-  const data = parsed.data;
-  if (data && data.choices && Array.isArray(data.choices) && data.choices[0]) {
-    const choice = data.choices[0];
-    const msg = choice.message || {};
-    let content = msg.content;
-    if (!content && msg.reasoning) {
-      content = msg.reasoning;
-    }
-    if (content) {
-      // Mutate the response so the frontend's `choices[0].message.content` lookup works.
-      choice.message = { ...msg, content };
-      return res.status(200).json(data);
-    }
-    // content still empty but finish_reason indicates truncation
-    if (choice.finish_reason === 'length') {
-      return res.status(502).json({
-        error: `${provider}: response truncated (max_tokens reached during reasoning). Coba pertanyaan yang lebih singkat.`
-      });
-    }
-  }
-
-  if (data && data.error) {
-    const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
-    return res.status(502).json({
-      error: `${provider} upstream error: ${errMsg.substring(0, 300)}`
-    });
-  }
-
-  return res.status(502).json({
-    error: `${provider} returned unexpected response shape: ${JSON.stringify(data).substring(0, 200)}`
+  return res.status(response.status || 502).json({
+    error: `${provider} error ${response.status}: ${errDetail}`
   });
 }
