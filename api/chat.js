@@ -392,37 +392,10 @@ const PROVIDERS = {
         })
       };
     }
-  },
-  aihubmix_image: {
-    // AIHubMix Image Generation — gpt-image-2-free
-    // Uses /v1/images/generations endpoint (non-streaming)
-    envVar: 'AIHUBMIX_API_KEY',
-    fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
-    url: 'https://aihubmix.com/v1/images/generations',
-    timeout: 55000,
-    isImageGen: true,
-    buildRequest(apiKey, model, messages) {
-      let prompt = 'generate an image';
-      for (const m of messages) {
-        if (m.role === 'user' && typeof m.content === 'string') {
-          prompt = m.content;
-        }
-      }
-      return {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-image-2-free',
-          prompt: prompt,
-          n: 1,
-          size: '1024x1024'
-        })
-      };
-    }
   }
+  // aihubmix_image provider REMOVED — gpt-image-2-free frequently returns
+  // "no_available_channel" (server-side issue). Commented out from model list too.
+  // To re-enable: uncomment model in index.html + restore this provider block.
 };
 
 function setCors(res) {
@@ -664,55 +637,163 @@ export default async function handler(req, res) {
   }
 
   // ===== IMAGE GENERATION (non-streaming) =====
-  if (response && response.ok && config.isImageGen) {
-    const data = await response.json().catch(() => ({}));
-    // Format 1: /v1/images/generations response → { data: [{ b64_json | url }] }
-    if (data.data && Array.isArray(data.data) && data.data[0]) {
-      const img = data.data[0];
-      let imgSrc = null;
-      if (img.b64_json) {
-        imgSrc = 'data:image/png;base64,' + img.b64_json;
-      } else if (img.url) {
-        imgSrc = img.url;
-      }
-      if (imgSrc) {
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache, no-transform');
-        res.setHeader('Connection', 'keep-alive');
-        res.setHeader('X-Accel-Buffering', 'no');
-        res.flushHeaders();
-        res.write(`data: ${JSON.stringify({ content: '![Generated Image](' + imgSrc + ')', imageGen: true })}\n\n`);
-        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-        res.end();
-        return;
-      }
-    }
-    // Format 2: chat completion with multi_mod_content
-    const choice = data.choices && data.choices[0];
-    const msg = choice && choice.message || {};
-    let imageData = null;
-    if (msg.multi_mod_content) {
-      const mmc = msg.multi_mod_content;
-      const items = Array.isArray(mmc) ? mmc : (typeof mmc === 'string' ? JSON.parse(mmc) : []);
-      for (const item of items) {
-        if (item.inline_data && item.inline_data.data) {
-          imageData = 'data:image/jpeg;base64,' + item.inline_data.data;
-          break;
-        }
-      }
-    }
-    if (imageData) {
+  // Handles 4 response formats:
+  //   1. OpenAI /v1/images/generations → { data: [{ b64_json | url }] }
+  //   2. Replicate sync → { output: "url" | ["url"] | [{ data: "base64" }] }
+  //   3. Replicate async → { id, status: "starting"|"processing" } → poll GET /predictions/{id}
+  //   4. Chat completion with multi_mod_content (legacy)
+  // Plus: auto-fallback to old endpoint if new endpoint returns 500/4xx with no_available_channel.
+  if (config.isImageGen) {
+    // Helper: send image to client as SSE
+    function sendImageSSE(imgSrc) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.setHeader('Connection', 'keep-alive');
       res.setHeader('X-Accel-Buffering', 'no');
       res.flushHeaders();
-      res.write(`data: ${JSON.stringify({ content: '![Generated Image](' + imageData + ')', imageGen: true })}\n\n`);
+      res.write(`data: ${JSON.stringify({ content: '![Generated Image](' + imgSrc + ')', imageGen: true })}\n\n`);
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
       res.end();
+    }
+
+    // Helper: extract image source from any response format
+    function extractImage(data) {
+      if (!data) return null;
+      // Format 1: OpenAI /v1/images/generations → { data: [{ b64_json | url }] }
+      if (data.data && Array.isArray(data.data) && data.data[0]) {
+        const img = data.data[0];
+        if (img.b64_json) return 'data:image/png;base64,' + img.b64_json;
+        if (img.url) return img.url;
+      }
+      // Format 2: Replicate → { output: ... }
+      if (data.output !== undefined) {
+        const out = data.output;
+        // output can be: string URL, array of URLs, or array of { data: base64 } objects
+        if (typeof out === 'string') {
+          // Could be URL or base64
+          if (out.startsWith('http')) return out;
+          if (out.startsWith('data:')) return out;
+          // Assume base64 raw
+          return 'data:image/png;base64,' + out;
+        }
+        if (Array.isArray(out) && out.length > 0) {
+          const first = out[0];
+          if (typeof first === 'string') {
+            if (first.startsWith('http')) return first;
+            if (first.startsWith('data:')) return first;
+            return 'data:image/png;base64,' + first;
+          }
+          if (first && typeof first === 'object') {
+            // Replicate v2 format: { data: "base64..." } or { url: "..." }
+            if (first.url) return first.url;
+            if (first.data) return 'data:image/png;base64,' + first.data;
+            if (first.b64_json) return 'data:image/png;base64,' + first.b64_json;
+          }
+        }
+      }
+      // Format 3: chat completion with multi_mod_content
+      const choice = data.choices && data.choices[0];
+      const msg = choice && choice.message || {};
+      if (msg.multi_mod_content) {
+        const mmc = msg.multi_mod_content;
+        const items = Array.isArray(mmc) ? mmc : (typeof mmc === 'string' ? (()=>{try{return JSON.parse(mmc)}catch(e){return[]}})() : []);
+        for (const item of items) {
+          if (item.inline_data && item.inline_data.data) {
+            return 'data:image/jpeg;base64,' + item.inline_data.data;
+          }
+        }
+      }
+      return null;
+    }
+
+    // Helper: poll Replicate async prediction until done
+    async function pollPrediction(apiKey, predictionUrl, maxAttempts) {
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(r => setTimeout(r, 2000)); // 2s between polls
+        try {
+          const r = await fetch(predictionUrl, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+          });
+          if (!r.ok) continue;
+          const d = await r.json();
+          if (d.status === 'succeeded') return d;
+          if (d.status === 'failed' || d.status === 'error') {
+            throw new Error(d.error || 'Image generation failed');
+          }
+          // status: "starting" | "processing" → keep polling
+        } catch (e) {
+          if (e.message && e.message.indexOf('failed') !== -1) throw e;
+          // Network error — keep polling
+        }
+      }
+      throw new Error('Image generation timeout (60s)');
+    }
+
+    // Check current response status
+    let imageData = null;
+    let responseJson = null;
+
+    if (response && response.ok) {
+      responseJson = await response.json().catch(() => ({}));
+      // Check if this is an async Replicate prediction (status: starting/processing)
+      if (responseJson.id && (responseJson.status === 'starting' || responseJson.status === 'processing')) {
+        // Build poll URL — Replicate uses the same URL + /{id}
+        const pollUrl = config.primaryUrl + '/' + responseJson.id;
+        try {
+          responseJson = await pollPrediction(apiKey, pollUrl, 30); // 30 × 2s = 60s max
+        } catch (e) {
+          return res.status(502).json({ error: 'Image generation timeout: ' + e.message });
+        }
+      }
+      imageData = extractImage(responseJson);
+    }
+
+    // If primary endpoint failed OR no image extracted, try fallback endpoint
+    if (!imageData && config.fallbackUrl && config.buildFallbackRequest) {
+      const fbOpts = config.buildFallbackRequest(apiKey, model, finalMessages);
+      try {
+        const fbRes = await fetchWithTimeout(config.fallbackUrl, fbOpts, config.timeout);
+        if (fbRes.ok) {
+          const fbData = await fbRes.json().catch(() => ({}));
+          // Same polling logic for async response
+          if (fbData.id && (fbData.status === 'starting' || fbData.status === 'processing')) {
+            const pollUrl = config.fallbackUrl + '/' + fbData.id;
+            try {
+              const polled = await pollPrediction(apiKey, pollUrl, 30);
+              imageData = extractImage(polled);
+            } catch (e) {
+              // Polling failed — surface original error
+            }
+          } else {
+            imageData = extractImage(fbData);
+          }
+        }
+      } catch (e) {
+        // Fallback also failed — fall through to error
+      }
+    }
+
+    if (imageData) {
+      sendImageSSE(imageData);
       return;
     }
-    return res.status(502).json({ error: 'Image generation failed — no image data in response' });
+
+    // Build helpful error message
+    let errDetail = 'No image data in response';
+    if (response && !response.ok) {
+      const errText = await response.text().catch(() => '');
+      try {
+        const e = JSON.parse(errText);
+        errDetail = e.error?.message || e.message || e.error || errText.substring(0, 200);
+      } catch(_) {
+        errDetail = errText.substring(0, 200) || errDetail;
+      }
+    } else if (responseJson) {
+      errDetail = JSON.stringify(responseJson).substring(0, 200);
+    }
+    return res.status(502).json({
+      error: 'Image generation failed — ' + errDetail + '. Model free mungkin sedang tidak tersedia (no_available_channel), coba lagi nanti.'
+    });
   }
 
   // ===== STREAMING RESPONSE =====

@@ -216,6 +216,74 @@
     #MC{overflow-wrap:break-word;word-wrap:break-word}
     /* Optimize image loading */
     img{content-visibility:auto}
+    /* ===== MODEL SELECTOR BUTTON — dark, prominent, discoverable ===== */
+    .ms-btn{
+      background:linear-gradient(180deg,#2A2928 0%,#231F1D 100%);
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:0 1px 0 rgba(0,0,0,0.4) inset,0 2px 6px rgba(0,0,0,0.35);
+      color:#E5E3DA;
+    }
+    .ms-btn:hover{
+      background:linear-gradient(180deg,#322F2D 0%,#2A2624 100%);
+      border-color:rgba(255,107,74,0.35);
+      box-shadow:0 1px 0 rgba(0,0,0,0.4) inset,0 0 0 1px rgba(255,107,74,0.15),0 4px 12px rgba(0,0,0,0.4);
+    }
+    .ms-btn:active{
+      transform:scale(0.97);
+    }
+    /* Subtle pulse to draw attention when model not yet picked */
+    @keyframes ms-pulse{
+      0%,100%{box-shadow:0 1px 0 rgba(0,0,0,0.4) inset,0 2px 6px rgba(0,0,0,0.35)}
+      50%{box-shadow:0 1px 0 rgba(0,0,0,0.4) inset,0 2px 6px rgba(0,0,0,0.35),0 0 0 2px rgba(255,107,74,0.2)}
+    }
+    .ms-btn.ms-pulse{animation:ms-pulse 2.4s ease-in-out infinite}
+    @media(prefers-reduced-motion:reduce){.ms-btn.ms-pulse{animation:none}}
+    /* TAP TO CHANGE badge — hide after first interaction */
+    .ms-btn:hover .ms-tag,.ms-btn.ms-used .ms-tag{display:none!important}
+    /* ===== MODEL SELECTOR PANEL (modal) — tidier layout ===== */
+    #MOP .mp .mo{
+      cursor:pointer;
+      border:1px solid transparent;
+      transition:background 0.15s,border-color 0.15s,transform 0.1s;
+    }
+    #MOP .mp .mo:hover{
+      background:rgba(255,255,255,0.04);
+      border-color:rgba(255,255,255,0.06);
+    }
+    #MOP .mp .mo.sel{
+      background:linear-gradient(90deg,rgba(255,107,74,0.12) 0%,rgba(255,107,74,0.03) 100%);
+      border-color:rgba(255,107,74,0.3);
+    }
+    #MOP .mp .mo.sel:hover{
+      background:linear-gradient(90deg,rgba(255,107,74,0.18) 0%,rgba(255,107,74,0.06) 100%);
+    }
+    #MOP .mp .mo:active{transform:scale(0.985)}
+    /* Category headers — clearer separation */
+    #MOP .mp .cat-h{
+      font-size:10px;
+      letter-spacing:0.15em;
+      text-transform:uppercase;
+      color:#7C7770;
+      font-weight:600;
+      padding:14px 12px 6px;
+      border-top:1px solid rgba(255,255,255,0.04);
+      margin-top:4px;
+    }
+    #MOP .mp .cat-h:first-child{border-top:none;margin-top:0}
+    /* Tag chip — smaller, less visual noise */
+    #MOP .mp .mo .mo-tag{
+      font-size:10px;
+      padding:2px 7px;
+      border-radius:6px;
+      background:rgba(38,37,36,0.85);
+      color:#9A9690;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    #MOP .mp .mo.sel .mo-tag{
+      background:rgba(255,107,74,0.1);
+      color:#FF8466;
+      border-color:rgba(255,107,74,0.2);
+    }
     /* Reduce motion for accessibility */
     @media(prefers-reduced-motion:reduce){
       *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
@@ -233,14 +301,17 @@
 
   <!-- MODEL SELECTOR -->
   <div id="MOL" class="fixed inset-0 z-[80] bg-black/65 backdrop-blur-sm hidden items-center justify-center" onclick="closeMP()">
-    <div id="MOP" class="amsi w-[90vw] max-w-[400px] max-h-[70vh] bg-[#1F1E1D]/98 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl shadow-black/50 overflow-hidden flex flex-col" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between p-4 border-b border-white/[0.06] flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="iconify text-coral-400 text-base" data-icon="mdi:chip"></span>
-          <span class="text-sm font-medium text-cream-50">Pilih Model AI</span>
+    <div id="MOP" class="amsi w-[92vw] max-w-[440px] max-h-[75vh] bg-[#1F1E1D]/98 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/60 overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.06] flex-shrink-0 bg-[#262524]/40">
+        <div class="flex items-center gap-2.5">
+          <span class="iconify text-coral-400 text-lg" data-icon="mdi:chip"></span>
+          <div>
+            <p class="text-sm font-semibold text-cream-50 leading-tight">Pilih Model AI</p>
+            <p class="text-[10px] text-[#7C7770] leading-tight mt-0.5">Tap model untuk mengganti</p>
+          </div>
         </div>
-        <button onclick="closeMP()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors">
-          <span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span>
+        <button onclick="closeMP()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.05] transition-colors flex-shrink-0">
+          <span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:close"></span>
         </button>
       </div>
       <div class="mp p-2 overflow-y-auto flex-1" id="ML"></div>
@@ -543,10 +614,11 @@
     <div class="flex-shrink-0 border-t border-white/[0.06] bg-[#1F1E1D]/85 backdrop-blur-md px-3 sm:px-4 md:px-6 py-3">
       <div class="max-w-3xl mx-auto">
         <div class="mb-2">
-          <button type="button" id="MSB" onclick="openMP()" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-[#7C7770] hover:text-[#E5E3DA] hover:bg-white/[0.05] transition-colors active:scale-[0.97]">
-            <span class="iconify text-sm text-coral-400/70" data-icon="mdi:chip"></span>
-            <span id="MSL" class="text-[#C2BFB8]">SkelzAI Turbo</span>
-            <span class="iconify text-xs" data-icon="mdi:chevron-up"></span>
+          <button type="button" id="MSB" onclick="openMP()" class="ms-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm transition-all active:scale-[0.97] group" title="Ganti model AI">
+            <span class="iconify text-base text-coral-400 flex-shrink-0" data-icon="mdi:chip"></span>
+            <span class="text-cream-50 font-medium truncate max-w-[180px] sm:max-w-[260px]" id="MSL">SkelzAI Turbo</span>
+            <span class="iconify text-xs text-[#7C7770] group-hover:text-coral-400 transition-colors flex-shrink-0" data-icon="mdi:chevron-up"></span>
+            <span class="ms-tag text-[10px] px-1.5 py-0.5 rounded-md bg-coral-400/15 text-coral-400 border border-coral-400/20 hidden sm:inline-flex flex-shrink-0">TAP TO CHANGE</span>
           </button>
         </div>
         <div id="AP" class="hidden mb-2 att-preview glass-i rounded-xl p-2.5 flex items-center gap-3">
@@ -627,8 +699,9 @@
       ,{id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
       ,{id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
       ,{id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      /* Image Generation (AIHubMix free) */
+      /* Image Generation (AIHubMix free) — DISABLED: model often returns no_available_channel
       ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
+      */
       /* Gemini models commented out — API key invalid.
          To re-enable: get valid key from https://aistudio.google.com/app/apikey (format: AIza...)
       ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
@@ -766,11 +839,24 @@
     }
 
     /* ===== MODEL SELECTOR ===== */
-    function openMP(){buildML();var ol=document.getElementById('MOL');ol.classList.remove('hidden');ol.classList.add('flex')}
+    function openMP(){
+      buildML();
+      var ol=document.getElementById('MOL');ol.classList.remove('hidden');ol.classList.add('flex');
+      // Mark button as "used" — stops the pulse animation + hides TAP TO CHANGE badge
+      var btn=document.getElementById('MSB');
+      if(btn){btn.classList.add('ms-used');btn.classList.remove('ms-pulse')}
+    }
     function closeMP(){var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex')}
 
     function buildML(){
       var el=document.getElementById('ML'),html='',lastCat='';
+      // Count models per category for a compact header summary
+      var catCounts={};
+      for(var i=0;i<MODELS.length;i++){
+        var m0=MODELS[i];
+        if(isGuest()&&(m0.cat!=='SkelzAI'||m0.free===false))continue;
+        catCounts[m0.cat]=(catCounts[m0.cat]||0)+1;
+      }
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
         // Guest restriction: only free SkelzAI models for non-logged-in users
@@ -778,24 +864,28 @@
         // Logged in but model needs redeem code and not yet redeemed
         var redeemLocked=!isGuest()&&m.redeem&&!isModelUnlocked(m);
         if(m.cat!==lastCat){
-          html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium">'+m.cat+'</span></div>';lastCat=m.cat;
+          // Category header with count badge — tidier separation
+          html+='<div class="cat-h flex items-center justify-between"><span>'+m.cat+'</span><span class="text-[9px] text-[#7C7770]/70 font-normal normal-case tracking-normal">'+(catCounts[m.cat]||0)+' model</span></div>';lastCat=m.cat;
         }
         var isSel=m.id===selModel.id;
         var lockIcon='';
         var lockedClass='';
         if(isGuest()&&m.free===false){
-          lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:lock-outline" title="Login untuk gunakan"></span>';
+          lockIcon='<span class="iconify text-[11px] text-[#7C7770] flex-shrink-0" data-icon="mdi:lock-outline" title="Login untuk gunakan"></span>';
           lockedClass=' opacity-50';
         }else if(redeemLocked){
-          lockIcon='<span class="iconify text-[10px] text-coral-400/50 flex-shrink-0" data-icon="mdi:ticket-outline" title="Butuh redeem code"></span>';
+          lockIcon='<span class="iconify text-[11px] text-coral-400/50 flex-shrink-0" data-icon="mdi:ticket-outline" title="Butuh redeem code"></span>';
           lockedClass=' opacity-40 grayscale';
         }
-        html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+lockedClass+'" data-mid="'+m.id+'">';
-        html+='<div class="flex-1 min-w-0"><p class="text-sm text-cream-50 truncate flex items-center gap-1.5">'+esc(m.label)+lockIcon;
-        if(m.vision)html+='<span class="iconify text-[11px] text-coral-400 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>';
-        html+='</p><p class="text-[11px] text-[#7C7770]">'+esc(m.desc)+'</p></div>';
-        html+='<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#262524]/85 text-[#7C7770] border border-white/[0.06] flex-shrink-0">'+m.tag+'</span>';
-        if(isSel)html+='<span class="iconify text-coral-400 text-base flex-shrink-0" data-icon="mdi:check"></span>';
+        // Row: icon column + content + tag column
+        var visionIcon=m.vision?'<span class="iconify text-[11px] text-coral-400/80 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>':'';
+        html+='<div class="mo flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg'+(isSel?' sel':'')+lockedClass+'" data-mid="'+m.id+'">';
+        html+='<div class="flex-1 min-w-0">';
+        html+='<div class="flex items-center gap-1.5 mb-0.5"><p class="text-sm text-cream-50 truncate font-medium">'+esc(m.label)+'</p>'+lockIcon+visionIcon+'</div>';
+        html+='<p class="text-[11px] text-[#7C7770] truncate">'+esc(m.desc)+'</p>';
+        html+='</div>';
+        html+='<span class="mo-tag flex-shrink-0">'+m.tag+'</span>';
+        if(isSel)html+='<span class="iconify text-coral-400 text-base flex-shrink-0 ml-0.5" data-icon="mdi:check-circle"></span>';
         html+='</div>';
       }
       // If guest, show locked models notice
@@ -2230,6 +2320,22 @@
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
+      // Model selector: pulse for 6s on first load to draw attention (only if user
+      // hasn't opened the selector before in this browser)
+      try{
+        if(!localStorage.getItem('sk_ms_seen')){
+          var msBtn=document.getElementById('MSB');
+          if(msBtn){msBtn.classList.add('ms-pulse');
+            // Stop pulse after 6s or on first click — whichever comes first
+            setTimeout(function(){msBtn.classList.remove('ms-pulse')},6000);
+            msBtn.addEventListener('click',function once(){
+              msBtn.classList.remove('ms-pulse');
+              localStorage.setItem('sk_ms_seen','1');
+              msBtn.removeEventListener('click',once);
+            },{once:true});
+          }
+        }
+      }catch(e){}
       // Load saved theme color
       var savedTheme=localStorage.getItem('sk_theme_color');
       if(savedTheme){try{var t=JSON.parse(savedTheme);updateThemeColors(t.c1,t.c2,t.c3)}catch(e){}}
