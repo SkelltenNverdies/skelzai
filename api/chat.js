@@ -252,7 +252,7 @@ const PROVIDERS = {
   },
   github: {
     envVar: 'GITHUB_TOKEN',
-    fallbackKey: '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',
+    fallbackKey: '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',
     url: 'https://models.inference.ai.azure.com/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
