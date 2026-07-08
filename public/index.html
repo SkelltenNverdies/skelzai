@@ -22,7 +22,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230A0A0A'/%3E%3Crect x='8' y='8' width='84' height='84' rx='16' fill='none' stroke='%23D4AF37' stroke-width='2' opacity='0.3'/%3E%3Ccircle cx='50' cy='36' r='10' fill='none' stroke='%23D4AF37' stroke-width='2.5'/%3E%3Ccircle cx='50' cy='36' r='3.5' fill='%23D4AF37'/%3E%3Cpath d='M32 64 Q41 54 50 54 Q59 54 68 64' stroke='%23D4AF37' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3Cline x1='50' y1='46' x2='50' y2='54' stroke='%23D4AF37' stroke-width='2'/%3E%3Ccircle cx='26' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='74' cy='36' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3Ccircle cx='50' cy='78' r='2' fill='%23D4AF37' opacity='0.4'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23D97757'/%3E%3Cstop offset='1' stop-color='%23A84A2E'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='%231F1E1D'/%3E%3Crect width='100' height='100' rx='24' fill='url(%23g)' opacity='0.15'/%3E%3Cpath d='M30 38 Q30 28 42 28 L58 28 Q70 28 70 38 L70 52 Q70 62 58 62 L52 62 L52 70 L48 70 L48 62 L42 62 Q30 62 30 52 Z' fill='none' stroke='url(%23g)' stroke-width='3' stroke-linejoin='round'/%3E%3Ccircle cx='42' cy='44' r='3' fill='url(%23g)'/%3E%3Ccircle cx='58' cy='44' r='3' fill='url(%23g)'/%3E%3Cpath d='M42 52 Q50 56 58 52' fill='none' stroke='url(%23g)' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 
   <!-- Open Graph / social sharing -->
   <meta property="og:type" content="website">
@@ -37,7 +37,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <!-- PDF.js for PDF text extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <!-- Mammoth.js for DOCX text extraction -->
@@ -49,12 +49,12 @@
     }
   </script>
   <script>
-    tailwind.config={theme:{extend:{colors:{coral:{300:'#E8A48D',400:'#D97757',500:'#C75F3F',600:'#A84A2E'},cream:{50:'#FAF9F5',100:'#F5F4ED',200:'#E5E3DA'},ink:{950:'#161514',900:'#1F1E1D',850:'#262524',800:'#2D2B27',750:'#3A3835',700:'#3D3A35',600:'#7C7770',500:'#9C9590',400:'#C2BFB8'}},fontFamily:{serif:['"Cormorant Garamond"','Georgia','serif'],sans:['"Inter"','system-ui','sans-serif']}}}}
+    tailwind.config={theme:{extend:{colors:{coral:{300:'#E8A48D',400:'#D97757',500:'#C75F3F',600:'#A84A2E'},cream:{50:'#FAF9F5',100:'#F5F4ED',200:'#E5E3DA'},ink:{950:'#161514',900:'#1F1E1D',850:'#262524',800:'#2D2B27',750:'#3A3835',700:'#3D3A35',600:'#7C7770',500:'#9C9590',400:'#C2BFB8'}},fontFamily:{serif:['"Plus Jakarta Sans"','Georgia','serif'],sans:['"Plus Jakarta Sans"','system-ui','sans-serif'],mono:['"JetBrains Mono"','monospace']}}}}
   </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{height:100%}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
+    body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.015em}
     ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.3)}
     /* Glass surfaces — subtle, warm dark */
     .glass-s{background:rgba(38,37,36,.92);backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.07);box-shadow:0 12px 40px -12px rgba(0,0,0,.5)}
@@ -235,7 +235,7 @@
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account"></span></div>
         <div class="flex-1 min-w-0">
           <p class="text-sm text-[#E5E3DA] truncate" id="UN">Guest User</p>
-          <p class="text-[10px] text-[#7C7770]">Free Plan</p>
+          <p class="text-[10px] text-[#7C7770]" id="UN_PLAN">Free Plan (SkelzAI only)</p>
         </div>
         <span class="iconify text-[#7C7770] text-base" id="PC" data-icon="mdi:chevron-up"></span>
       </div>
@@ -243,6 +243,10 @@
         <button onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
         <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
         <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
+        <div class="border-t border-white/[0.06]"></div>
+        <!-- Auth section -->
+        <button id="AUTH_LOGIN_LI" onclick="openAuth('login')" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:login"></span>Masuk / Daftar</button>
+        <button id="AUTH_LOGOUT_LI" onclick="authLogout()" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Keluar</button>
         <div class="border-t border-white/[0.06]"></div>
         <!-- Caveman Mode Toggle -->
         <div class="px-3 py-2.5">
@@ -295,11 +299,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 2.20.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 3.0.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 28 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Real-time streaming (AI mengetik langsung), voice input, text-to-speech, search chat, pin favorite, export markdown, keyboard shortcuts, download code, PWA, analisis foto, Caveman Mode</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Login/Register, guest mode (SkelzAI only), real-time streaming, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -344,6 +348,35 @@
     </div>
   </div>
 
+  <!-- AUTH MODAL (Login/Register) -->
+  <div id="AUTH" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('AUTH')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3 glow-c"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:robot-happy-outline"></span></div>
+        <h3 id="AUTH_TITLE" class="text-xl font-semibold text-cream-50 mb-1">Masuk ke SkelzAI</h3>
+        <p id="AUTH_SUB" class="text-xs text-[#7C7770]">Akses semua 28 model AI gratis</p>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Username</label>
+          <input id="AUTH_USER" type="text" maxlength="20" placeholder="Masukkan username..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors" onkeydown="if(event.key==='Enter')document.getElementById('AUTH_PASS').focus()">
+        </div>
+        <div>
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Password</label>
+          <input id="AUTH_PASS" type="password" maxlength="50" placeholder="Masukkan password..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors" onkeydown="if(event.key==='Enter')authSubmit()">
+        </div>
+        <div id="AUTH_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
+      </div>
+      <button id="AUTH_BTN" onclick="authSubmit()" class="w-full mt-5 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Masuk</button>
+      <div class="text-center mt-4">
+        <button id="AUTH_TOGGLE" onclick="toggleAuthMode()" class="text-xs text-coral-400 hover:underline transition-colors">Belum punya akun? Daftar</button>
+      </div>
+      <div class="mt-4 pt-4 border-t border-white/[0.06] text-center">
+        <button onclick="closeM('AUTH')" class="text-xs text-[#7C7770] hover:text-[#C2BFB8] transition-colors">Lanjut sebagai Guest (model terbatas)</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="lg:ml-[280px] h-full flex flex-col relative z-10">
     <header class="flex items-center justify-between px-4 md:px-6 h-14 min-h-[56px] border-b border-white/[0.06] bg-[#1F1E1D]/85 backdrop-blur-md flex-shrink-0">
@@ -364,7 +397,7 @@
 
     <div id="CA" class="flex-1 overflow-y-auto overscroll-contain">
       <div id="WS" class="h-full flex flex-col items-center justify-center px-5 py-10">
-        <h1 class="brand-mobile font-serif text-4xl sm:text-5xl md:text-6xl text-center mb-4" style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:400"><span class="tg-anim">Halo, senang bertemu</span></h1>
+        <h1 class="brand-mobile font-serif text-4xl sm:text-5xl md:text-6xl text-center mb-4" style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:300;letter-spacing:-0.03em"><span class="tg-anim">Halo, senang bertemu</span></h1>
         <p class="text-[#9C9590] text-sm sm:text-base text-center mb-10 max-w-md px-4 font-light">Pilih model AI di bawah, lalu tanyakan apa saja.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg px-2">
           <button onclick="useSug(this)" class="chip glass-i rounded-xl px-4 py-3.5 text-left"><div class="flex items-center gap-2 mb-1"><span class="iconify text-coral-400/70 text-sm" data-icon="mdi:code-braces"></span><span class="text-[11px] text-coral-400/70 font-medium uppercase tracking-wider">Koding</span></div><p class="text-sm text-[#C2BFB8] leading-snug">Buatkan fungsi JavaScript untuk debounce</p></button>
@@ -403,7 +436,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v2.20.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.0.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -553,6 +586,8 @@
       var el=document.getElementById('ML'),html='',lastCat='';
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
+        // Guest restriction: only SkelzAI models for non-logged-in users
+        if(isGuest()&&m.cat!=='SkelzAI')continue;
         if(m.cat!==lastCat){
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium">'+m.cat+'</span></div>';lastCat=m.cat;
         }
@@ -565,13 +600,26 @@
         if(isSel)html+='<span class="iconify text-coral-400 text-base flex-shrink-0" data-icon="mdi:check"></span>';
         html+='</div>';
       }
+      // If guest, show locked models notice
+      if(isGuest()){
+        html+='<div class="px-3 py-4 mt-2 text-center"><div class="text-[11px] text-[#7C7770] mb-2">25 model lain terkunci</div><button onclick="closeMP();openAuth(\'login\')" class="text-xs text-coral-400 hover:underline">Masuk untuk akses semua model →</button></div>';
+      }
       el.innerHTML=html;
       var opts=el.querySelectorAll('.mo');
       for(var j=0;j<opts.length;j++){(function(opt){opt.addEventListener('click',function(e){e.stopPropagation();pickModel(opt.getAttribute('data-mid'))})})(opts[j])}
     }
 
     function pickModel(id){
-      for(var i=0;i<MODELS.length;i++){if(MODELS[i].id===id){selModel=MODELS[i];break}}
+      for(var i=0;i<MODELS.length;i++){if(MODELS[i].id===id){
+        // Guest restriction
+        if(isGuest()&&MODELS[i].cat!=='SkelzAI'){
+          toast('Masuk untuk akses model ini','warning');
+          closeMP();
+          openAuth('login');
+          return;
+        }
+        selModel=MODELS[i];break;
+      }}
       setModelLabel();closeMP();save();toast('Model: '+selModel.label,'info');
     }
 
@@ -748,6 +796,123 @@
 
     /* ===== SHORTCUTS HELP ===== */
     function openShortcuts(){openM('SC')}
+
+    /* ===== AUTH SYSTEM (client-side, localStorage-based) ===== */
+    var currentUser=null,authMode='login';
+    function authInit(){
+      try{
+        var s=localStorage.getItem('sk_session');
+        if(s){
+          var session=JSON.parse(s);
+          if(session.username&&session.expires>Date.now()){
+            currentUser=session;
+            updateAuthUI();
+            return;
+          }
+          localStorage.removeItem('sk_session');
+        }
+      }catch(e){}
+      currentUser=null;
+      updateAuthUI();
+    }
+    function isGuest(){return !currentUser}
+    function isPremium(){return !!currentUser}
+    function updateAuthUI(){
+      var un=document.getElementById('UN');
+      var pp=document.getElementById('UN_PLAN');
+      var loginLi=document.getElementById('AUTH_LOGIN_LI');
+      var logoutLi=document.getElementById('AUTH_LOGOUT_LI');
+      if(currentUser){
+        un.textContent=currentUser.username;
+        if(pp)pp.textContent='Premium — All Models';
+        if(loginLi)loginLi.classList.add('hidden');
+        if(logoutLi)logoutLi.classList.remove('hidden');
+      }else{
+        un.textContent='Guest User';
+        if(pp)pp.textContent='Free Plan (SkelzAI only)';
+        if(loginLi)loginLi.classList.remove('hidden');
+        if(logoutLi)logoutLi.classList.add('hidden');
+      }
+    }
+    function openAuth(mode){
+      authMode=mode||'login';
+      var title=document.getElementById('AUTH_TITLE');
+      var sub=document.getElementById('AUTH_SUB');
+      var btn=document.getElementById('AUTH_BTN');
+      var toggle=document.getElementById('AUTH_TOGGLE');
+      var err=document.getElementById('AUTH_ERR');
+      err.classList.add('hidden');
+      if(authMode==='login'){
+        title.textContent='Masuk ke SkelzAI';
+        sub.textContent='Akses semua 28 model AI gratis';
+        btn.textContent='Masuk';
+        toggle.textContent='Belum punya akun? Daftar';
+      }else{
+        title.textContent='Daftar Akun Baru';
+        sub.textContent='Gratis, akses semua model AI';
+        btn.textContent='Daftar';
+        toggle.textContent='Sudah punya akun? Masuk';
+      }
+      document.getElementById('AUTH_USER').value='';
+      document.getElementById('AUTH_PASS').value='';
+      closePM();
+      openM('AUTH');
+      setTimeout(function(){document.getElementById('AUTH_USER').focus()},100);
+    }
+    function toggleAuthMode(){openAuth(authMode==='login'?'register':'login')}
+    function authShowError(msg){
+      var err=document.getElementById('AUTH_ERR');
+      err.textContent=msg;
+      err.classList.remove('hidden');
+    }
+    async function authSubmit(){
+      var user=document.getElementById('AUTH_USER').value.trim();
+      var pass=document.getElementById('AUTH_PASS').value;
+      var err=document.getElementById('AUTH_ERR');
+      err.classList.add('hidden');
+      if(!user||user.length<3){authShowError('Username minimal 3 karakter');return}
+      if(!pass||pass.length<4){authShowError('Password minimal 4 karakter');return}
+      // Hash password with SubtleCrypto (SHA-256)
+      var hashBuf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sk_salt_'+pass));
+      var hash=Array.from(new Uint8Array(hashBuf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+      if(authMode==='register'){
+        // Check if username already exists
+        var users={};
+        try{users=JSON.parse(localStorage.getItem('sk_users')||'{}')}catch(e){}
+        if(users[user]){authShowError('Username sudah digunakan');return}
+        users[user]={password:hash,created:Date.now()};
+        localStorage.setItem('sk_users',JSON.stringify(users));
+        // Auto-login after register
+        currentUser={username:user,expires:Date.now()+7*24*60*60*1000};
+        localStorage.setItem('sk_session',JSON.stringify(currentUser));
+        updateAuthUI();
+        closeM('AUTH');
+        toast('Akun berhasil dibuat! Selamat datang, '+user,'success');
+      }else{
+        // Login
+        var users={};
+        try{users=JSON.parse(localStorage.getItem('sk_users')||'{}')}catch(e){}
+        if(!users[user]){authShowError('Username tidak ditemukan');return}
+        if(users[user].password!==hash){authShowError('Password salah');return}
+        currentUser={username:user,expires:Date.now()+7*24*60*60*1000};
+        localStorage.setItem('sk_session',JSON.stringify(currentUser));
+        updateAuthUI();
+        closeM('AUTH');
+        toast('Selamat datang kembali, '+user+'!','success');
+      }
+    }
+    function authLogout(){
+      showConfirm('Keluar','Anda yakin ingin keluar dari akun?',function(){
+        currentUser=null;
+        localStorage.removeItem('sk_session');
+        updateAuthUI();
+        // Reset to first model (SkelzAI Turbo)
+        selModel=MODELS[0];
+        setModelLabel();
+        save();
+        toast('Anda telah keluar','info');
+      });
+    }
 
     /* ===== FILE UPLOAD — supports text, image, PDF, DOCX (max 20MB) ===== */
     var TEXT_EXTS=['txt','md','js','ts','py','html','css','json','csv','xml','yml','yaml','java','c','cpp','go','rs','rb','php','sh','sql','log','vue','jsx','tsx','scss','less','ini','conf','env','gitignore','dockerfile'];
@@ -1022,7 +1187,7 @@
       generating=true;updBtn();abortTyping=false;
       showThinking();scrollBot();
       callAPIStreamWithFallback(userMsg,null).then(function(result){
-        if(result&&result.content){msgs.push({role:'assistant',content:result.content,fb:!!result.fallback})}
+        if(curId&&chats[curId]&&result&&result.content){chats[curId].messages.push({role:'assistant',content:result.content,fb:!!result.fallback})}
       }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();streamAbortController=null;toast('Pesan di-regenerasi','success')});
     }
 
@@ -1061,6 +1226,9 @@
     // Stream API: creates AI message DOM, streams tokens in real-time, returns promise with full content
     function callAPIStream(userMsg, imageAttachment, isFallback){
       return new Promise(function(resolve, reject){
+        // Safety: capture curId at start to avoid race conditions
+        var streamChatId=curId;
+        if(!streamChatId||!chats[streamChatId]){reject(new Error('Tidak ada chat aktif'));return}
         var history=buildHistory(userMsg, imageAttachment);
         if(!history){reject(new Error('Tidak ada chat aktif'));return}
 
@@ -1091,14 +1259,17 @@
 
           // Streaming response — read SSE chunks
           hideThinking();
+          // Safety: check chat still exists
+          if(!streamChatId||!chats[streamChatId]){reject(new Error('Chat tidak ditemukan'));return}
           // Create AI message DOM element for streaming
           var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
-          var idx=chats[curId]?chats[curId].messages.length:0;
+          var idx=chats[streamChatId]?chats[streamChatId].messages.length:0;
           d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
           c.appendChild(d);
           var ta=d.querySelector('.md');
           var fullContent='';
           var reasoningContent='';
+          var lastRenderTime=0;
 
           var reader=response.body.getReader();
           var decoder=new TextDecoder();
@@ -1138,9 +1309,13 @@
                     ta.innerHTML='';
                   }
                   fullContent+=parsed.content;
-                  // Render markdown incrementally (throttled)
-                  ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
-                  scrollBot();
+                  // Throttle markdown rendering to every 80ms for smooth performance
+                  var now=Date.now();
+                  if(now-lastRenderTime>=80||parsed.done){
+                    ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                    lastRenderTime=now;
+                    scrollBot();
+                  }
                 }
               }catch(e){/* skip */}
             }
@@ -1302,7 +1477,7 @@
       showThinking();scrollBot();
       var imageArg=isImageAttachment?attachment:null;
       callAPIStreamWithFallback(msgContent, imageArg).then(function(result){
-        if(result&&result.content){
+        if(curId&&chats[curId]&&result&&result.content){
           chats[curId].messages.push({role:'assistant',content:result.content,fb:!!result.fallback});
         }
       }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();streamAbortController=null});
@@ -1331,7 +1506,10 @@
 
     /* ===== INIT ===== */
     document.addEventListener('DOMContentLoaded',function(){
+      authInit();
       load();setModelLabel();updHist();updTop();
+      // If guest, force SkelzAI model
+      if(isGuest()&&selModel.cat!=='SkelzAI'){selModel=MODELS[0];setModelLabel()}
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
