@@ -302,7 +302,7 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 3.1.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 3.1.1</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 28 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -491,7 +491,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.1.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.1.1 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1514,17 +1514,20 @@
             var lines=buffer.split('\n');
             buffer=lines.pop();
             for(var i=0;i<lines.length;i++){
-              var line=lines[i].trim();
+              var line=lines[i].replace(/\r$/,'').trim();
               if(!line.startsWith('data:'))continue;
               var data=line.slice(5).trim();
               if(!data)continue;
               try{
                 var parsed=JSON.parse(data);
                 if(parsed.done){
+                  // Final render — no typing cursor
+                  ta.innerHTML=parseMD(fullContent||reasoningContent);
+                  scrollBot();
                   return true;
                 }
                 if(parsed.error){
-                  fullContent='[Error: '+parsed.error+']';
+                  fullContent+=(fullContent?'\n\n':'')+'[Error: '+parsed.error+']';
                   ta.innerHTML=parseMD(fullContent);
                   scrollBot();
                   return true;
@@ -1533,8 +1536,15 @@
                   reasoningContent+=parsed.reasoning;
                   // Show reasoning as subtle muted text while thinking
                   if(!fullContent){
-                    ta.innerHTML='<div style="color:#7C7770;font-style:italic;font-size:13px;margin-bottom:8px">'+esc(reasoningContent.substring(reasoningContent.length-200))+'<span class="typing-cursor"></span></div>';
-                    scrollBot();
+                    var now=Date.now();
+                    if(now-lastRenderTime>=100){
+                      if(renderRAF)cancelAnimationFrame(renderRAF);
+                      renderRAF=requestAnimationFrame(function(){
+                        ta.innerHTML='<div style="color:#7C7770;font-style:italic;font-size:13px;margin-bottom:8px">'+esc(reasoningContent.substring(Math.max(0,reasoningContent.length-300)))+'<span class="typing-cursor"></span></div>';
+                        lastRenderTime=Date.now();
+                        scrollBot();
+                      });
+                    }
                   }
                 }
                 if(parsed.content){
@@ -1545,7 +1555,7 @@
                   fullContent+=parsed.content;
                   // Use requestAnimationFrame for smooth 60fps rendering
                   var now=Date.now();
-                  if(now-lastRenderTime>=60||parsed.done){
+                  if(now-lastRenderTime>=60){
                     if(renderRAF)cancelAnimationFrame(renderRAF);
                     renderRAF=requestAnimationFrame(function(){
                       ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
@@ -1563,7 +1573,18 @@
             reader.read().then(function(result){
               if(result.done){
                 // Process remaining buffer
-                if(buffer.trim())processChunk('\n'+buffer+'\n');
+                if(buffer.trim()){
+                  var done=processChunk('\n'+buffer+'\n');
+                  buffer='';
+                  if(done){
+                    // Already rendered in processChunk
+                    if(!fullContent && reasoningContent)fullContent=reasoningContent;
+                    resolve({content:fullContent, fallback:isFallback});
+                    return;
+                  }
+                }
+                // Final render — ensure full content is displayed without cursor
+                if(renderRAF)cancelAnimationFrame(renderRAF);
                 ta.innerHTML=parseMD(fullContent||reasoningContent);
                 scrollBot();
                 // If no content but reasoning exists, use reasoning
@@ -1573,6 +1594,8 @@
               }
               var done=processChunk(decoder.decode(result.value,{stream:true}));
               if(done){
+                // Final render without cursor
+                if(renderRAF)cancelAnimationFrame(renderRAF);
                 ta.innerHTML=parseMD(fullContent||reasoningContent);
                 scrollBot();
                 if(!fullContent && reasoningContent)fullContent=reasoningContent;
@@ -1581,6 +1604,7 @@
               }
               pump();
             }).catch(function(err){
+              if(renderRAF)cancelAnimationFrame(renderRAF);
               if(err.name==='AbortError'){
                 ta.innerHTML=parseMD(fullContent)+' <span style="color:#7C7770;font-style:italic">[dihentikan]</span>';
                 resolve({content:fullContent, fallback:isFallback});

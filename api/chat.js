@@ -156,9 +156,9 @@ const PROVIDERS = {
     // Strategy: aggressive history trimming + conservative max_tokens.
     getMaxTokens(model) {
       // Larger models (70B+, MoE, GPT-OSS) → 4000 tokens
-      // Smaller models (8B, 20B) → 2000 tokens (tight TPM)
+      // Smaller models (8B, 20B) → 3000 tokens (enough for code)
       if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 4000;
-      return 2000;
+      return 3000;
     },
     getMaxHistory(model) {
       // Small models (8B, 20B) — tight TPM, only last 4 messages
@@ -363,7 +363,7 @@ const PROVIDERS = {
       }
       // Set max_tokens based on model context
       const isSmall = (this.smallContext || []).indexOf(model) !== -1;
-      const maxTokens = isSmall ? 1500 : 4096;
+      const maxTokens = isSmall ? 2500 : 4096;
       return {
         method: 'POST',
         headers: {
@@ -599,43 +599,90 @@ export default async function handler(req, res) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let streamDone = false;
 
     function sendSSE(obj) {
-      try { res.write(`data: ${JSON.stringify(obj)}\n\n`); } catch(e) {}
+      try {
+        res.write(`data: ${JSON.stringify(obj)}\n\n`);
+        // Force flush — critical for Vercel to send chunks immediately
+        if (typeof res.flush === 'function') res.flush();
+      } catch(e) {}
     }
 
     function processLine(line) {
-      const trimmed = line.trim();
+      // Handle \r\n line endings — strip \r
+      const trimmed = line.replace(/\r$/, '').trim();
+      if (!trimmed) return false;
+      
+      // Some providers send "data:" some send "data: " — handle both
       if (!trimmed.startsWith('data:')) return false;
       const data = trimmed.slice(5).trim();
+      if (!data) return false;
+      
       if (data === '[DONE]') return true; // signal done
+      
       try {
         const parsed = JSON.parse(data);
-        const delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta || {};
+        const choice = parsed.choices && parsed.choices[0];
+        if (!choice) return false;
+        
+        const delta = choice.delta || {};
+        
+        // Forward content chunks
         if (delta.content) sendSSE({ content: delta.content });
+        
+        // Forward reasoning chunks (for reasoning models)
         if (delta.reasoning) sendSSE({ reasoning: delta.reasoning });
+        
+        // Check for finish_reason — signal completion
+        if (choice.finish_reason) {
+          if (choice.finish_reason === 'length') {
+            // Response was truncated due to max_tokens
+            sendSSE({ content: '\n\n*[Respons terpotong karena batas token. Lanjutkan dengan "lanjutkan" untuk melanjutkan.]*' });
+          }
+          return true; // signal done
+        }
+        
+        // Also check message.content (some providers send full message in stream)
+        if (choice.message && choice.message.content) {
+          sendSSE({ content: choice.message.content });
+        }
       } catch(e) { /* skip unparseable */ }
       return false;
     }
 
     try {
-      while (true) {
+      while (!streamDone) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          // Reader finished — process any remaining buffer
+          if (buffer.trim()) {
+            const lines = buffer.split('\n');
+            for (const line of lines) {
+              if (processLine(line)) { streamDone = true; break; }
+            }
+          }
+          break;
+        }
+        
         buffer += decoder.decode(value, { stream: true });
+        // Split by \n (handles both \n and \r\n since we strip \r in processLine)
         const lines = buffer.split('\n');
         buffer = lines.pop(); // keep incomplete line
+        
         for (const line of lines) {
-          if (processLine(line)) { sendSSE({ done: true }); res.end(); return; }
+          if (processLine(line)) { 
+            streamDone = true; 
+            break; 
+          }
         }
       }
-      // Process remaining buffer
-      if (buffer.trim()) {
-        processLine(buffer);
-      }
+      
+      // Always send done signal to frontend
       sendSSE({ done: true });
       res.end();
     } catch (err) {
+      // On error, send what we have + error message + done
       sendSSE({ error: err.message });
       sendSSE({ done: true });
       try { res.end(); } catch(e) {}
