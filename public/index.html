@@ -591,69 +591,12 @@
         <div id="REDEEM_SUCCESS" class="hidden text-xs text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-lg px-3 py-2 mt-2"></div>
         <button onclick="doRedeem()" id="REDEEM_BTN" class="w-full mt-4 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Redeem</button>
         <div id="REDEEM_STATUS" class="mt-4 pt-4 border-t border-white/[0.06]"></div>
-
-        <!-- Admin panel trigger — 7 quick taps on the title icon -->
-        <div class="mt-4 pt-3 border-t border-white/[0.06] text-center">
-          <p class="text-[10px] text-[#7C7770]/60">Admin? <button onclick="openAdmin()" class="text-[#7C7770] hover:text-coral-400/70 transition-colors underline">Login panel</button></p>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN PANEL MODAL (for generating codes) -->
-  <div id="ADMIN" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)closeM('ADMIN')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[85vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-5">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:shield-account-outline"></span></div>
-          <span class="text-base font-medium text-cream-50">Admin Panel</span>
-        </div>
-        <button onclick="closeM('ADMIN')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
-      </div>
-
-      <!-- Step 1: Admin secret login -->
-      <div id="ADMIN_LOGIN">
-        <p class="text-xs text-[#7C7770] mb-3 leading-relaxed">Masukkan admin secret untuk generate & kelola redeem code. Set env var <code class="text-coral-400 font-mono">ADMIN_SECRET</code> di Vercel untuk mengubah default.</p>
-        <input id="ADMIN_SECRET_INPUT" type="password" placeholder="Admin secret..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors" onkeydown="if(event.key==='Enter')adminLogin()">
-        <div id="ADMIN_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mt-2"></div>
-        <button onclick="adminLogin()" class="w-full mt-3 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Login Admin</button>
-        <p class="text-[10px] text-[#7C7770] mt-3 text-center">Default secret: <code class="text-[#7C7770]/70 font-mono">skelz_admin_change_me</code> — ubah via env var!</p>
-      </div>
-
-      <!-- Step 2: Admin dashboard (hidden until login) -->
-      <div id="ADMIN_DASH" class="hidden">
-        <!-- Generate code -->
-        <div class="bg-[#262524]/40 border border-white/[0.06] rounded-xl p-4 mb-4">
-          <p class="text-xs font-medium text-cream-50 mb-3 flex items-center gap-1.5"><span class="iconify text-coral-400" data-icon="mdi:plus-circle-outline"></span>Generate Kode Baru</p>
-          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Tier (jenis unlock)</label>
-          <select id="ADMIN_TIER" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-cream-50 outline-none focus:border-coral-400/30 transition-colors mb-3">
-            <option value="premium">Premium AI — Unlock Premium AI models</option>
-            <option value="vision">Vision AI — Unlock Vision AI models (analisis foto)</option>
-            <option value="powerful">Powerful AI — Unlock Powerful AI models</option>
-            <option value="skelz_premium">Skelz Premium — Unlock Skelz premium models</option>
-            <option value="all">ALL ACCESS — Unlock SEMUA model premium</option>
-          </select>
-          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Max penggunaan</label>
-          <input id="ADMIN_MAXUSES" type="number" min="1" max="1000" value="1" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-cream-50 outline-none focus:border-coral-400/30 transition-colors mb-3">
-          <button onclick="adminGenerate()" id="ADMIN_GEN_BTN" class="w-full px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Generate Kode</button>
-          <div id="ADMIN_GEN_RESULT" class="hidden mt-3 bg-emerald-500/5 border border-emerald-500/15 rounded-lg p-3"></div>
-        </div>
-
-        <!-- List existing codes -->
-        <div class="bg-[#262524]/40 border border-white/[0.06] rounded-xl p-4 mb-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-medium text-cream-50 flex items-center gap-1.5"><span class="iconify text-coral-400" data-icon="mdi:list-box-outline"></span>Kode Aktif</p>
-            <button onclick="adminList()" class="text-[10px] text-coral-400 hover:underline">Refresh</button>
-          </div>
-          <div id="ADMIN_CODE_LIST" class="space-y-2 max-h-64 overflow-y-auto">
-            <p class="text-[11px] text-[#7C7770] text-center py-4">Klik Refresh untuk load</p>
-          </div>
-        </div>
-
-        <button onclick="adminLogout()" class="w-full px-4 py-2.5 rounded-xl text-xs text-[#7C7770] hover:text-red-400 hover:bg-red-500/5 transition-colors">Logout Admin</button>
-      </div>
-    </div>
-  </div>
+  <!-- ADMIN PANEL MODAL REMOVED — admin panel sekarang ada di Settings modal -->
+  <!-- Lihat "Admin Panel" section di dalam SETTINGS modal -->
 
   <!-- SETTINGS MODAL -->
   <div id="SETTINGS" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('SETTINGS')">
@@ -722,6 +665,56 @@
           <button onclick="setCavemanLevel('full')" data-level="full" class="theme-caveman-btn py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors text-center">Full</button>
           <button onclick="setCavemanLevel('ultra')" data-level="ultra" class="theme-caveman-btn py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors text-center">Ultra</button>
           <button onclick="setCavemanLevel('wenyan')" data-level="wenyan" class="theme-caveman-btn py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors text-center">文言</button>
+        </div>
+      </div>
+
+      <!-- Admin Panel Section -->
+      <div class="mb-5 pt-4 border-t border-white/[0.06]">
+        <div class="flex items-center justify-between mb-2.5">
+          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider flex items-center gap-1.5"><span class="iconify text-sm text-coral-400/70" data-icon="mdi:shield-account-outline"></span>Admin Panel</label>
+          <span id="ADMIN_STATUS_BADGE" class="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.05] text-[#7C7770] hidden">Login</span>
+        </div>
+        <p class="text-[10px] text-[#7C7770] mb-2.5 leading-relaxed">Generate & kelola redeem code. Setelah login admin, secret tersimpan di device ini — tidak perlu login ulang.</p>
+
+        <!-- Admin login form (shown if not logged in) -->
+        <div id="SETTINGS_ADMIN_LOGIN">
+          <input id="SETTINGS_ADMIN_SECRET" type="password" placeholder="Masukkan ADMIN_SECRET..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-3 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2" onkeydown="if(event.key==='Enter')settingsAdminLogin()">
+          <div id="SETTINGS_ADMIN_ERR" class="hidden text-[11px] text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-2.5 py-1.5 mb-2"></div>
+          <button onclick="settingsAdminLogin()" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-white bg-coral-400/80 hover:bg-coral-400 transition-colors">Login Admin</button>
+        </div>
+
+        <!-- Admin dashboard (shown if logged in) -->
+        <div id="SETTINGS_ADMIN_DASH" class="hidden">
+          <!-- Generate code -->
+          <div class="bg-[#262524]/40 border border-white/[0.06] rounded-lg p-3 mb-2.5">
+            <p class="text-[11px] font-medium text-cream-50 mb-2">Generate Kode Baru</p>
+            <select id="SETTINGS_ADMIN_TIER" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-cream-50 outline-none focus:border-coral-400/30 transition-colors mb-2">
+              <option value="premium">Premium AI</option>
+              <option value="vision">Vision AI (analisis foto)</option>
+              <option value="powerful">Powerful AI</option>
+              <option value="skelz_premium">Skelz Premium</option>
+              <option value="all">ALL ACCESS (semua model)</option>
+            </select>
+            <div class="flex items-center gap-2 mb-2">
+              <label class="text-[10px] text-[#7C7770] flex-shrink-0">Max pakai:</label>
+              <input id="SETTINGS_ADMIN_MAXUSES" type="number" min="1" max="1000" value="1" class="flex-1 bg-[#262524]/80 border border-white/[0.06] rounded-lg px-2.5 py-1.5 text-[11px] text-cream-50 outline-none focus:border-coral-400/30 transition-colors">
+            </div>
+            <button onclick="settingsAdminGenerate()" id="SETTINGS_ADMIN_GEN_BTN" class="w-full px-3 py-2 rounded-lg text-[11px] font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Generate</button>
+            <div id="SETTINGS_ADMIN_GEN_RESULT" class="hidden mt-2"></div>
+          </div>
+
+          <!-- Code list -->
+          <div class="bg-[#262524]/40 border border-white/[0.06] rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-[11px] font-medium text-cream-50">Kode Aktif</p>
+              <button onclick="settingsAdminList()" class="text-[10px] text-coral-400 hover:underline">Refresh</button>
+            </div>
+            <div id="SETTINGS_ADMIN_CODE_LIST" class="space-y-1.5 max-h-48 overflow-y-auto">
+              <p class="text-[10px] text-[#7C7770] text-center py-3">Klik Refresh untuk load</p>
+            </div>
+          </div>
+
+          <button onclick="settingsAdminLogout()" class="w-full mt-2.5 px-3 py-2 rounded-lg text-[11px] text-[#7C7770] hover:text-red-400 hover:bg-red-500/5 transition-colors">Logout Admin</button>
         </div>
       </div>
 
@@ -1355,26 +1348,46 @@
       return false;
     }
 
-    /* ===== ADMIN PANEL (generate & manage redeem codes) ===== */
+    /* ===== ADMIN PANEL (di Settings modal — auto-login via localStorage) =====
+       Admin secret disimpan di localStorage setelah login pertama kali.
+       Jadi user tidak perlu login ulang setiap buka Settings.
+       Klik "Logout Admin" untuk hapus secret dari device ini.
+    */
     var adminSecret=null;
-    function openAdmin(){
-      // Hide admin dashboard, show login form
-      document.getElementById('ADMIN_LOGIN').classList.remove('hidden');
-      document.getElementById('ADMIN_DASH').classList.add('hidden');
-      document.getElementById('ADMIN_ERR').classList.add('hidden');
-      document.getElementById('ADMIN_SECRET_INPUT').value=adminSecret||'';
-      // Clear previous result
-      document.getElementById('ADMIN_GEN_RESULT').classList.add('hidden');
-      document.getElementById('ADMIN_CODE_LIST').innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Klik Refresh untuk load</p>';
-      openM('ADMIN');
-      setTimeout(function(){document.getElementById('ADMIN_SECRET_INPUT').focus()},100);
+
+    // Try auto-restore admin secret from localStorage on script load
+    try{
+      var _savedAdmin=localStorage.getItem('sk_admin_secret');
+      if(_savedAdmin)adminSecret=_savedAdmin;
+    }catch(e){}
+
+    function settingsAdminInit(){
+      var loginEl=document.getElementById('SETTINGS_ADMIN_LOGIN');
+      var dashEl=document.getElementById('SETTINGS_ADMIN_DASH');
+      var badge=document.getElementById('ADMIN_STATUS_BADGE');
+      if(!loginEl||!dashEl)return;
+      if(adminSecret){
+        // Already logged in (restored from localStorage) — show dashboard
+        loginEl.classList.add('hidden');
+        dashEl.classList.remove('hidden');
+        if(badge){badge.classList.remove('hidden');badge.textContent='Admin';badge.className='text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'}
+        // Auto-load code list
+        settingsAdminList();
+      }else{
+        loginEl.classList.remove('hidden');
+        dashEl.classList.add('hidden');
+        if(badge){badge.classList.add('hidden')}
+        // Clear password field
+        var inp=document.getElementById('SETTINGS_ADMIN_SECRET');
+        if(inp)inp.value='';
+      }
     }
-    function adminLogin(){
-      var secret=document.getElementById('ADMIN_SECRET_INPUT').value;
-      var err=document.getElementById('ADMIN_ERR');
+    function settingsAdminLogin(){
+      var secret=document.getElementById('SETTINGS_ADMIN_SECRET').value;
+      var err=document.getElementById('SETTINGS_ADMIN_ERR');
       if(!secret){err.textContent='Masukkan admin secret';err.classList.remove('hidden');return}
-      // Test secret by trying to list codes
       err.classList.add('hidden');
+      // Verify secret by trying to list codes
       fetch('/api/redeem',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -1383,26 +1396,28 @@
         if(d.error&&d.error.indexOf('Admin secret salah')!==-1){
           err.textContent='Admin secret salah';err.classList.remove('hidden');
         }else{
-          // Login OK
+          // Login OK — save to localStorage for auto-login next time
           adminSecret=secret;
-          document.getElementById('ADMIN_LOGIN').classList.add('hidden');
-          document.getElementById('ADMIN_DASH').classList.remove('hidden');
-          adminRenderList(d.codes||[]);
+          try{localStorage.setItem('sk_admin_secret',secret)}catch(e){}
+          settingsAdminInit();
+          settingsAdminRenderList(d.codes||[]);
+          toast('Login admin berhasil','success');
         }
       }).catch(function(){
         err.textContent='Koneksi gagal';err.classList.remove('hidden');
       });
     }
-    function adminLogout(){
+    function settingsAdminLogout(){
       adminSecret=null;
-      closeM('ADMIN');
+      try{localStorage.removeItem('sk_admin_secret')}catch(e){}
+      settingsAdminInit();
       toast('Logout admin berhasil','info');
     }
-    async function adminGenerate(){
-      var tier=document.getElementById('ADMIN_TIER').value;
-      var maxUses=parseInt(document.getElementById('ADMIN_MAXUSES').value,10)||1;
-      var btn=document.getElementById('ADMIN_GEN_BTN');
-      var result=document.getElementById('ADMIN_GEN_RESULT');
+    async function settingsAdminGenerate(){
+      var tier=document.getElementById('SETTINGS_ADMIN_TIER').value;
+      var maxUses=parseInt(document.getElementById('SETTINGS_ADMIN_MAXUSES').value,10)||1;
+      var btn=document.getElementById('SETTINGS_ADMIN_GEN_BTN');
+      var result=document.getElementById('SETTINGS_ADMIN_GEN_RESULT');
       btn.disabled=true;btn.textContent='Generate...';
       try{
         var r=await fetch('/api/redeem',{
@@ -1412,40 +1427,38 @@
         });
         var d=await r.json();
         if(!r.ok){
-          result.innerHTML='<div class="text-xs text-red-400">✗ '+(d.error||'Gagal generate')+'</div>';
+          result.innerHTML='<div class="text-[11px] text-red-400">✗ '+(d.error||'Gagal generate')+'</div>';
           result.classList.remove('hidden');
         }else{
-          result.innerHTML='<div class="text-xs text-emerald-300 mb-2 flex items-center gap-1.5"><span class="iconify" data-icon="mdi:check-circle"></span>Kode berhasil dibuat!</div>'+
-            '<div class="bg-coral-400/10 border border-coral-400/25 rounded-lg p-2.5 text-center mb-2"><p class="text-base font-mono font-bold text-coral-400 tracking-wider select-all">'+d.code+'</p></div>'+
+          result.innerHTML='<div class="text-[11px] text-emerald-300 mb-1.5 flex items-center gap-1"><span class="iconify" data-icon="mdi:check-circle"></span>Kode dibuat!</div>'+
+            '<div class="bg-coral-400/10 border border-coral-400/25 rounded-lg p-2 text-center mb-1.5"><p class="text-sm font-mono font-bold text-coral-400 tracking-wider select-all">'+d.code+'</p></div>'+
             '<div class="flex items-center justify-between gap-2">'+
-              '<p class="text-[10px] text-[#7C7770]">Tier: '+d.tier+' • Max: '+d.maxUses+'x</p>'+
-              '<button onclick="adminCopyCode(\''+d.code+'\')" class="text-[10px] text-coral-400 hover:underline flex items-center gap-1"><span class="iconify" data-icon="mdi:content-copy"></span>Copy</button>'+
+              '<p class="text-[10px] text-[#7C7770]">'+d.tier+' • '+d.maxUses+'x</p>'+
+              '<button onclick="settingsAdminCopyCode(\''+d.code+'\')" class="text-[10px] text-coral-400 hover:underline flex items-center gap-1"><span class="iconify" data-icon="mdi:content-copy"></span>Copy</button>'+
             '</div>';
           result.classList.remove('hidden');
           toast('Kode dibuat: '+d.code,'success');
-          // Refresh list
-          adminList();
+          settingsAdminList();
         }
       }catch(e){
-        result.innerHTML='<div class="text-xs text-red-400">Koneksi gagal</div>';
+        result.innerHTML='<div class="text-[11px] text-red-400">Koneksi gagal</div>';
         result.classList.remove('hidden');
       }
-      btn.disabled=false;btn.textContent='Generate Kode';
+      btn.disabled=false;btn.textContent='Generate';
     }
-    function adminCopyCode(code){
+    function settingsAdminCopyCode(code){
       try{
         navigator.clipboard.writeText(code);
         toast('Kode disalin','success');
       }catch(e){
-        // Fallback
         var ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();
         try{document.execCommand('copy');toast('Kode disalin','success')}catch(_){toast('Gagal copy','error')}
         document.body.removeChild(ta);
       }
     }
-    async function adminList(){
-      var listEl=document.getElementById('ADMIN_CODE_LIST');
-      listEl.innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Loading...</p>';
+    async function settingsAdminList(){
+      var listEl=document.getElementById('SETTINGS_ADMIN_CODE_LIST');
+      listEl.innerHTML='<p class="text-[10px] text-[#7C7770] text-center py-3">Loading...</p>';
       try{
         var r=await fetch('/api/redeem',{
           method:'POST',
@@ -1453,41 +1466,39 @@
           body:JSON.stringify({action:'list',adminSecret:adminSecret})
         });
         var d=await r.json();
-        if(!r.ok){listEl.innerHTML='<p class="text-[11px] text-red-400 text-center py-2">'+(d.error||'Gagal load')+'</p>';return}
-        adminRenderList(d.codes||[]);
+        if(!r.ok){listEl.innerHTML='<p class="text-[10px] text-red-400 text-center py-2">'+(d.error||'Gagal load')+'</p>';return}
+        settingsAdminRenderList(d.codes||[]);
       }catch(e){
-        listEl.innerHTML='<p class="text-[11px] text-red-400 text-center py-2">Koneksi gagal</p>';
+        listEl.innerHTML='<p class="text-[10px] text-red-400 text-center py-2">Koneksi gagal</p>';
       }
     }
-    function adminRenderList(codes){
-      var listEl=document.getElementById('ADMIN_CODE_LIST');
+    function settingsAdminRenderList(codes){
+      var listEl=document.getElementById('SETTINGS_ADMIN_CODE_LIST');
       if(!codes.length){
-        listEl.innerHTML='<p class="text-[11px] text-[#7C7770] text-center py-4">Belum ada kode. Generate di atas.</p>';
+        listEl.innerHTML='<p class="text-[10px] text-[#7C7770] text-center py-3">Belum ada kode.</p>';
         return;
       }
-      var tierColors={premium:'coral-400',vision:'coral-400',powerful:'coral-400',skelz_premium:'coral-400',all:'emerald-400'};
       var html='';
       for(var i=0;i<codes.length;i++){
         var c=codes[i];
         var date=new Date(c.created||0).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
         var usedTxt=c.usedCount+'/'+c.maxUses;
         var isMaxed=c.usedCount>=c.maxUses;
-        var tierLabel=c.tier.toUpperCase();
-        html+='<div class="bg-[#262524]/60 border border-white/[0.06] rounded-lg p-2.5">';
-        html+='<div class="flex items-center justify-between gap-2 mb-1.5">';
-        html+='<p class="text-[11px] font-mono text-cream-50 select-all truncate flex-1">'+c.code+'</p>';
-        html+='<button onclick="adminDeleteCode(\''+c.code+'\')" class="text-[10px] text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0" title="Hapus"><span class="iconify" data-icon="mdi:trash-can-outline"></span></button>';
+        var tierLabel=(c.tier||'').toUpperCase();
+        html+='<div class="bg-[#262524]/60 border border-white/[0.06] rounded-md p-2">';
+        html+='<div class="flex items-center justify-between gap-1.5 mb-1">';
+        html+='<p class="text-[10px] font-mono text-cream-50 select-all truncate flex-1">'+c.code+'</p>';
+        html+='<button onclick="settingsAdminDeleteCode(\''+c.code+'\')" class="text-[10px] text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0" title="Hapus"><span class="iconify" data-icon="mdi:trash-can-outline"></span></button>';
         html+='</div>';
         html+='<div class="flex items-center justify-between text-[9px] text-[#7C7770]">';
         html+='<span class="px-1.5 py-0.5 rounded bg-coral-400/10 text-coral-400 font-medium">'+tierLabel+'</span>';
-        html+='<span class="'+(isMaxed?'text-yellow-400':'text-emerald-400')+'">Used: '+usedTxt+'</span>';
+        html+='<span class="'+(isMaxed?'text-yellow-400':'text-emerald-400')+'">'+usedTxt+'</span>';
         html+='</div>';
-        html+='<p class="text-[9px] text-[#7C7770]/60 mt-1">'+date+'</p>';
         html+='</div>';
       }
       listEl.innerHTML=html;
     }
-    function adminDeleteCode(code){
+    function settingsAdminDeleteCode(code){
       showConfirm('Hapus Kode','Kode "'+code+'" akan dihapus. User yang sudah redeem tetap punya unlock-nya.',async function(){
         try{
           var r=await fetch('/api/redeem',{
@@ -1498,7 +1509,7 @@
           var d=await r.json();
           if(!r.ok){toast(d.error||'Gagal hapus','error');return}
           toast('Kode dihapus','success');
-          adminList();
+          settingsAdminList();
         }catch(e){toast('Koneksi gagal','error')}
       });
     }
@@ -1508,6 +1519,8 @@
       closePM();
       openM('SETTINGS');
       updateSettingsUI();
+      // Init admin panel (auto-login if secret saved in localStorage)
+      settingsAdminInit();
     }
     function setPerfMode(mode){
       localStorage.setItem('sk_perf_mode',mode);

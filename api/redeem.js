@@ -125,6 +125,57 @@ async function kvDel(key) {
 }
 
 // ============================================================================
+// DEFENSIVE TYPE HELPERS — handle corrupt/legacy data gracefully
+// ============================================================================
+// Old bug (now fixed) caused arrays to be stored as JSON strings, then read
+// back as strings (not arrays). Calling .push() on a string throws
+// "TypeError: .push is not a function". These helpers normalize any value
+// to its expected type, so we never crash on corrupt data.
+// ============================================================================
+
+function ensureArray(val) {
+  if (Array.isArray(val)) return val;
+  if (val === null || val === undefined) return [];
+  if (typeof val === 'string') {
+    // Could be a JSON-encoded array string (from old double-encoding bug)
+    const trimmed = val.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    // Could be a comma-separated list (legacy fallback) — rare but handle it
+    if (trimmed.length > 0 && !trimmed.startsWith('{')) {
+      return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+  if (typeof val === 'object') {
+    // Object that should have been an array — try to extract values
+    try {
+      const arr = Object.keys(val).map(k => val[k]);
+      return arr;
+    } catch (e) { return []; }
+  }
+  return [];
+}
+
+function ensureObject(val) {
+  if (val && typeof val === 'object' && !Array.isArray(val)) return val;
+  return null;
+}
+
+function ensureNumber(val, defaultVal) {
+  if (typeof val === 'number' && !isNaN(val)) return val;
+  if (typeof val === 'string') {
+    const n = parseInt(val, 10);
+    if (!isNaN(n)) return n;
+  }
+  return defaultVal || 0;
+}
+
+// ============================================================================
 // CODE GENERATION & VERIFICATION (HMAC-signed)
 // ============================================================================
 //
@@ -244,13 +295,19 @@ export default async function handler(req, res) {
 
       // Look up code metadata in KV
       const codeKey = `rcode:${code}`;
-      const codeMeta = await kvGet(codeKey);
-      if (!codeMeta || typeof codeMeta !== 'object') {
+      let codeMeta = ensureObject(await kvGet(codeKey));
+      if (!codeMeta) {
         // Code passes HMAC check but isn't registered in DB — either:
         // 1. Was generated with a different admin secret (e.g. dev environment)
         // 2. Was deleted by admin
         return res.status(400).json({ error: 'Kode redeem tidak ditemukan atau sudah dihapus. Beli kode resmi via WhatsApp 0857-2724-6118.' });
       }
+
+      // Normalize codeMeta fields defensively (in case of corrupt data)
+      codeMeta.usedBy = ensureArray(codeMeta.usedBy);
+      codeMeta.usedCount = ensureNumber(codeMeta.usedCount, 0);
+      codeMeta.maxUses = ensureNumber(codeMeta.maxUses, 1);
+      codeMeta.tier = typeof codeMeta.tier === 'string' ? codeMeta.tier : '';
 
       // Check usage limit
       if (codeMeta.usedCount >= codeMeta.maxUses) {
@@ -258,14 +315,13 @@ export default async function handler(req, res) {
       }
 
       // Check if this user already redeemed this code
-      codeMeta.usedBy = codeMeta.usedBy || [];
       if (codeMeta.usedBy.indexOf(username) !== -1) {
         return res.status(400).json({ error: 'Anda sudah pernah redeem kode ini' });
       }
 
-      // Get user's redeemed codes list
+      // Get user's redeemed codes list — ensureArray handles corrupt/legacy data
       const redeemKey = `redeem:${username}`;
-      let redeemed = await kvGet(redeemKey) || [];
+      let redeemed = ensureArray(await kvGet(redeemKey));
       if (redeemed.indexOf(code) !== -1) {
         return res.status(400).json({ error: 'Anda sudah pernah redeem kode ini' });
       }
@@ -275,7 +331,7 @@ export default async function handler(req, res) {
       await kvSet(redeemKey, redeemed);
 
       // Increment code usage
-      codeMeta.usedCount = (codeMeta.usedCount || 0) + 1;
+      codeMeta.usedCount = codeMeta.usedCount + 1;
       codeMeta.usedBy.push(username);
       codeMeta.lastUsed = Date.now();
       await kvSet(codeKey, codeMeta);
@@ -297,14 +353,15 @@ export default async function handler(req, res) {
       if (!username) return res.status(200).json({ redeemed: [] });
 
       const redeemKey = `redeem:${username}`;
-      let redeemed = await kvGet(redeemKey) || [];
+      let redeemed = ensureArray(await kvGet(redeemKey));
 
       let unlockedModels = [];
       let unlockedCategories = [];
       for (const code of redeemed) {
-        const codeMeta = await kvGet(`rcode:${code}`);
-        if (!codeMeta || typeof codeMeta !== 'object') continue;
-        const tier = codeMeta.tier;
+        if (typeof code !== 'string') continue; // skip corrupt entries
+        const codeMeta = ensureObject(await kvGet(`rcode:${code}`));
+        if (!codeMeta) continue;
+        const tier = typeof codeMeta.tier === 'string' ? codeMeta.tier : '';
         const info = TIER_INFO[tier];
         if (!info) continue;
         if (tier === 'all') {
@@ -406,18 +463,17 @@ export default async function handler(req, res) {
       // Fetch metadata for each code
       const codeList = [];
       for (const code of allCodes) {
-        const meta = await kvGet(`rcode:${code}`);
-        if (meta && typeof meta === 'object') {
-          codeList.push({
-            code: meta.code || code,
-            tier: meta.tier,
-            maxUses: meta.maxUses,
-            usedCount: meta.usedCount || 0,
-            usedBy: meta.usedBy || [],
-            created: meta.created,
-            lastUsed: meta.lastUsed
-          });
-        }
+        const meta = ensureObject(await kvGet(`rcode:${code}`));
+        if (!meta) continue;
+        codeList.push({
+          code: typeof meta.code === 'string' ? meta.code : code,
+          tier: typeof meta.tier === 'string' ? meta.tier : 'unknown',
+          maxUses: ensureNumber(meta.maxUses, 1),
+          usedCount: ensureNumber(meta.usedCount, 0),
+          usedBy: ensureArray(meta.usedBy),
+          created: meta.created || 0,
+          lastUsed: meta.lastUsed || 0
+        });
       }
       // Sort newest first
       codeList.sort((a, b) => (b.created || 0) - (a.created || 0));
