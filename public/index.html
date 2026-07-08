@@ -232,7 +232,7 @@
     </div>
     <div class="p-3 border-t border-white/[0.06]" id="profileArea">
       <div onclick="togPM()" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account"></span></div>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
           <p class="text-sm text-[#E5E3DA] truncate" id="UN">Guest User</p>
           <p class="text-[10px] text-[#7C7770]" id="UN_PLAN">Free Plan (SkelzAI only)</p>
@@ -241,6 +241,9 @@
       </div>
       <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden">
         <button onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
+        <button onclick="document.getElementById('PROFILE_PHOTO_INPUT').click()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:camera-outline"></span>Ubah Foto Profil</button>
+        <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
+        <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
         <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
         <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
         <div class="border-t border-white/[0.06]"></div>
@@ -299,11 +302,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 3.0.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 3.1.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 28 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Login/Register, guest mode (SkelzAI only), real-time streaming, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Login/Register, foto profil, tema warna, ukuran font, guest mode, streaming 60fps, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -377,6 +380,58 @@
     </div>
   </div>
 
+  <!-- SETTINGS MODAL -->
+  <div id="SETTINGS" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('SETTINGS')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:cog-outline"></span></div>
+          <span class="text-base font-medium text-cream-50">Pengaturan</span>
+        </div>
+        <button onclick="closeM('SETTINGS')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
+      </div>
+
+      <!-- Theme Color Picker -->
+      <div class="mb-5">
+        <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-2.5 block">Warna Tema</label>
+        <div class="grid grid-cols-6 gap-2" id="THEME_COLORS">
+          <button onclick="setThemeColor('#D97757','#E8A48D','#A84A2E')" data-color="coral" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-coral-400" style="background:#D97757" title="Coral (default)"></button>
+          <button onclick="setThemeColor('#8B5CF6','#C4B5FD','#6D28D9')" data-color="violet" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent" style="background:#8B5CF6" title="Violet"></button>
+          <button onclick="setThemeColor('#3B82F6','#93C5FD','#1D4ED8')" data-color="blue" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent" style="background:#3B82F6" title="Blue"></button>
+          <button onclick="setThemeColor('#10B981','#6EE7B7','#059669')" data-color="green" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent" style="background:#10B981" title="Green"></button>
+          <button onclick="setThemeColor('#F59E0B','#FCD34D','#D97706')" data-color="amber" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent" style="background:#F59E0B" title="Amber"></button>
+          <button onclick="setThemeColor('#EC4899','#F9A8D4','#BE185D')" data-color="pink" class="theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent" style="background:#EC4899" title="Pink"></button>
+        </div>
+      </div>
+
+      <!-- Font Size -->
+      <div class="mb-5">
+        <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-2.5 block">Ukuran Font</label>
+        <div class="flex gap-2">
+          <button onclick="setFontSize('14px')" data-size="14" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Kecil</button>
+          <button onclick="setFontSize('15px')" data-size="15" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-coral-400/10 border border-coral-400/20 transition-colors">Sedang</button>
+          <button onclick="setFontSize('16px')" data-size="16" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Besar</button>
+        </div>
+      </div>
+
+      <!-- Caveman Quick Toggle -->
+      <div class="mb-5">
+        <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-2.5 block">Caveman Mode</label>
+        <div class="flex gap-2">
+          <button onclick="setCavemanLevel('lite')" class="theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Lite</button>
+          <button onclick="setCavemanLevel('full')" class="theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-coral-400/10 border border-coral-400/20 transition-colors">Full</button>
+          <button onclick="setCavemanLevel('ultra')" class="theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Ultra</button>
+          <button onclick="setCavemanLevel('wenyan')" class="theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">文言</button>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="pt-4 border-t border-white/[0.06]">
+        <button onclick="closeM('SETTINGS');closePM();resetApp()" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm text-red-400/70 hover:bg-red-500/5 hover:text-red-400 transition-colors"><span class="iconify text-base" data-icon="mdi:alert-outline"></span>Reset Semua Data</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="lg:ml-[280px] h-full flex flex-col relative z-10">
     <header class="flex items-center justify-between px-4 md:px-6 h-14 min-h-[56px] border-b border-white/[0.06] bg-[#1F1E1D]/85 backdrop-blur-md flex-shrink-0">
@@ -436,7 +491,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.0.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.1.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -471,7 +526,6 @@
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
       /* Powerful AI (NVIDIA NIM free) */
-      {id:'moonshotai/kimi-k2.6',provider:'nvidia',label:'Kimi K2.6',desc:'Moonshot AI, long context',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'mistralai/ministral-14b-instruct-2512',provider:'nvidia',label:'Ministral 14B',desc:'Mistral, 14B seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
@@ -797,6 +851,141 @@
     /* ===== SHORTCUTS HELP ===== */
     function openShortcuts(){openM('SC')}
 
+    /* ===== SETTINGS ===== */
+    function openSettings(){
+      closePM();
+      openM('SETTINGS');
+      // Highlight current settings
+      updateSettingsUI();
+    }
+    function updateSettingsUI(){
+      // Highlight current caveman level
+      var cvLevel=localStorage.getItem('sk_caveman_level')||'full';
+      var btns=document.querySelectorAll('.theme-caveman-btn');
+      for(var i=0;i<btns.length;i++){
+        var lvl=btns[i].textContent.toLowerCase();
+        var map={'lite':'lite','full':'full','ultra':'ultra','文言':'wenyan'};
+        if(map[lvl]===cvLevel){
+          btns[i].className='theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-coral-400 bg-coral-400/10 border border-coral-400/20 transition-colors';
+        }else{
+          btns[i].className='theme-caveman-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors';
+        }
+      }
+      // Highlight current font size
+      var fontSize=localStorage.getItem('sk_font_size')||'15px';
+      var fbtns=document.querySelectorAll('.theme-font-btn');
+      for(var i=0;i<fbtns.length;i++){
+        var size=btns[i].getAttribute('data-size');
+        if((''+size+'px')===fontSize){
+          fbtns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-coral-400 bg-coral-400/10 border border-coral-400/20 transition-colors';
+        }else{
+          fbtns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors';
+        }
+      }
+    }
+    function setThemeColor(c1,c2,c3){
+      // Update CSS variables dynamically
+      var root=document.documentElement;
+      root.style.setProperty('--coral-400',c1);
+      root.style.setProperty('--coral-300',c2);
+      root.style.setProperty('--coral-600',c3);
+      // Update Tailwind config
+      tailwind.config.theme.extend.colors.coral['400']=c1;
+      tailwind.config.theme.extend.colors.coral['300']=c2;
+      tailwind.config.theme.extend.colors.coral['600']=c3;
+      // Save to localStorage
+      localStorage.setItem('sk_theme_color',JSON.stringify({c1,c2,c3}));
+      // Update all coral elements
+      updateThemeColors(c1,c2,c3);
+      // Update button borders
+      var btns=document.querySelectorAll('.theme-color-btn');
+      for(var i=0;i<btns.length;i++){
+        btns[i].className='theme-color-btn w-10 h-10 rounded-lg border-2 '+(btns[i].style.backgroundColor.includes(c1.toLowerCase().replace('#',''))?'border-coral-400':'border-transparent');
+      }
+      toast('Tema diubah','success');
+    }
+    function updateThemeColors(c1,c2,c3){
+      // Force re-render by updating style elements
+      var style=document.createElement('style');
+      style.id='dynamic-theme';
+      var old=document.getElementById('dynamic-theme');
+      if(old)old.remove();
+      style.textContent=`
+        .text-coral-400{color:${c1}!important}
+        .bg-coral-400{background-color:${c1}!important}
+        .border-coral-400{border-color:${c1}!important}
+        .from-coral-400{--tw-gradient-from:${c1}!important}
+        .to-coral-500{--tw-gradient-to:${c1}!important}
+        .from-coral-500{--tw-gradient-from:${c1}!important}
+        .to-coral-600{--tw-gradient-to:${c3}!important}
+        .tg{background:linear-gradient(135deg,${c1} 0%,${c2} 100%)!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;background-clip:text!important}
+        .tg-anim{background:linear-gradient(110deg,${c1} 0%,${c2} 50%,${c1} 100%)!important;background-size:200% auto!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;background-clip:text!important}
+        .footer-brand{background:linear-gradient(90deg,#7C7770 0%,${c1} 50%,#7C7770 100%)!important;background-size:200% auto!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;background-clip:text!important}
+        .sbtn.on{background:${c1}!important}
+        .think-orbit-core{background:${c1}!important}
+        .think-orbit-ring{border-top-color:${c1}!important}
+        .think-orbit-dot{background:${c1}!important}
+        .td{background:${c1}!important}
+        .typing-cursor{background:${c1}!important;box-shadow:0 0 4px ${c1}80!important}
+        .chdr .lang-label{color:${c1}!important}
+        .cc .kw{color:${c2}!important}
+        .cc .nm{color:${c2}!important}
+        .md a{color:${c2}!important}
+        .md code:not(.cc code){color:${c2}!important}
+        .mo.sel{background:${c1}15!important;border-color:${c1}40!important}
+        .si-i.act{background:${c1}15!important}
+      `;
+      document.head.appendChild(style);
+    }
+    function setFontSize(size){
+      localStorage.setItem('sk_font_size',size);
+      // Update message text size
+      var style=document.createElement('style');
+      style.id='dynamic-font';
+      var old=document.getElementById('dynamic-font');
+      if(old)old.remove();
+      style.textContent=`.md{font-size:${size}!important}.msg-pad p{font-size:${size}!important}`;
+      document.head.appendChild(style);
+      // Update button highlights
+      var btns=document.querySelectorAll('.theme-font-btn');
+      for(var i=0;i<btns.length;i++){
+        var s=btns[i].getAttribute('data-size');
+        if((''+s+'px')===size){
+          btns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-coral-400 bg-coral-400/10 border border-coral-400/20 transition-colors';
+        }else{
+          btns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors';
+        }
+      }
+      toast('Ukuran font: '+size,'info');
+    }
+
+    /* ===== PROFILE PHOTO ===== */
+    function handleProfilePhoto(e){
+      var f=e.target.files[0];
+      if(!f)return;
+      if(f.size>2000000){toast('Foto terlalu besar (maks 2MB)','error');e.target.value='';return}
+      var r=new FileReader();
+      r.onload=function(ev){
+        var photo=ev.target.result;
+        localStorage.setItem('sk_photo',photo);
+        updateProfilePhoto();
+        toast('Foto profil diperbarui!','success');
+      };
+      r.onerror=function(){toast('Gagal membaca foto','error')};
+      r.readAsDataURL(f);
+      e.target.value='';
+    }
+    function updateProfilePhoto(){
+      var photo=localStorage.getItem('sk_photo');
+      var avatar=document.getElementById('PROFILE_AVATAR');
+      var icon=document.getElementById('PROFILE_AVATAR_ICON');
+      if(photo){
+        avatar.innerHTML='<img src="'+photo+'" class="w-full h-full object-cover" alt="Profile">';
+      }else{
+        avatar.innerHTML='<span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account"></span>';
+      }
+    }
+
     /* ===== AUTH SYSTEM (client-side, localStorage-based) ===== */
     var currentUser=null,authMode='login';
     function authInit(){
@@ -1039,22 +1228,66 @@
       return r;
     }
     function parseMD(text){
+      // Step 1: Extract code blocks (both complete AND incomplete for streaming)
+      // Replace with unicode placeholders so they don't get escaped
+      var codeBlocks=[];
+      // Complete code blocks (with closing ```)
       text=text.replace(/```(\w*)\n?([\s\S]*?)```/g,function(_,lang,code){
-        return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(lang||'code')+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(code.trim())+'</div></div>'
+        codeBlocks.push({lang:lang||'code',code:code.trim()});
+        return '\u0000CB'+(codeBlocks.length-1)+'\u0000';
       });
+      // INCOMPLETE code blocks (streaming — opening ``` without closing)
+      // This is CRITICAL: without this, raw HTML/code leaks into DOM during streaming
+      text=text.replace(/```(\w*)\n?([\s\S]*)$/g,function(_,lang,code){
+        codeBlocks.push({lang:lang||'code',code:code.trim()});
+        return '\u0000CB'+(codeBlocks.length-1)+'\u0000';
+      });
+
+      // Step 2: Escape ALL HTML in remaining text (prevents XSS and raw HTML rendering)
+      text=esc(text);
+
+      // Step 3: Apply markdown formatting on escaped text
       text=text.replace(/`([^`]+)`/g,'<code class="bg-[#262524]/85 px-1.5 py-0.5 rounded text-coral-400 text-[13px] font-mono">$1</code>');
-      text=text.replace(/^### (.+)$/gm,'<h3>$1</h3>');text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+      text=text.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+      text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
       text=text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
-      text=text.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+      text=text.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
       text=text.replace(/^---$/gm,'<hr>');
-      text=text.replace(/^- (.+)$/gm,'::ULI::$1');text=text.replace(/^\d+\. (.+)$/gm,'::OLI::$1');
+      text=text.replace(/^- (.+)$/gm,'::ULI::$1');
+      text=text.replace(/^\d+\. (.+)$/gm,'::OLI::$1');
+
+      // Step 4: Process paragraphs
       var blocks=text.split('\n\n'),res=[];
-      for(var i=0;i<blocks.length;i++){var b=blocks[i].trim();if(!b)continue;if(b.charAt(0)==='<'){res.push(b);continue}
-        if(b.indexOf('::ULI::')!==-1){var it=b.split('\n').map(function(l){return'<li>'+l.replace('::ULI::','')+'</li>'}).join('');res.push('<ul>'+it+'</ul>')}
-        else if(b.indexOf('::OLI::')!==-1){var it=b.split('\n').map(function(l){return'<li>'+l.replace('::OLI::','')+'</li>'}).join('');res.push('<ol>'+it+'</ol>')}
-        else{res.push('<p>'+b.replace(/\n/g,'<br>')+'</p>')}
+      for(var i=0;i<blocks.length;i++){
+        var b=blocks[i].trim();
+        if(!b)continue;
+        if(b.indexOf('\u0000CB')!==-1){
+          // Code block placeholder — replace with actual code block HTML
+          res.push(b.replace(/\u0000CB(\d+)\u0000/g,function(_,idx){
+            var cb=codeBlocks[parseInt(idx)];
+            return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(cb.lang)+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(cb.code)+'</div></div>';
+          }));
+        }else if(b.charAt(0)==='<'){
+          res.push(b);
+        }else if(b.indexOf('::ULI::')!==-1){
+          var it=b.split('\n').map(function(l){return'<li>'+l.replace('::ULI::','')+'</li>'}).join('');
+          res.push('<ul>'+it+'</ul>');
+        }else if(b.indexOf('::OLI::')!==-1){
+          var it=b.split('\n').map(function(l){return'<li>'+l.replace('::OLI::','')+'</li>'}).join('');
+          res.push('<ol>'+it+'</ol>');
+        }else{
+          res.push('<p>'+b.replace(/\n/g,'<br>')+'</p>');
+        }
       }
-      return res.join('');
+
+      // Step 5: Replace any remaining code block placeholders
+      var result=res.join('');
+      result=result.replace(/\u0000CB(\d+)\u0000/g,function(_,idx){
+        var cb=codeBlocks[parseInt(idx)];
+        return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(cb.lang)+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(cb.code)+'</div></div>';
+      });
+
+      return result;
     }
     function cpCode(btn){
       var code=btn.closest('.cb').querySelector('.cc').textContent;
@@ -1270,6 +1503,7 @@
           var fullContent='';
           var reasoningContent='';
           var lastRenderTime=0;
+          var renderRAF=null;
 
           var reader=response.body.getReader();
           var decoder=new TextDecoder();
@@ -1309,12 +1543,15 @@
                     ta.innerHTML='';
                   }
                   fullContent+=parsed.content;
-                  // Throttle markdown rendering to every 80ms for smooth performance
+                  // Use requestAnimationFrame for smooth 60fps rendering
                   var now=Date.now();
-                  if(now-lastRenderTime>=80||parsed.done){
-                    ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
-                    lastRenderTime=now;
-                    scrollBot();
+                  if(now-lastRenderTime>=60||parsed.done){
+                    if(renderRAF)cancelAnimationFrame(renderRAF);
+                    renderRAF=requestAnimationFrame(function(){
+                      ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                      lastRenderTime=Date.now();
+                      scrollBot();
+                    });
                   }
                 }
               }catch(e){/* skip */}
@@ -1513,6 +1750,14 @@
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
+      // Load saved theme color
+      var savedTheme=localStorage.getItem('sk_theme_color');
+      if(savedTheme){try{var t=JSON.parse(savedTheme);updateThemeColors(t.c1,t.c2,t.c3)}catch(e){}}
+      // Load saved font size
+      var savedFont=localStorage.getItem('sk_font_size');
+      if(savedFont){var style=document.createElement('style');style.id='dynamic-font';style.textContent='.md{font-size:'+savedFont+'!important}.msg-pad p{font-size:'+savedFont+'!important}';document.head.appendChild(style)}
+      // Load profile photo
+      updateProfilePhoto();
 
       // Handle PWA shortcut "?action=new" — start fresh chat
       var params=new URLSearchParams(window.location.search);
