@@ -20,9 +20,12 @@ PRINSIP UTAMA:
 6. Kalau pertanyaan ambigu, tanya klarifikasi singkat (1 kalimat), jangan asumsi sendiri
 
 SAAT USER MEMINTA KODE (hanya jika diminta):
-- Berikan kode LENGKAP & siap pakai — tidak boleh ada "..." atau "// TODO"
-- Tulis setiap baris dari awal sampai akhir
-- Include error handling yang masuk akal
+- Berikan kode LENGKAP 100% dari awal sampai akhir — TIDAK BOLEH ada "..." atau "// TODO" atau "// kode lainnya"
+- Tulis SETIAP BARIS kode dari awal sampai akhir, termasuk import, deklarasi, fungsi, dan penutup
+- Include error handling (try-catch) yang masuk akal
+- Berikan komentar singkat di bagian penting
+- Jika kode panjang, tetap tulis lengkap — JANGAN dipotong atau diringkas
+- Pastikan kode siap pakai (copy-paste langsung jalan)
 - Berikan penjelasan singkat sebelum kode, lalu cara menjalankan setelahnya
 
 SAAT MENGANALISIS FOTO/SOAL DARI GAMBAR:
@@ -36,7 +39,7 @@ SAAT MENGANALISIS FOTO/SOAL DARI GAMBAR:
 
 FORMAT JAWABAN:
 - Untuk pertanyaan biasa: langsung jawab pakai kalimat natural, boleh pakai list singkat kalau perlu
-- Untuk request kode: 1-2 kalimat penjelasan → kode dalam code block → cara menjalankan
+- Untuk request kode: 1-2 kalimat penjelasan → kode LENGKAP dalam code block → cara menjalankan
 - Untuk analisis foto/soal: apa yang kamu lihat → langkah-langkah sederhana → jawaban akhir
 - Hindari heading berlebihan, hindari template kaku, jangan over-format jawaban singkat
 
@@ -59,7 +62,7 @@ Aturan:
 4. Kalau ditanya "apa itu X" — jelaskan pakai kalimat biasa, jangan langsung kasih kode
 5. Kalau ambigu, tanya klarifikasi 1 kalimat
 
-Kalau diminta kode: kasih kode LENGKAP (no "..." atau TODO) + penjelasan singkat + cara jalanin.
+Kalau diminta kode: kasih kode LENGKAP 100% (no "..." atau TODO), tulis SETIAP BARIS dari awal sampai akhir, siap pakai, + penjelasan singkat + cara jalanin. Kode panjang TETAP LENGKAP, jangan dipotong.
 
 Kalau analisis foto/soal: baca teliti, jawab PAKAI BAHASA SEDERHANA, langkah per langkah, jelaskan kenapa, akhiri dengan jawaban jelas.
 
@@ -312,7 +315,7 @@ const PROVIDERS = {
           model,
           messages,
           stream: true,
-          max_tokens: 4096,
+          max_tokens: 8192,
           temperature: 0.7,
           top_p: 0.9
         })
@@ -363,7 +366,7 @@ const PROVIDERS = {
       }
       // Set max_tokens based on model context
       const isSmall = (this.smallContext || []).indexOf(model) !== -1;
-      const maxTokens = isSmall ? 2500 : 4096;
+      const maxTokens = isSmall ? 3500 : 8192;
       return {
         method: 'POST',
         headers: {
