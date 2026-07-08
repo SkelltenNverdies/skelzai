@@ -251,8 +251,19 @@ const PROVIDERS = {
     }
   },
   github: {
+    // GitHub Models API — uses GITHUB_TOKEN (PAT).
+    // IMPORTANT: GitHub auto-revokes any PAT that appears in deployed code
+    // (secret scanning). PAT must be set via Vercel Environment Variable
+    // GITHUB_TOKEN — NEVER embed it in this file.
+    //
+    // Endpoint fallback: GitHub is migrating from models.inference.ai.azure.com
+    // to models.github.ai/inference. We try the OLD endpoint first; on 401 we
+    // auto-retry the NEW endpoint. This handles both endpoints transparently.
     envVar: 'GITHUB_TOKEN',
-    fallbackKey: null, // GitHub auto-revokes PATs embedded in code. Set GITHUB_TOKEN env var in Vercel.
+    fallbackKey: null,
+    primaryUrl: 'https://models.inference.ai.azure.com/chat/completions',
+    fallbackUrl: 'https://models.github.ai/inference/chat/completions',
+    // `url` is set dynamically per request — see handler below.
     url: 'https://models.inference.ai.azure.com/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -540,9 +551,12 @@ export default async function handler(req, res) {
   // Reason: timeout is 50s per request (gives AI time to think for reasoning/vision).
   // 1 retry would be 50s + 50s = 100s > 60s Vercel maxDuration → FUNCTION_INVOCATION_TIMEOUT.
   // Special handling: 413 (TPM exceeded) surfaces immediately so frontend can fallback.
+  // EXCEPTION: GitHub provider retries once on 401 with the new models.github.ai endpoint
+  // (GitHub is migrating endpoints — old endpoint may 401 even with valid token).
   let lastError = null;
   let response = null;
   let hit413 = false;
+  let usedGithubFallback = false;
   try {
     // For Groq, pass dynamically-computed max_tokens so we never request more
     // than the TPM budget allows. For other providers, buildRequest uses its own defaults.
@@ -555,6 +569,17 @@ export default async function handler(req, res) {
       // TPM exceeded on Groq — surface immediately so frontend can fallback to SkelzAI Turbo.
       hit413 = true;
       lastError = new Error(`Token limit exceeded (413)`);
+    }
+
+    // GitHub: auto-retry on 401 with the new models.github.ai endpoint.
+    // The old models.inference.ai.azure.com endpoint is being deprecated and may
+    // return 401 for valid tokens. Try the new endpoint before surfacing the error.
+    if (provider === 'github' && response.status === 401 && config.fallbackUrl && !usedGithubFallback) {
+      // Drain the 401 response body so the connection can be reused
+      try { await response.text(); } catch(e) {}
+      usedGithubFallback = true;
+      const retryOpts = config.buildRequest(apiKey, model, finalMessages);
+      response = await fetchWithTimeout(config.fallbackUrl, retryOpts, config.timeout);
     }
   } catch (err) {
     lastError = err;
@@ -799,6 +824,15 @@ export default async function handler(req, res) {
     else if (errJson.detail) errDetail = errJson.detail;
     else if (errJson.message) errDetail = errJson.message;
   } catch(e) {}
+
+  // GitHub 401 — give user the most actionable error message possible.
+  // We've already retried the new endpoint above, so 401 here means the PAT
+  // itself is invalid/expired/revoked.
+  if (provider === 'github' && response.status === 401) {
+    return res.status(401).json({
+      error: 'GITHUB_TOKEN tidak valid atau sudah expired. PAT yang di-embed di kode akan otomatis di-revoke oleh GitHub Secret Scanning. Setup: 1) Buka https://github.com/settings/tokens/new 2) Centang scope "repo" 3) Generate PAT 4) Di Vercel Project Settings → Environment Variables → tambah Key=GITHUB_TOKEN Value=ghp_xxx 5) Redeploy. Detail: ' + errDetail
+    });
+  }
 
   return res.status(response.status || 502).json({
     error: `${provider} error ${response.status}: ${errDetail}`
