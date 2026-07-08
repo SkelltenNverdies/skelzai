@@ -327,7 +327,7 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 4.2.2</p>
+        <p><strong class="text-cream-50">Versi:</strong> 4.3.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 39 AI model dikategorikan — 14 SkelzAI (Qwen, 4 vision), 5 Fast Chat, 8 Premium AI, 7 Powerful AI, 8 Vision AI — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -567,7 +567,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.2.2 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.3.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -751,9 +751,15 @@
         }
         var isSel=m.id===selModel.id;
         var lockIcon='';
-        if(isGuest()&&m.free===false)lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:lock-outline" title="Login untuk gunakan"></span>';
-        else if(redeemLocked)lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:ticket-outline" title="Butuh redeem code"></span>';
-        html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+'" data-mid="'+m.id+'">';
+        var lockedClass='';
+        if(isGuest()&&m.free===false){
+          lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:lock-outline" title="Login untuk gunakan"></span>';
+          lockedClass=' opacity-50';
+        }else if(redeemLocked){
+          lockIcon='<span class="iconify text-[10px] text-coral-400/50 flex-shrink-0" data-icon="mdi:ticket-outline" title="Butuh redeem code"></span>';
+          lockedClass=' opacity-40 grayscale';
+        }
+        html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+lockedClass+'" data-mid="'+m.id+'">';
         html+='<div class="flex-1 min-w-0"><p class="text-sm text-cream-50 truncate flex items-center gap-1.5">'+esc(m.label)+lockIcon;
         if(m.vision)html+='<span class="iconify text-[11px] text-coral-400 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>';
         html+='</p><p class="text-[11px] text-[#7C7770]">'+esc(m.desc)+'</p></div>';
@@ -767,6 +773,13 @@
         var otherCount=MODELS.filter(function(m){return m.cat!=='SkelzAI'}).length;
         var totalLocked=lockedCount+otherCount;
         html+='<div class="px-3 py-4 mt-2 text-center"><div class="text-[11px] text-[#7C7770] mb-2">'+totalLocked+' model lain terkunci</div><button onclick="closeMP();openAuth(\'login\')" class="text-xs text-coral-400 hover:underline">Masuk untuk akses semua model →</button></div>';
+      }
+      // If logged in but has locked redeem models, show notice
+      if(!isGuest()){
+        var redeemLockedCount=MODELS.filter(function(m){return m.redeem&&!isModelUnlocked(m)}).length;
+        if(redeemLockedCount>0){
+          html+='<div class="px-3 py-3 mt-2 text-center bg-coral-400/5 rounded-lg mx-1"><div class="text-[11px] text-coral-400/70 mb-1">'+redeemLockedCount+' model premium terkunci</div><button onclick="closeMP();openRedeem()" class="text-xs text-coral-400 hover:underline">Redeem code untuk unlock →</button></div>';
+        }
       }
       el.innerHTML=html;
       var opts=el.querySelectorAll('.mo');
@@ -1418,10 +1431,11 @@
       btn.disabled=true;
       btn.textContent='Memproses...';
       try{
+        var deviceName=navigator.userAgent.match(/Mobile|Android|iPhone|iPad/)?'Mobile':'Desktop';
         var r=await fetch('/api/auth',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:authMode,username:user,password:pass})
+          body:JSON.stringify({action:authMode,username:user,password:pass,device:deviceName})
         });
         var d=await r.json();
         if(!r.ok){

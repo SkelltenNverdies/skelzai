@@ -134,7 +134,8 @@ export default async function handler(req, res) {
         passwordHash: hashPassword(password),
         created: Date.now(),
         chats: {},
-        settings: { themeColor: null, fontSize: '15px', cavemanLevel: 'full' }
+        settings: { themeColor: null, fontSize: '15px', cavemanLevel: 'full' },
+        sessions: [] // Track active sessions (max 2 devices)
       };
 
       await kvSet(userKey, userData);
@@ -143,15 +144,29 @@ export default async function handler(req, res) {
       const sessionToken = generateToken();
       const sessionData = {
         username: username,
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 days
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+        device: body.device || 'unknown' // Track device name
       };
       await kvSet(`session:${sessionToken}`, sessionData, 7 * 24 * 60 * 60);
+
+      // Track session in user data (max 2 concurrent sessions)
+      userData.sessions = userData.sessions || [];
+      userData.sessions.push({ token: sessionToken, device: sessionData.device, created: Date.now() });
+      // Keep only last 2 sessions
+      if (userData.sessions.length > 2) {
+        // Remove oldest session token
+        const oldSession = userData.sessions.shift();
+        if (oldSession && oldSession.token) {
+          await kvDel(`session:${oldSession.token}`);
+        }
+      }
+      await kvSet(userKey, userData);
 
       return res.status(200).json({
         success: true,
         token: sessionToken,
         username: username,
-        message: 'Akun berhasil dibuat!'
+        message: 'Akun berhasil dibuat! Bisa login di 2 device sekaligus.'
       });
     }
 
@@ -175,15 +190,29 @@ export default async function handler(req, res) {
       const sessionToken = generateToken();
       const sessionData = {
         username: username,
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        device: body.device || 'unknown'
       };
       await kvSet(`session:${sessionToken}`, sessionData, 7 * 24 * 60 * 60);
+
+      // Track session — allow max 2 concurrent devices
+      userData.sessions = userData.sessions || [];
+      // Clean up expired sessions
+      userData.sessions = userData.sessions.filter(function(s) {
+        return s && s.token;
+      });
+      // If already 2 sessions, remove oldest (but don't delete it — let it expire naturally)
+      if (userData.sessions.length >= 2) {
+        userData.sessions.shift(); // Remove oldest from tracking
+      }
+      userData.sessions.push({ token: sessionToken, device: sessionData.device, created: Date.now() });
+      await kvSet(userKey, userData);
 
       return res.status(200).json({
         success: true,
         token: sessionToken,
         username: username,
-        message: 'Login berhasil!'
+        message: 'Login berhasil! Aktif di ' + userData.sessions.length + ' device.'
       });
     }
 
