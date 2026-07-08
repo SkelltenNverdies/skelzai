@@ -336,7 +336,7 @@ const PROVIDERS = {
     envVar: 'NVIDIA_API_KEY',
     fallbackKey: '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',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
-    timeout: 50000,
+    timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
     smallContext: ['meta/llama-3.2-3b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
     buildRequest(apiKey, model, messages) {
@@ -393,13 +393,19 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
+// Fetch with connection timeout — timer is cleared once headers arrive.
+// For streaming, the body is read separately and should NOT be aborted by this timer.
 async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    // Headers arrived — clear the timer so body reading is NOT aborted
     clearTimeout(timer);
+    return response;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
   }
 }
 
