@@ -210,6 +210,8 @@
     *{-webkit-tap-highlight-color:transparent}
     /* Smooth scroll */
     #CA{scroll-behavior:smooth}
+    /* Profile menu scroll */
+    #PM{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
     /* Prevent horizontal overflow */
     #MC{overflow-wrap:break-word;word-wrap:break-word}
     /* Optimize image loading */
@@ -285,43 +287,19 @@
         </div>
         <span class="iconify text-[#7C7770] text-base" id="PC" data-icon="mdi:chevron-up"></span>
       </div>
-      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden">
-        <button onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
-        <button onclick="document.getElementById('PROFILE_PHOTO_INPUT').click()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:camera-outline"></span>Ubah Foto Profil</button>
+      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto">
+        <button onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
+        <button onclick="document.getElementById('PROFILE_PHOTO_INPUT').click()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:camera-outline"></span>Ubah Foto Profil</button>
         <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
-        <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
-        <button onclick="openRedeem()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:ticket-outline"></span>Redeem Code</button>
-        <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
-        <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
+        <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
+        <button onclick="openRedeem()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:ticket-outline"></span>Redeem Code</button>
+        <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
+        <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
         <div class="border-t border-white/[0.06]"></div>
-        <!-- Auth section -->
-        <button id="AUTH_LOGIN_LI" onclick="openAuth('login')" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:login"></span>Masuk / Daftar</button>
-        <button id="AUTH_LOGOUT_LI" onclick="authLogout()" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Keluar</button>
+        <button id="AUTH_LOGIN_LI" onclick="openAuth('login')" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:login"></span>Masuk / Daftar</button>
+        <button id="AUTH_LOGOUT_LI" onclick="authLogout()" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Keluar</button>
         <div class="border-t border-white/[0.06]"></div>
-        <!-- Caveman Mode Toggle -->
-        <div class="px-3 py-2.5">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2.5">
-              <span class="iconify text-base text-coral-400" data-icon="mdi:emoticon-cool-outline"></span>
-              <span class="text-sm text-[#C2BFB8]">Caveman Mode</span>
-            </div>
-            <button id="CAVEMAN_TOGGLE" onclick="toggleCaveman()" class="relative w-11 h-6 rounded-full transition-colors flex-shrink-0">
-              <span id="CAVEMAN_KNOB" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
-            </button>
-          </div>
-          <div id="CAVEMAN_LEVEL_WRAP" class="flex items-center gap-1.5 mt-2">
-            <span class="text-[10px] text-[#7C7770] flex-shrink-0">Level:</span>
-            <div class="flex gap-1 flex-1">
-              <button onclick="setCavemanLevel('lite')" data-level="lite" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Lite</button>
-              <button onclick="setCavemanLevel('full')" data-level="full" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Full</button>
-              <button onclick="setCavemanLevel('ultra')" data-level="ultra" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">Ultra</button>
-              <button onclick="setCavemanLevel('wenyan')" data-level="wenyan" class="caveman-lvl flex-1 text-[10px] px-2 py-1.5 rounded-md transition-colors">文言</button>
-            </div>
-          </div>
-          <p class="text-[10px] text-[#7C7770] mt-2 leading-relaxed">Ringkas jawaban AI ~65%, hemat token. Code/path/URL tetap utuh.</p>
-        </div>
-        <div class="border-t border-white/[0.06]"></div>
-        <button onclick="resetApp()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-red-400/70 hover:bg-red-500/5 hover:text-red-400 transition-colors"><span class="iconify text-base" data-icon="mdi:logout"></span>Reset Aplikasi</button>
+        <button onclick="resetApp()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-400/70 hover:bg-red-500/5 hover:text-red-400 transition-colors"><span class="iconify text-base" data-icon="mdi:alert-outline"></span>Reset Aplikasi</button>
       </div>
     </div>
   </aside>
@@ -349,7 +327,7 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 4.2.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 4.2.1</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
         <p><strong class="text-cream-50">Model:</strong> 39 AI model dikategorikan — 14 SkelzAI (Qwen, 4 vision), 5 Fast Chat, 8 Premium AI, 7 Powerful AI, 8 Vision AI — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
@@ -583,7 +561,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.2.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.2.1 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
