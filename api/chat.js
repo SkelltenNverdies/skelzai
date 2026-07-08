@@ -332,13 +332,14 @@ const PROVIDERS = {
     //   nemotron-nano-12b-v2-vl
     //
     // Known issues:
-    // - Small models (3B, 4B, 10.7B) have 4096 max context → use conservative max_tokens
+    // - Small models (4B, 10.7B) have 4096 max context → use max_tokens=3000
+    // - meta/llama-3.2-3b-instruct always times out → removed from model list
     envVar: 'NVIDIA_API_KEY',
     fallbackKey: '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',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
-    smallContext: ['meta/llama-3.2-3b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
+    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
     buildRequest(apiKey, model, messages) {
       // Check if this model doesn't support system role
       const noSys = (this.noSystemRole || []).indexOf(model) !== -1;
@@ -366,7 +367,7 @@ const PROVIDERS = {
       }
       // Set max_tokens based on model context
       const isSmall = (this.smallContext || []).indexOf(model) !== -1;
-      const maxTokens = isSmall ? 3500 : 8192;
+      const maxTokens = isSmall ? 3000 : 8192;
       return {
         method: 'POST',
         headers: {
