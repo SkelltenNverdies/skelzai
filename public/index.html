@@ -327,9 +327,9 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 4.3.1</p>
+        <p><strong class="text-cream-50">Versi:</strong> 4.4.2</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> 38 AI model dikategorikan — 14 Skelz (4 vision), 5 Fast Chat, 8 Premium AI, 6 Powerful AI, 5 Vision AI — semua gratis, terverifikasi</p>
+        <p><strong class="text-cream-50">Model:</strong> 46 AI model dikategorikan — 14 Skelz (4 vision), 5 Fast Chat, 8 Premium AI, 14 Powerful AI (1 image gen), 5 Vision AI — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
         <p><strong class="text-cream-50">Fitur:</strong> Redeem code system, global login (cross-device), performance mode, foto profil, tema warna, font size, guest mode, streaming 60fps, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
@@ -567,7 +567,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.3.1 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.4.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -619,6 +619,16 @@
       {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'}
+      /* AIHubMix Free Models (limit ~7 req/hour, reset hourly) */
+      ,{id:'coding-glm-4.7-free',provider:'aihubmix',label:'GLM 4.7 Coding',desc:'AIHubMix — Coding specialized, gratis',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'}
+      ,{id:'coding-glm-4.6-free',provider:'aihubmix',label:'GLM 4.6 Coding',desc:'AIHubMix — Coding, stabil',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      ,{id:'coding-minimax-m3-free',provider:'aihubmix',label:'MiniMax M3 Coding',desc:'AIHubMix — Coding + reasoning',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'}
+      ,{id:'coding-minimax-m2.7-free',provider:'aihubmix',label:'MiniMax M2.7 Coding',desc:'AIHubMix — Coding cepat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      ,{id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      ,{id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      ,{id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      /* Image Generation (AIHubMix free) */
+      ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
       /* Gemini models commented out — API key invalid.
          To re-enable: get valid key from https://aistudio.google.com/app/apikey (format: AIza...)
       ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},

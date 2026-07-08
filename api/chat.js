@@ -135,7 +135,7 @@ const PROVIDERS = {
   qwen: {
     envVar: 'QWEN_API_KEY',
     url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
-    timeout: 50000,
+    timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -144,7 +144,7 @@ const PROVIDERS = {
           'Authorization': `Bearer ${apiKey}`,
           'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg'
         },
-        body: JSON.stringify({ model, messages, stream: true, max_tokens: 8192, temperature: 0.7 })
+        body: JSON.stringify({ model, messages, stream: true, max_tokens: 16384, temperature: 0.7, top_p: 0.9 })
       };
     }
   },
@@ -152,22 +152,14 @@ const PROVIDERS = {
     envVar: 'GROQ_API_KEY',
     fallbackKey: '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',
     url: 'https://api.groq.com/openai/v1/chat/completions',
-    timeout: 50000,
-    // Groq free tier TPM (Tokens Per Minute) limits — varies per model.
-    // Groq counts request size as (input_tokens + max_tokens).
-    // We must keep total < TPM limit to avoid 413 errors.
-    // Strategy: aggressive history trimming + conservative max_tokens.
+    timeout: 55000,
     getMaxTokens(model) {
-      // Larger models (70B+, MoE, GPT-OSS) → 4000 tokens
-      // Smaller models (8B, 20B) → 3000 tokens (enough for code)
-      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 4000;
-      return 3000;
+      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 8000;
+      return 4000;
     },
     getMaxHistory(model) {
-      // Small models (8B, 20B) — tight TPM, only last 4 messages
-      // Large models (70B+, MoE, 120B) — more room, last 8 messages
-      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 8;
-      return 4;
+      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 10;
+      return 6;
     },
     buildRequest(apiKey, model, messages) {
       const maxTokens = this.getMaxTokens(model);
@@ -182,16 +174,10 @@ const PROVIDERS = {
     }
   },
   openrouter: {
-    // OpenRouter — OpenAI-compatible API
-    // Default key embedded as fallback so it works out-of-the-box;
-    // override via OPENROUTER_API_KEY env var for production use.
-    // NOTE: NVIDIA Nemotron 3 models are reasoning models — they consume
-    // tokens for chain-of-thought before producing final content. We use
-    // a large max_tokens (8192) so the model has room to finish reasoning.
     envVar: 'OPENROUTER_API_KEY',
     fallbackKey: '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',
     url: 'https://openrouter.ai/api/v1/chat/completions',
-    timeout: 50000,
+    timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -205,25 +191,18 @@ const PROVIDERS = {
           model,
           messages,
           stream: true,
-          max_tokens: 8192,
-          temperature: 0.7
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
         })
       };
     }
   },
   gemini: {
-    // Google Gemini via OpenAI-compatible endpoint (generativelanguage.googleapis.com)
-    // Free tier: 15 RPM, 1500 req/day for most models. Vision-capable.
-    // API key embedded as fallback; override via GEMINI_API_KEY env var.
-    // NOTE: Google AI Studio now issues keys in two formats:
-    //   - Old format: "AIza..." (39 chars)
-    //   - New format: "AQ.Ab8R..." (longer, OAuth-style but works as API key)
-    // Both formats work with Authorization: Bearer header on the OpenAI-compat endpoint.
-    // If 401 occurs, code falls back to native Gemini API with x-goog-api-key header.
     envVar: 'GEMINI_API_KEY',
     fallbackKey: 'AQ.Ab8RN6J9_yC_bHZLwPq8TZs3pIiY60wN3yY28XBAiOvZwWPdwg',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-    timeout: 50000,
+    timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -235,74 +214,18 @@ const PROVIDERS = {
           model,
           messages,
           stream: true,
-          max_tokens: 8192,
+          max_tokens: 16384,
           temperature: 0.7,
           top_p: 0.9
         })
       };
-    },
-    // Alternative auth method (native Gemini API with x-goog-api-key header).
-    // Used as fallback if OpenAI-compat endpoint returns 401.
-    buildNativeRequest(apiKey, model, messages) {
-      // Convert OpenAI-style messages to Gemini native format
-      const contents = [];
-      let systemInstruction = null;
-      for (const m of messages) {
-        if (m.role === 'system') {
-          systemInstruction = { parts: [{ text: m.content }] };
-        } else {
-          const role = m.role === 'assistant' ? 'model' : 'user';
-          // Handle multimodal content (array of {type, text/image_url})
-          let parts;
-          if (Array.isArray(m.content)) {
-            parts = m.content.map(c => {
-              if (c.type === 'text') return { text: c.text };
-              if (c.type === 'image_url') {
-                const url = c.image_url.url || '';
-                const match = url.match(/^data:([^;]+);base64,(.+)$/);
-                if (match) {
-                  return { inline_data: { mime_type: match[1], data: match[2] } };
-                }
-                return { text: '[image url not supported in native mode]' };
-              }
-              return { text: '' };
-            });
-          } else {
-            parts = [{ text: m.content || '' }];
-          }
-          contents.push({ role, parts });
-        }
-      }
-      const body = {
-        contents,
-        generationConfig: {
-          maxOutputTokens: 8192,
-          temperature: 0.7,
-          topP: 0.9
-        }
-      };
-      if (systemInstruction) body.systemInstruction = systemInstruction;
-      return {
-        method: 'POST',
-        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify(body)
-      };
     }
   },
   github: {
-    // GitHub Models API (models.inference.ai.azure.com) — OpenAI-compatible.
-    // Free for GitHub users with PAT. Generous daily limits per model.
-    // Supports GPT-4o, GPT-4o-mini, GPT-4.1, GPT-4.1-mini, GPT-4.1-nano, Phi-4, Llama-3.3-70B
-    // All GPT-4o/4.1 models support vision.
-    // Override via GITHUB_TOKEN env var for production use.
     envVar: 'GITHUB_TOKEN',
-    fallbackKey: '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',
+    fallbackKey: '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',
     url: 'https://models.inference.ai.azure.com/chat/completions',
-    timeout: 50000,
+    timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -315,7 +238,7 @@ const PROVIDERS = {
           model,
           messages,
           stream: true,
-          max_tokens: 8192,
+          max_tokens: 16384,
           temperature: 0.7,
           top_p: 0.9
         })
@@ -332,14 +255,17 @@ const PROVIDERS = {
     //   nemotron-nano-12b-v2-vl
     //
     // Known issues:
-    // - Small models (4B, 10.7B) have 4096 max context → use max_tokens=3000
+    // - Small models (4B, 10.7B) have 4096 max context → use max_tokens=2000
     // - meta/llama-3.2-3b-instruct always times out → removed from model list
     envVar: 'NVIDIA_API_KEY',
     fallbackKey: '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',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
+    // System prompt alone is ~400 tokens, so max_tokens must be well under 4096 - input
     smallContext: ['nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
+    // Smallest max_tokens for 4096 context models (4096 - 2000 input - 96 buffer = ~2000)
+    smallContextMaxTokens: 2000,
     buildRequest(apiKey, model, messages) {
       // Check if this model doesn't support system role
       const noSys = (this.noSystemRole || []).indexOf(model) !== -1;
@@ -367,7 +293,7 @@ const PROVIDERS = {
       }
       // Set max_tokens based on model context
       const isSmall = (this.smallContext || []).indexOf(model) !== -1;
-      const maxTokens = isSmall ? 3000 : 8192;
+      const maxTokens = isSmall ? (this.smallContextMaxTokens || 2000) : 8192;
       return {
         method: 'POST',
         headers: {
@@ -382,6 +308,62 @@ const PROVIDERS = {
           max_tokens: maxTokens,
           temperature: 0.7,
           top_p: 0.9
+        })
+      };
+    }
+  },
+  aihubmix: {
+    // AIHubMix — OpenAI-compatible API aggregator
+    // Free models available with limits (~7 req/hour after top-up $1)
+    // Override via AIHUBMIX_API_KEY env var
+    envVar: 'AIHUBMIX_API_KEY',
+    fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
+    url: 'https://aihubmix.com/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
+  },
+  aihubmix_image: {
+    // AIHubMix Image Generation — gpt-image-2-free
+    // Uses /v1/images/generations endpoint (non-streaming)
+    envVar: 'AIHUBMIX_API_KEY',
+    fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
+    url: 'https://aihubmix.com/v1/images/generations',
+    timeout: 55000,
+    isImageGen: true,
+    buildRequest(apiKey, model, messages) {
+      let prompt = 'generate an image';
+      for (const m of messages) {
+        if (m.role === 'user' && typeof m.content === 'string') {
+          prompt = m.content;
+        }
+      }
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-2-free',
+          prompt: prompt,
+          n: 1,
+          size: '1024x1024'
         })
       };
     }
@@ -594,6 +576,58 @@ export default async function handler(req, res) {
       fallback: true,
       detail: errDetail
     });
+  }
+
+  // ===== IMAGE GENERATION (non-streaming) =====
+  if (response && response.ok && config.isImageGen) {
+    const data = await response.json().catch(() => ({}));
+    // Format 1: /v1/images/generations response → { data: [{ b64_json | url }] }
+    if (data.data && Array.isArray(data.data) && data.data[0]) {
+      const img = data.data[0];
+      let imgSrc = null;
+      if (img.b64_json) {
+        imgSrc = 'data:image/png;base64,' + img.b64_json;
+      } else if (img.url) {
+        imgSrc = img.url;
+      }
+      if (imgSrc) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+        res.write(`data: ${JSON.stringify({ content: '![Generated Image](' + imgSrc + ')', imageGen: true })}\n\n`);
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+        return;
+      }
+    }
+    // Format 2: chat completion with multi_mod_content
+    const choice = data.choices && data.choices[0];
+    const msg = choice && choice.message || {};
+    let imageData = null;
+    if (msg.multi_mod_content) {
+      const mmc = msg.multi_mod_content;
+      const items = Array.isArray(mmc) ? mmc : (typeof mmc === 'string' ? JSON.parse(mmc) : []);
+      for (const item of items) {
+        if (item.inline_data && item.inline_data.data) {
+          imageData = 'data:image/jpeg;base64,' + item.inline_data.data;
+          break;
+        }
+      }
+    }
+    if (imageData) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      res.flushHeaders();
+      res.write(`data: ${JSON.stringify({ content: '![Generated Image](' + imageData + ')', imageGen: true })}\n\n`);
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+      return;
+    }
+    return res.status(502).json({ error: 'Image generation failed — no image data in response' });
   }
 
   // ===== STREAMING RESPONSE =====

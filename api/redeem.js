@@ -31,7 +31,7 @@ const REDEEM_CODES = {
   'SKELZ-POWER-2025': {
     unlocks: 'powerful',
     description: 'Unlock semua Powerful AI models',
-    models: ['minimaxai/minimax-m3', 'z-ai/glm-5.2', 'mistralai/ministral-14b-instruct-2512', 'stockmark/stockmark-2-100b-instruct', 'meta/llama-3.2-3b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct']
+    models: ['minimaxai/minimax-m3', 'z-ai/glm-5.2', 'mistralai/ministral-14b-instruct-2512', 'stockmark/stockmark-2-100b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct', 'coding-glm-4.7-free', 'coding-minimax-m3-free']
   },
   // Unlock ALL premium models (master code)
   'SKELZ-ALL-ACCESS-2025': {
