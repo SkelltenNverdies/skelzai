@@ -641,7 +641,29 @@
     /* ===== STATE ===== */
     var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null,cavemanEnabled=true,cavemanLevel='full';
 
-    function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id);localStorage.setItem('sk_caveman',cavemanEnabled?'1':'0');localStorage.setItem('sk_caveman_level',cavemanLevel)}catch(e){}}    function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl}catch(e){}}
+    function save(){
+      try{
+        localStorage.setItem('sk_c',JSON.stringify(chats));
+        localStorage.setItem('sk_id',curId||'');
+        localStorage.setItem('sk_n',document.getElementById('UN').textContent);
+        localStorage.setItem('sk_m',selModel.id);
+        localStorage.setItem('sk_caveman',cavemanEnabled?'1':'0');
+        localStorage.setItem('sk_caveman_level',cavemanLevel);
+      }catch(e){}
+      // If logged in, also debounce-sync to server (database is source of truth).
+      // debouncedSync is defined later in the file but hoisted via function declaration.
+      if(authToken){debouncedSync()}
+    }
+    function load(){
+      try{
+        var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);
+        curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;
+        var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;
+        var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}
+        var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';
+        var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl;
+      }catch(e){}
+    }
 
     /* ===== HELPERS ===== */
     function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -1267,6 +1289,9 @@
 
     /* ===== AUTH SYSTEM (global, server-side via Vercel KV) ===== */
     var currentUser=null,authMode='login',authToken=null;
+    // Guard flag: suppresses debouncedSync while we're loading chats from server.
+    // Prevents stale local chats from overwriting server data on initial page load.
+    var _loadingFromServer=false;
     function authInit(){
       // Try to restore session from localStorage
       try{
@@ -1276,6 +1301,8 @@
           if(s.token&&s.username&&s.expires>Date.now()){
             currentUser=s;
             authToken=s.token;
+            // Suppress sync until server chats have been loaded
+            _loadingFromServer=true;
             updateAuthUI();
             // Verify token with server (async, non-blocking)
             verifyToken(s.token);
@@ -1300,6 +1327,7 @@
           // Token expired or invalid — logout
           currentUser=null;
           authToken=null;
+          _loadingFromServer=false;
           localStorage.removeItem('sk_session');
           updateAuthUI();
           if(selModel.cat!=='SkelzAI'){selModel=MODELS[0];setModelLabel()}
@@ -1308,7 +1336,8 @@
           loadUserData(token);
         }
       }catch(e){
-        // Network error — keep local session
+        // Network error — keep local session, release guard so future saves can sync
+        _loadingFromServer=false;
       }
     }
     async function loadUserData(token){
@@ -1319,14 +1348,27 @@
           body:JSON.stringify({action:'load',token:token})
         });
         var d=await r.json();
-        if(d.success&&d.chats){
-          // Merge server chats with local (server takes priority if different)
-          var serverChats=d.chats;
-          var localChatsCount=Object.keys(chats).length;
-          if(localChatsCount===0&&Object.keys(serverChats).length>0){
-            chats=serverChats;
-            save();updHist();updTop();
+        if(d.success){
+          // SERVER IS SOURCE OF TRUTH for logged-in users.
+          // Replace local chats entirely with server copy (auto-sync across devices).
+          var serverChats=d.chats||{};
+          chats=serverChats;
+          // Pick a sensible current chat: existing curId if still present, else newest, else null
+          if(!curId||!chats[curId]){
+            var ids=Object.keys(chats).sort(function(a,b){return (chats[b].created||0)-(chats[a].created||0)});
+            curId=ids.length>0?ids[0]:null;
           }
+          // If no chats exist, create a fresh one so the UI shows the welcome screen
+          if(!curId){newChat()}else{loadChat(curId)}
+          // Persist loaded chats to localStorage (mirror) and update UI.
+          // NOTE: we intentionally bypass debouncedSync here (we just downloaded from server).
+          try{
+            localStorage.setItem('sk_c',JSON.stringify(chats));
+            localStorage.setItem('sk_id',curId||'');
+          }catch(e){}
+          updHist();updTop();
+          // Release the sync guard — future save() calls will sync normally.
+          _loadingFromServer=false;
           // Load settings
           if(d.settings){
             if(d.settings.themeColor){
@@ -1343,9 +1385,12 @@
           }
         }
       }catch(e){}
+      // Always release the guard, even on error (otherwise sync stays suppressed forever)
+      _loadingFromServer=false;
     }
     async function syncUserData(){
       if(!authToken||!currentUser)return;
+      if(_loadingFromServer)return; // skip sync while initial server load is in progress
       try{
         // Sync chats + settings to server (debounced, non-blocking)
         await fetch('/api/auth',{
@@ -1457,6 +1502,8 @@
         authToken=d.token;
         currentUser={username:d.username,token:d.token,expires:Date.now()+7*24*60*60*1000};
         localStorage.setItem('sk_session',JSON.stringify(currentUser));
+        // Suppress sync until server chats have been loaded
+        _loadingFromServer=true;
         updateAuthUI();
         closeM('AUTH');
         toast(d.message||'Berhasil!','success');
@@ -1469,7 +1516,7 @@
       btn.textContent=authMode==='login'?'Masuk':'Daftar';
     }
     async function authLogout(){
-      showConfirm('Keluar','Anda yakin ingin keluar? Chat lokal akan tetap tersimpan.',function(){
+      showConfirm('Keluar','Anda yakin ingin keluar? Chat tersimpan di server dan bisa diakses saat login kembali di device mana saja.',function(){
         // Logout from server
         if(authToken){
           fetch('/api/auth',{
@@ -2012,17 +2059,38 @@
       });
     }
 
-    /* ===== SMART FALLBACK — Groq/Gemini error -> SkelzAI Turbo ===== */
+    /* ===== SMART FALLBACK — Groq/Gemini error -> SkelzAI Turbo =====
+       Only auto-fallback AFTER multiple consecutive failures from the SAME model.
+       First failure: just show the error (user might be testing the model).
+       This prevents the "always auto-switch on first try" complaint where
+       GPT-OSS 120B (or any Groq model) was being abandoned even though it
+       was actually usable.
+    */
+    var _modelFailCounts={};
+    function _modelFailKey(){return selModel?selModel.id+':'+selModel.provider:''}
     function callAPIStreamWithFallback(userMsg, imageAttachment){
-      return callAPIStream(userMsg, imageAttachment, false).catch(function(err){
+      return callAPIStream(userMsg, imageAttachment, false).then(function(result){
+        // Success — reset failure counter for this model
+        _modelFailCounts[_modelFailKey()]=0;
+        return result;
+      }).catch(function(err){
         var msg=(err&&err.message)?err.message.toLowerCase():'';
         var isBad=msg.indexOf('413')!==-1||msg.indexOf('429')!==-1||msg.indexOf('504')!==-1||msg.indexOf('timeout')!==-1||msg.indexOf('gateway')!==-1||msg.indexOf('ratelimit')!==-1||msg.indexOf('token limit')!==-1||msg.indexOf('quota')!==-1;
+        // Only auto-switch for Groq/Gemini transient errors, AND only after 2 consecutive failures.
+        // First failure → just show error, let user retry or manually switch.
         if(isBad && (selModel.provider==='groq' || selModel.provider==='gemini')){
+          var k=_modelFailKey();
+          _modelFailCounts[k]=(_modelFailCounts[k]||0)+1;
+          if(_modelFailCounts[k]<2){
+            // First failure — show error, don't switch. User might just be testing.
+            throw err;
+          }
+          // 2nd consecutive failure → auto-fallback to SkelzAI Turbo
           var savedModel=selModel;
           selModel=MODELS[0];
           setModelLabel();
           var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':msg.indexOf('quota')!==-1?'Quota exceeded':'Rate limit';
-          toast(reason+' — auto-switch ke SkelzAI Turbo','warning');
+          toast(reason+' (2x) — auto-switch ke SkelzAI Turbo','warning');
           return callAPIStream(userMsg, null, true).then(function(result){
             selModel=savedModel;setModelLabel();
             return result;
@@ -2209,6 +2277,54 @@
         hideInstallMenuItem();
         deferredPrompt=null;
       });
+
+      // ===== AUTO-SYNC LIFECYCLE LISTENERS =====
+      // Flush pending chat sync to server when tab is hidden or unloaded.
+      // This ensures cross-device sync works even if user closes the tab quickly.
+      document.addEventListener('visibilitychange',function(){
+        if(document.visibilityState==='hidden'){flushSync()}
+      });
+      window.addEventListener('beforeunload',function(){
+        flushSync();
+      });
+      // On window focus (returning to tab), pull latest from server — another device
+      // may have updated chats. Throttled to every 30s to avoid hammering the server.
+      var _lastFocusPull=0;
+      window.addEventListener('focus',function(){
+        var now=Date.now();
+        if(authToken&&now-_lastFocusPull>30000){
+          _lastFocusPull=now;
+          // Pull server data (silent, non-blocking) — only update if our local chats
+          // differ (e.g. new chat from another device)
+          pullServerChats();
+        }
+      });
+
+      async function pullServerChats(){
+        if(!authToken)return;
+        try{
+          var r=await fetch('/api/auth',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'load',token:authToken})
+          });
+          var d=await r.json();
+          if(d.success&&d.chats){
+            var serverKeys=Object.keys(d.chats).sort();
+            var localKeys=Object.keys(chats).sort();
+            // Only replace if server has different/newer data (avoid clobbering in-flight edits)
+            if(serverKeys.join(',')!==localKeys.join(',')){
+              chats=d.chats;
+              if(!curId||!chats[curId]){
+                var ids=Object.keys(chats).sort(function(a,b){return (chats[b].created||0)-(chats[a].created||0)});
+                curId=ids.length>0?ids[0]:null;
+              }
+              if(curId){loadChat(curId)}else{newChat()}
+              updHist();updTop();
+            }
+          }
+        }catch(e){}
+      }
 
       function showInstallMenuItem(){
         var li=document.getElementById('INSTALL_LI');

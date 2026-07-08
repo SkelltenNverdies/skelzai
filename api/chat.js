@@ -153,23 +153,52 @@ const PROVIDERS = {
     fallbackKey: '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',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 55000,
+    // Groq free-tier TPM limits (verified Dec 2024):
+    //   - llama-3.1-8b-instant:    30,000 TPM
+    //   - llama-3.3-70b-versatile:  6,000 TPM
+    //   - gpt-oss-120b:             6,000 TPM (was wrongly treated as 12000)
+    //   - gpt-oss-20b:              6,000 TPM
+    // max_tokens must be < tpmLimit - inputTokens - buffer, otherwise Groq returns 413
+    // even on first request. Lower = safer.
+    getTpmLimit(model) {
+      if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 30000;
+      return 6000; // 70b, oss-120, oss-20, scout all share 6000 TPM
+    },
     getMaxTokens(model) {
-      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 8000;
-      return 4000;
+      // Conservative caps so input + output stays under TPM even for medium-length chats.
+      // 8b has tons of headroom (30k TPM) so we can be generous.
+      if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 6000;
+      // 70b / oss-120 / oss-20 all have 6000 TPM — leave ~2500 for input
+      if (model.indexOf('oss-120') !== -1) return 3000; // largest model, slowest — keep tight
+      if (model.indexOf('oss-20') !== -1) return 3000;
+      if (model.indexOf('70b') !== -1 || model.indexOf('scout') !== -1) return 3500;
+      return 3000;
     },
     getMaxHistory(model) {
-      if (model.indexOf('70b') !== -1 || model.indexOf('oss-120') !== -1 || model.indexOf('scout') !== -1) return 10;
-      return 6;
+      if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 10;
+      return 6; // tight-history models
     },
-    buildRequest(apiKey, model, messages) {
-      const maxTokens = this.getMaxTokens(model);
+    // Dynamic max_tokens: scales down if input is large, so we never exceed TPM.
+    // Returns the final max_tokens to send to Groq.
+    getDynamicMaxTokens(model, inputTokens) {
+      const tpmLimit = this.getTpmLimit(model);
+      const cap = this.getMaxTokens(model);
+      const buffer = 500;
+      const budget = tpmLimit - inputTokens - buffer;
+      // Use the smaller of: configured cap OR remaining budget
+      // But never go below 800 — too small to be useful
+      return Math.max(800, Math.min(cap, budget));
+    },
+    buildRequest(apiKey, model, messages, maxTokens) {
+      // maxTokens is now passed in (dynamically computed) — fallback to getMaxTokens
+      const finalMax = maxTokens || this.getMaxTokens(model);
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ model, messages, stream: true, max_tokens: maxTokens, temperature: 0.7, top_p: 0.9 })
+        body: JSON.stringify({ model, messages, stream: true, max_tokens: finalMax, temperature: 0.7, top_p: 0.9 })
       };
     }
   },
@@ -462,15 +491,34 @@ export default async function handler(req, res) {
   let finalMessages = [sysPrompt, ...messages];
 
   // Groq-specific aggressive trimming to avoid 413 TPM errors
+  let dynamicMaxTokens = null;
   if (provider === 'groq' && config.getMaxHistory) {
     const maxHist = config.getMaxHistory(model);
     // Keep system prompt + last N messages
     const trimmed = messages.slice(-maxHist);
     finalMessages = [sysPrompt, ...trimmed];
+
+    // Dynamic max_tokens: estimate input tokens, then compute remaining TPM budget.
+    // This is the KEY fix: even on first message with max_tokens=8000, we'd exceed
+    // 6000 TPM on oss-120b → instant 413. Now we scale max_tokens to fit.
+    const estInput = estimateTokens(finalMessages);
+    dynamicMaxTokens = config.getDynamicMaxTokens(model, estInput);
+
+    // If even with min 800 max_tokens we can't fit input, trim further
+    let estTokens = estInput;
+    const tpmLimit = config.getTpmLimit(model);
+    const minBudget = tpmLimit - 800 - 500; // absolute minimum budget for input
+    while (estTokens > minBudget && finalMessages.length > 2) {
+      finalMessages.splice(1, 1);
+      estTokens = estimateTokens(finalMessages);
+    }
+    // Recompute dynamic max_tokens after final trim
+    const finalEstInput = estimateTokens(finalMessages);
+    dynamicMaxTokens = config.getDynamicMaxTokens(model, finalEstInput);
   }
 
-  // Rough token estimation (4 chars ≈ 1 token). If estimated input tokens
-  // exceed a safe budget for the provider, trim further.
+  // Rough token estimation (4 chars ≈ 1 token). Hoisted function declaration —
+  // safe to call from the Groq block above.
   function estimateTokens(msgs) {
     let chars = 0;
     for (const m of msgs) {
@@ -479,21 +527,7 @@ export default async function handler(req, res) {
     return Math.ceil(chars / 4);
   }
 
-  // For Groq 8B (6000 TPM), ensure input tokens + max_tokens < 5500 (safety margin)
-  // For Groq 70B (12000 TPM), ensure input tokens + max_tokens < 11000
-  if (provider === 'groq') {
-    const maxTok = config.getMaxTokens(model);
-    const tpmLimit = model.indexOf('70b') !== -1 ? 12000 : 6000;
-    const safeBudget = tpmLimit - maxTok - 500; // 500 token safety margin
-
-    let estTokens = estimateTokens(finalMessages);
-    // Trim history (keep system prompt + last messages) until under budget
-    while (estTokens > safeBudget && finalMessages.length > 2) {
-      // Remove the 2nd message (first after system prompt) — keeps recent context
-      finalMessages.splice(1, 1);
-      estTokens = estimateTokens(finalMessages);
-    }
-  }
+  // (Legacy Groq TPM block removed — replaced by dynamic max_tokens above.)
 
   // SINGLE ATTEMPT only — no retry.
   // Reason: timeout is 50s per request (gives AI time to think for reasoning/vision).
@@ -503,7 +537,11 @@ export default async function handler(req, res) {
   let response = null;
   let hit413 = false;
   try {
-    const reqOptions = config.buildRequest(apiKey, model, finalMessages);
+    // For Groq, pass dynamically-computed max_tokens so we never request more
+    // than the TPM budget allows. For other providers, buildRequest uses its own defaults.
+    const reqOptions = dynamicMaxTokens
+      ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
+      : config.buildRequest(apiKey, model, finalMessages);
     response = await fetchWithTimeout(config.url, reqOptions, config.timeout);
 
     if (response.status === 413) {
