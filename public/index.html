@@ -290,6 +290,7 @@
         <button onclick="document.getElementById('PROFILE_PHOTO_INPUT').click()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:camera-outline"></span>Ubah Foto Profil</button>
         <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
         <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
+        <button onclick="openRedeem()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:ticket-outline"></span>Redeem Code</button>
         <button onclick="openAM()" class="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:information-outline"></span>Tentang SkelzAI</button>
         <button id="INSTALL_LI" class="hidden w-full flex items-center gap-2.5 px-3 py-3 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:download"></span>Pasang App</button>
         <div class="border-t border-white/[0.06]"></div>
@@ -348,11 +349,11 @@
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 3.3.0</p>
+        <p><strong class="text-cream-50">Versi:</strong> 4.2.0</p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> 28 AI model dikategorikan (SkelzAI, Fast Chat, Premium AI, Powerful AI, Vision AI) — semua gratis, terverifikasi</p>
+        <p><strong class="text-cream-50">Model:</strong> 39 AI model dikategorikan — 14 SkelzAI (Qwen, 4 vision), 5 Fast Chat, 8 Premium AI, 7 Powerful AI, 8 Vision AI — semua gratis, terverifikasi</p>
         <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Login/Register, foto profil, tema warna, ukuran font, guest mode, streaming 60fps, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Redeem code system, global login (cross-device), performance mode, foto profil, tema warna, font size, guest mode, streaming 60fps, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -426,6 +427,32 @@
     </div>
   </div>
 
+  <!-- REDEEM MODAL -->
+  <div id="REDEEM" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('REDEEM')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:ticket-outline"></span></div>
+          <span class="text-base font-medium text-cream-50">Redeem Code</span>
+        </div>
+        <button onclick="closeM('REDEEM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
+      </div>
+      <div id="REDEEM_LOGIN_REQ" class="text-center py-6">
+        <div class="w-12 h-12 rounded-2xl bg-coral-400/10 border border-coral-400/15 flex items-center justify-center mx-auto mb-3"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:lock-outline"></span></div>
+        <p class="text-sm text-[#C2BFB8] mb-4">Login dulu untuk redeem code dan unlock model premium</p>
+        <button onclick="closeM('REDEEM');openAuth('login')" class="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Masuk / Daftar</button>
+      </div>
+      <div id="REDEEM_FORM" class="hidden">
+        <p class="text-xs text-[#7C7770] mb-3 leading-relaxed">Masukkan kode redeem untuk unlock model AI premium. Kode bisa digunakan untuk unlock kategori: Premium AI, Vision AI, Powerful AI, atau Skelz Premium.</p>
+        <input id="REDEEM_INPUT" type="text" maxlength="30" placeholder="Masukkan kode redeem..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors uppercase" onkeydown="if(event.key==='Enter')doRedeem()">
+        <div id="REDEEM_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mt-2"></div>
+        <div id="REDEEM_SUCCESS" class="hidden text-xs text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-lg px-3 py-2 mt-2"></div>
+        <button onclick="doRedeem()" id="REDEEM_BTN" class="w-full mt-4 px-4 py-3 rounded-xl text-sm font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors active:scale-[0.98]">Redeem</button>
+        <div id="REDEEM_STATUS" class="mt-4 pt-4 border-t border-white/[0.06]"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- SETTINGS MODAL -->
   <div id="SETTINGS" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('SETTINGS')">
     <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[80vh] overflow-y-auto">
@@ -457,6 +484,25 @@
           <button onclick="setFontSize('14px')" data-size="14" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Kecil</button>
           <button onclick="setFontSize('15px')" data-size="15" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-coral-400/10 border border-coral-400/20 transition-colors">Sedang</button>
           <button onclick="setFontSize('16px')" data-size="16" class="theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">Besar</button>
+        </div>
+      </div>
+
+      <!-- Performance Mode -->
+      <div class="mb-5">
+        <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-2.5 block">Mode Performa</label>
+        <div class="space-y-2">
+          <button onclick="setPerfMode('low')" id="PERF_LOW" class="perf-mode-btn w-full text-left px-3 py-2.5 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">
+            <div class="flex items-center gap-2 mb-0.5"><span class="iconify text-sm text-coral-400/60" data-icon="mdi:speedometer-slow"></span><span class="font-medium text-[#E5E3DA]">Low-End Device</span></div>
+            <p class="text-[10px] text-[#7C7770]">Untuk HP lama / RAM kecil. Animasi minimal, streaming lebih ringan.</p>
+          </button>
+          <button onclick="setPerfMode('balanced')" id="PERF_BALANCED" class="perf-mode-btn w-full text-left px-3 py-2.5 rounded-lg text-xs text-[#C2BFB8] bg-coral-400/10 border border-coral-400/20 transition-colors">
+            <div class="flex items-center gap-2 mb-0.5"><span class="iconify text-sm text-coral-400/60" data-icon="mdi:speedometer-medium"></span><span class="font-medium text-[#E5E3DA]">Balanced (Default)</span></div>
+            <p class="text-[10px] text-[#7C7770]">Seimbang untuk semua device. Animasi smooth, streaming 60fps.</p>
+          </button>
+          <button onclick="setPerfMode('high')" id="PERF_HIGH" class="perf-mode-btn w-full text-left px-3 py-2.5 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors">
+            <div class="flex items-center gap-2 mb-0.5"><span class="iconify text-sm text-coral-400/60" data-icon="mdi:speedometer"></span><span class="font-medium text-[#E5E3DA]">High-End Device</span></div>
+            <p class="text-[10px] text-[#7C7770]">Untuk HP flagship / desktop. Semua efek ON, max quality.</p>
+          </button>
         </div>
       </div>
 
@@ -537,7 +583,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v3.3.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.2.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -545,37 +591,48 @@
   <script>
     /* ===== MODELS — categorized, source hidden, all OpenRouter free verified working ===== */
     var MODELS=[
-      /* SkelzAI Originals */
-      {id:'qwen-turbo',provider:'qwen',label:'SkelzAI Turbo',desc:'Cepat & efisien',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
-      {id:'qwen-plus',provider:'qwen',label:'SkelzAI Plus',desc:'Seimbang kuat & cepat',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
-      {id:'qwen-max',provider:'qwen',label:'SkelzAI Max',desc:'Paling kuat & akurat',tag:'SkelzAI',vision:false,cat:'SkelzAI'},
+      /* SkelzAI Originals (Qwen) — branded as Skelz, premium models require login */
+      {id:'qwen-turbo',provider:'qwen',label:'Skelz Turbo',desc:'Cepat & efisien',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen-plus',provider:'qwen',label:'Skelz Plus',desc:'Seimbang kuat & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen-max',provider:'qwen',label:'Skelz Max',desc:'Paling kuat & akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Qwen3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Skelz Next 80B',desc:'MoE 80B, seimbang',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.5-plus',provider:'qwen',label:'Skelz 3.5 Plus',desc:'Generasi terbaru, cepat & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Qwen 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Qwen 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Analisis foto, paling akurat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-plus',provider:'qwen',label:'Skelz Vision Plus',desc:'Analisis foto, seimbang',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Qwen3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Qwen3 Vision, super cepat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       /* Fast Chat (Groq) */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      /* Premium AI (OpenRouter free) — only confirmed stable models */
-      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B, paling kuat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, seimbang',tag:'Premium',vision:false,cat:'Premium AI'},
+      /* Premium AI (OpenRouter free) — top models need redeem */
+      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B, paling kuat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, seimbang',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3-nano-30b-a3b:free',provider:'openrouter',label:'Nemotron 3 Nano 30B',desc:'MoE 30B, hemat token',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'Super cepat & ringan',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Multibahasa, 262K context',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'poolside/laguna-m.1:free',provider:'openrouter',label:'Laguna M.1',desc:'Coding specialist',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      {id:'poolside/laguna-m.1:free',provider:'openrouter',label:'Laguna M.1',desc:'Coding specialist',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat',tag:'Premium',vision:false,cat:'Premium AI'},
-      /* Vision AI (analisis foto) */
+      /* Vision AI (analisis foto) — top models need redeem */
       {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'Analisis foto, 12B',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
+      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
-      /* Powerful AI (NVIDIA NIM free) */
-      {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      /* Powerful AI (NVIDIA NIM free) — top models need redeem */
+      {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
+      {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'mistralai/ministral-14b-instruct-2512',provider:'nvidia',label:'Ministral 14B',desc:'Mistral, 14B seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.2-3b-instruct',provider:'nvidia',label:'Llama 3.2 3B',desc:'Ringan, hemat token',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'}
@@ -591,8 +648,7 @@
     /* ===== STATE ===== */
     var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null,cavemanEnabled=true,cavemanLevel='full';
 
-    function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id);localStorage.setItem('sk_caveman',cavemanEnabled?'1':'0');localStorage.setItem('sk_caveman_level',cavemanLevel)}catch(e){}}
-    function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl}catch(e){}}
+    function save(){try{localStorage.setItem('sk_c',JSON.stringify(chats));localStorage.setItem('sk_id',curId||'');localStorage.setItem('sk_n',document.getElementById('UN').textContent);localStorage.setItem('sk_m',selModel.id);localStorage.setItem('sk_caveman',cavemanEnabled?'1':'0');localStorage.setItem('sk_caveman_level',cavemanLevel)}catch(e){}if(authToken){debouncedSync()}}    function load(){try{var c=localStorage.getItem('sk_c');if(c)chats=JSON.parse(c);curId=localStorage.getItem('sk_id')||null;if(curId&&!chats[curId])curId=null;var n=localStorage.getItem('sk_n');if(n&&n!=='Guest User')document.getElementById('UN').textContent=n;var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl}catch(e){}}
 
     /* ===== HELPERS ===== */
     function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -686,14 +742,19 @@
       var el=document.getElementById('ML'),html='',lastCat='';
       for(var i=0;i<MODELS.length;i++){
         var m=MODELS[i];
-        // Guest restriction: only SkelzAI models for non-logged-in users
-        if(isGuest()&&m.cat!=='SkelzAI')continue;
+        // Guest restriction: only free SkelzAI models for non-logged-in users
+        if(isGuest()&&(m.cat!=='SkelzAI'||m.free===false))continue;
+        // Logged in but model needs redeem code and not yet redeemed
+        var redeemLocked=!isGuest()&&m.redeem&&!isModelUnlocked(m);
         if(m.cat!==lastCat){
           html+='<div class="px-3 pt-3 pb-1"><span class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium">'+m.cat+'</span></div>';lastCat=m.cat;
         }
         var isSel=m.id===selModel.id;
+        var lockIcon='';
+        if(isGuest()&&m.free===false)lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:lock-outline" title="Login untuk gunakan"></span>';
+        else if(redeemLocked)lockIcon='<span class="iconify text-[10px] text-[#7C7770] flex-shrink-0" data-icon="mdi:ticket-outline" title="Butuh redeem code"></span>';
         html+='<div class="mo flex items-center gap-3 px-3 py-3 rounded-lg'+(isSel?' sel':'')+'" data-mid="'+m.id+'">';
-        html+='<div class="flex-1 min-w-0"><p class="text-sm text-cream-50 truncate flex items-center gap-1.5">'+esc(m.label);
+        html+='<div class="flex-1 min-w-0"><p class="text-sm text-cream-50 truncate flex items-center gap-1.5">'+esc(m.label)+lockIcon;
         if(m.vision)html+='<span class="iconify text-[11px] text-coral-400 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>';
         html+='</p><p class="text-[11px] text-[#7C7770]">'+esc(m.desc)+'</p></div>';
         html+='<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#262524]/85 text-[#7C7770] border border-white/[0.06] flex-shrink-0">'+m.tag+'</span>';
@@ -702,7 +763,10 @@
       }
       // If guest, show locked models notice
       if(isGuest()){
-        html+='<div class="px-3 py-4 mt-2 text-center"><div class="text-[11px] text-[#7C7770] mb-2">25 model lain terkunci</div><button onclick="closeMP();openAuth(\'login\')" class="text-xs text-coral-400 hover:underline">Masuk untuk akses semua model →</button></div>';
+        var lockedCount=MODELS.filter(function(m){return m.cat==='SkelzAI'&&m.free===false}).length;
+        var otherCount=MODELS.filter(function(m){return m.cat!=='SkelzAI'}).length;
+        var totalLocked=lockedCount+otherCount;
+        html+='<div class="px-3 py-4 mt-2 text-center"><div class="text-[11px] text-[#7C7770] mb-2">'+totalLocked+' model lain terkunci</div><button onclick="closeMP();openAuth(\'login\')" class="text-xs text-coral-400 hover:underline">Masuk untuk akses semua model →</button></div>';
       }
       el.innerHTML=html;
       var opts=el.querySelectorAll('.mo');
@@ -711,14 +775,19 @@
 
     function pickModel(id){
       for(var i=0;i<MODELS.length;i++){if(MODELS[i].id===id){
+        var m=MODELS[i];
         // Guest restriction
-        if(isGuest()&&MODELS[i].cat!=='SkelzAI'){
-          toast('Masuk untuk akses model ini','warning');
-          closeMP();
-          openAuth('login');
-          return;
+        if(isGuest()&&m.cat!=='SkelzAI'){
+          toast('Masuk untuk akses model ini','warning');closeMP();openAuth('login');return;
         }
-        selModel=MODELS[i];break;
+        if(isGuest()&&m.free===false){
+          toast('Masuk untuk akses model premium ini','warning');closeMP();openAuth('login');return;
+        }
+        // Redeem code restriction (logged in but not redeemed)
+        if(!isGuest()&&m.redeem&&!isModelUnlocked(m)){
+          toast('Model ini butuh redeem code','warning');closeMP();openRedeem();return;
+        }
+        selModel=m;break;
       }}
       setModelLabel();closeMP();save();toast('Model: '+selModel.label,'info');
     }
@@ -902,12 +971,158 @@
     /* ===== SHORTCUTS HELP ===== */
     function openShortcuts(){openM('SC')}
 
+    /* ===== REDEEM CODE SYSTEM ===== */
+    var redeemedCodes=[];
+    function openRedeem(){
+      closePM();
+      var loginReq=document.getElementById('REDEEM_LOGIN_REQ');
+      var form=document.getElementById('REDEEM_FORM');
+      if(isGuest()){
+        loginReq.classList.remove('hidden');
+        form.classList.add('hidden');
+      }else{
+        loginReq.classList.add('hidden');
+        form.classList.remove('hidden');
+        document.getElementById('REDEEM_INPUT').value='';
+        document.getElementById('REDEEM_ERR').classList.add('hidden');
+        document.getElementById('REDEEM_SUCCESS').classList.add('hidden');
+        document.getElementById('REDEEM_BTN').disabled=false;
+        document.getElementById('REDEEM_BTN').textContent='Redeem';
+        checkRedeemStatus();
+      }
+      openM('REDEEM');
+      if(!isGuest())setTimeout(function(){document.getElementById('REDEEM_INPUT').focus()},100);
+    }
+    async function doRedeem(){
+      var code=document.getElementById('REDEEM_INPUT').value.trim().toUpperCase();
+      var errEl=document.getElementById('REDEEM_ERR');
+      var succEl=document.getElementById('REDEEM_SUCCESS');
+      var btn=document.getElementById('REDEEM_BTN');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+      if(!code){errEl.textContent='Masukkan kode redeem';errEl.classList.remove('hidden');return}
+      if(!currentUser){errEl.textContent='Login dulu';errEl.classList.remove('hidden');return}
+      btn.disabled=true;btn.textContent='Memproses...';
+      try{
+        var r=await fetch('/api/redeem',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'redeem',code:code,username:currentUser.username})
+        });
+        var d=await r.json();
+        if(!r.ok){errEl.textContent=d.error||'Kode tidak valid';errEl.classList.remove('hidden')}
+        else{
+          succEl.innerHTML='✓ '+d.message+'<br><span class="text-[10px] text-[#7C7770]">Model terbuka: '+(d.models&&d.models.length?d.models.length+' model':'Semua model')+'</span>';
+          succEl.classList.remove('hidden');
+          redeemedCodes.push(code);
+          localStorage.setItem('sk_redeemed',JSON.stringify(redeemedCodes));
+          toast(d.message,'success');
+          checkRedeemStatus();
+        }
+      }catch(e){errEl.textContent='Koneksi gagal';errEl.classList.remove('hidden')}
+      btn.disabled=false;btn.textContent='Redeem';
+    }
+    async function checkRedeemStatus(){
+      if(!currentUser)return;
+      var statusEl=document.getElementById('REDEEM_STATUS');
+      try{
+        var r=await fetch('/api/redeem',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'check',username:currentUser.username})
+        });
+        var d=await r.json();
+        redeemedCodes=d.redeemed||[];
+        localStorage.setItem('sk_redeemed',JSON.stringify(redeemedCodes));
+        if(d.unlockedCategories&&d.unlockedCategories.length>0){
+          if(d.unlockedCategories.indexOf('all')!==-1){
+            statusEl.innerHTML='<div class="text-[11px] text-emerald-400 flex items-center gap-1.5"><span class="iconify text-sm" data-icon="mdi:check-circle"></span>SEMUA model AI terbuka!</div>';
+          }else{
+            statusEl.innerHTML='<div class="text-[11px] text-emerald-400 flex items-center gap-1.5 mb-1"><span class="iconify text-sm" data-icon="mdi:check-circle"></span>Model terbuka:</div><div class="text-[11px] text-[#7C7770]">'+d.unlockedCategories.join(', ')+'</div>';
+          }
+        }else{
+          statusEl.innerHTML='<div class="text-[11px] text-[#7C7770]">Belum ada kode yang di-redeem</div>';
+        }
+      }catch(e){
+        statusEl.innerHTML='<div class="text-[11px] text-[#7C7770]">Tidak bisa cek status (offline)</div>';
+      }
+    }
+    function isModelUnlocked(model){
+      if(!model.redeem)return true;
+      if(!isGuest()&&redeemedCodes.length===0)return false;
+      // Check if user has "all access"
+      if(redeemedCodes.indexOf('SKELZ-ALL-ACCESS-2025')!==-1)return true;
+      // Check specific unlock
+      for(var i=0;i<redeemedCodes.length;i++){
+        var code=redeemedCodes[i];
+        // Map code to unlock type
+        if(code==='SKELZ-PREMIUM-2025'&&model.redeem==='premium')return true;
+        if(code==='SKELZ-VISION-2025'&&model.redeem==='vision')return true;
+        if(code==='SKELZ-POWER-2025'&&model.redeem==='powerful')return true;
+        if(code==='SKELZ-PRO-2025'&&model.redeem==='skelz_premium')return true;
+        if(code==='SKELZ-MAX-2025'&&model.id==='qwen-max')return true;
+      }
+      return false;
+    }
+
     /* ===== SETTINGS ===== */
     function openSettings(){
       closePM();
       openM('SETTINGS');
-      // Highlight current settings
       updateSettingsUI();
+      updatePerfModeUI();
+    }
+    function setPerfMode(mode){
+      localStorage.setItem('sk_perf_mode',mode);
+      applyPerfMode(mode);
+      updatePerfModeUI();
+      toast('Mode: '+(mode==='low'?'Low-End':mode==='high'?'High-End':'Balanced'),'success');
+    }
+    function applyPerfMode(mode){
+      // Remove previous perf mode styles
+      var old=document.getElementById('perf-mode-style');
+      if(old)old.remove();
+      var style=document.createElement('style');
+      style.id='perf-mode-style';
+      if(mode==='low'){
+        // Low-end: disable animations, reduce blur, simpler rendering
+        style.textContent=`
+          .afl{animation:none!important}
+          .tg-anim{animation:none!important}
+          .glow-anim{animation:none!important}
+          .footer-brand{animation:none!important}
+          .afi,.afu,.asl,.asr,.amsi{animation-duration:.1s!important}
+          .glass-s{backdrop-filter:none!important;background:rgba(38,37,36,.95)!important}
+          .glass-i{backdrop-filter:none!important;background:rgba(255,255,255,.04)!important}
+          .think-orbit-ring{animation-duration:2s!important}
+          .typing-cursor{animation:none!important;opacity:.5}
+          .sbtn.on{animation:none!important}
+          .bg-o{display:none!important}
+          *{transition-duration:.05s!important}
+        `;
+      }else if(mode==='high'){
+        // High-end: all effects ON, enhanced
+        style.textContent=`
+          .glass-s{backdrop-filter:blur(32px) saturate(160%)!important}
+          .glass-i{backdrop-filter:blur(20px) saturate(140%)!important}
+        `;
+      }
+      // balanced = default, no extra styles
+      document.head.appendChild(style);
+    }
+    function updatePerfModeUI(){
+      var mode=localStorage.getItem('sk_perf_mode')||'balanced';
+      var modes=['low','balanced','high'];
+      for(var i=0;i<modes.length;i++){
+        var el=document.getElementById('PERF_'+modes[i].toUpperCase());
+        if(el){
+          if(modes[i]===mode){
+            el.className='perf-mode-btn w-full text-left px-3 py-2.5 rounded-lg text-xs text-coral-400 bg-coral-400/10 border border-coral-400/20 transition-colors';
+          }else{
+            el.className='perf-mode-btn w-full text-left px-3 py-2.5 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors';
+          }
+        }
+      }
     }
     function updateSettingsUI(){
       // Highlight current caveman level
@@ -1037,23 +1252,118 @@
       }
     }
 
-    /* ===== AUTH SYSTEM (client-side, localStorage-based) ===== */
-    var currentUser=null,authMode='login';
+    /* ===== AUTH SYSTEM (global, server-side via Vercel KV) ===== */
+    var currentUser=null,authMode='login',authToken=null;
     function authInit(){
+      // Try to restore session from localStorage
       try{
-        var s=localStorage.getItem('sk_session');
-        if(s){
-          var session=JSON.parse(s);
-          if(session.username&&session.expires>Date.now()){
-            currentUser=session;
+        var saved=localStorage.getItem('sk_session');
+        if(saved){
+          var s=JSON.parse(saved);
+          if(s.token&&s.username&&s.expires>Date.now()){
+            currentUser=s;
+            authToken=s.token;
             updateAuthUI();
+            // Verify token with server (async, non-blocking)
+            verifyToken(s.token);
             return;
           }
           localStorage.removeItem('sk_session');
         }
       }catch(e){}
       currentUser=null;
+      authToken=null;
       updateAuthUI();
+    }
+    async function verifyToken(token){
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'verify',token:token})
+        });
+        var d=await r.json();
+        if(!d.valid){
+          // Token expired or invalid — logout
+          currentUser=null;
+          authToken=null;
+          localStorage.removeItem('sk_session');
+          updateAuthUI();
+          if(selModel.cat!=='SkelzAI'){selModel=MODELS[0];setModelLabel()}
+        }else{
+          // Token valid — load user data from server
+          loadUserData(token);
+        }
+      }catch(e){
+        // Network error — keep local session
+      }
+    }
+    async function loadUserData(token){
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'load',token:token})
+        });
+        var d=await r.json();
+        if(d.success&&d.chats){
+          // Merge server chats with local (server takes priority if different)
+          var serverChats=d.chats;
+          var localChatsCount=Object.keys(chats).length;
+          if(localChatsCount===0&&Object.keys(serverChats).length>0){
+            chats=serverChats;
+            save();updHist();updTop();
+          }
+          // Load settings
+          if(d.settings){
+            if(d.settings.themeColor){
+              try{var t=d.settings.themeColor;updateThemeColors(t.c1,t.c2,t.c3);localStorage.setItem('sk_theme_color',JSON.stringify(t))}catch(e){}
+            }
+            if(d.settings.fontSize){
+              setFontSize(d.settings.fontSize);
+            }
+            if(d.settings.cavemanLevel){
+              cavemanLevel=d.settings.cavemanLevel;
+              localStorage.setItem('sk_caveman_level',cavemanLevel);
+              updateCavemanUI();
+            }
+          }
+        }
+      }catch(e){}
+    }
+    async function syncUserData(){
+      if(!authToken||!currentUser)return;
+      try{
+        // Sync chats + settings to server (debounced, non-blocking)
+        await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            action:'sync',
+            token:authToken,
+            chats:chats,
+            settings:{
+              themeColor:JSON.parse(localStorage.getItem('sk_theme_color')||'null'),
+              fontSize:localStorage.getItem('sk_font_size')||'15px',
+              cavemanLevel:cavemanLevel
+            }
+          })
+        });
+      }catch(e){}
+    }
+    // Auto-sync: debounce 2 detik setelah perubahan terakhir
+    var _syncTimer=null;
+    function debouncedSync(){
+      if(_syncTimer)clearTimeout(_syncTimer);
+      _syncTimer=setTimeout(function(){
+        syncUserData();
+        _syncTimer=null;
+      },2000);
+    }
+    // Sync saat app ke background (mobile) atau sebelum unload
+    function flushSync(){
+      if(_syncTimer){clearTimeout(_syncTimer);_syncTimer=null}
+      syncUserData();
     }
     function isGuest(){return !currentUser}
     function isPremium(){return !!currentUser}
@@ -1084,12 +1394,12 @@
       err.classList.add('hidden');
       if(authMode==='login'){
         title.textContent='Masuk ke SkelzAI';
-        sub.textContent='Akses semua 28 model AI gratis';
+        sub.textContent='Akses semua 27 model AI di device mana saja';
         btn.textContent='Masuk';
         toggle.textContent='Belum punya akun? Daftar';
       }else{
         title.textContent='Daftar Akun Baru';
-        sub.textContent='Gratis, akses semua model AI';
+        sub.textContent='Gratis, akses semua model AI di semua device';
         btn.textContent='Daftar';
         toggle.textContent='Sudah punya akun? Masuk';
       }
@@ -1109,41 +1419,53 @@
       var user=document.getElementById('AUTH_USER').value.trim();
       var pass=document.getElementById('AUTH_PASS').value;
       var err=document.getElementById('AUTH_ERR');
+      var btn=document.getElementById('AUTH_BTN');
       err.classList.add('hidden');
       if(!user||user.length<3){authShowError('Username minimal 3 karakter');return}
       if(!pass||pass.length<4){authShowError('Password minimal 4 karakter');return}
-      // Hash password with SubtleCrypto (SHA-256)
-      var hashBuf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sk_salt_'+pass));
-      var hash=Array.from(new Uint8Array(hashBuf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
-      if(authMode==='register'){
-        // Check if username already exists
-        var users={};
-        try{users=JSON.parse(localStorage.getItem('sk_users')||'{}')}catch(e){}
-        if(users[user]){authShowError('Username sudah digunakan');return}
-        users[user]={password:hash,created:Date.now()};
-        localStorage.setItem('sk_users',JSON.stringify(users));
-        // Auto-login after register
-        currentUser={username:user,expires:Date.now()+7*24*60*60*1000};
+      if(!/^[a-zA-Z0-9_]+$/.test(user)){authShowError('Username hanya boleh huruf, angka, underscore');return}
+      btn.disabled=true;
+      btn.textContent='Memproses...';
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:authMode,username:user,password:pass})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          authShowError(d.error||'Terjadi kesalahan');
+          btn.disabled=false;
+          btn.textContent=authMode==='login'?'Masuk':'Daftar';
+          return;
+        }
+        // Success — save session
+        authToken=d.token;
+        currentUser={username:d.username,token:d.token,expires:Date.now()+7*24*60*60*1000};
         localStorage.setItem('sk_session',JSON.stringify(currentUser));
         updateAuthUI();
         closeM('AUTH');
-        toast('Akun berhasil dibuat! Selamat datang, '+user,'success');
-      }else{
-        // Login
-        var users={};
-        try{users=JSON.parse(localStorage.getItem('sk_users')||'{}')}catch(e){}
-        if(!users[user]){authShowError('Username tidak ditemukan');return}
-        if(users[user].password!==hash){authShowError('Password salah');return}
-        currentUser={username:user,expires:Date.now()+7*24*60*60*1000};
-        localStorage.setItem('sk_session',JSON.stringify(currentUser));
-        updateAuthUI();
-        closeM('AUTH');
-        toast('Selamat datang kembali, '+user+'!','success');
+        toast(d.message||'Berhasil!','success');
+        // Load user data from server
+        loadUserData(d.token);
+      }catch(e){
+        authShowError('Koneksi gagal. Periksa internet Anda.');
       }
+      btn.disabled=false;
+      btn.textContent=authMode==='login'?'Masuk':'Daftar';
     }
-    function authLogout(){
-      showConfirm('Keluar','Anda yakin ingin keluar dari akun?',function(){
+    async function authLogout(){
+      showConfirm('Keluar','Anda yakin ingin keluar? Chat lokal akan tetap tersimpan.',function(){
+        // Logout from server
+        if(authToken){
+          fetch('/api/auth',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'logout',token:authToken})
+          }).catch(function(){});
+        }
         currentUser=null;
+        authToken=null;
         localStorage.removeItem('sk_session');
         updateAuthUI();
         // Reset to first model (SkelzAI Turbo)
@@ -1605,8 +1927,9 @@
                   }
                   fullContent+=parsed.content;
                   // Use requestAnimationFrame for smooth 60fps rendering
+                  // Throttle to 50ms for better performance on low-end devices
                   var now=Date.now();
-                  if(now-lastRenderTime>=60){
+                  if(now-lastRenderTime>=50){
                     if(renderRAF)cancelAnimationFrame(renderRAF);
                     renderRAF=requestAnimationFrame(function(){
                       ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
@@ -1799,6 +2122,11 @@
     document.addEventListener('click',function(e){
       if(pmOpen){var pa=document.getElementById('profileArea');if(!pa.contains(e.target)){closePM()}}
     });
+    // Auto-sync saat app ke background atau tab ditutup
+    window.addEventListener('beforeunload',function(){flushSync()});
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='hidden'){flushSync()}
+    });
     document.addEventListener('keydown',function(e){
       if(e.key==='Escape'){
         if(!document.getElementById('MOL').classList.contains('hidden')){closeMP();return}
@@ -1820,8 +2148,8 @@
     document.addEventListener('DOMContentLoaded',function(){
       authInit();
       load();setModelLabel();updHist();updTop();
-      // If guest, force SkelzAI model
-      if(isGuest()&&selModel.cat!=='SkelzAI'){selModel=MODELS[0];setModelLabel()}
+      // If guest, force free Skelz model only
+      if(isGuest()&&(selModel.cat!=='SkelzAI'||selModel.free===false)){selModel=MODELS[0];setModelLabel()}
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
@@ -1833,6 +2161,13 @@
       if(savedFont){var style=document.createElement('style');style.id='dynamic-font';style.textContent='.md{font-size:'+savedFont+'!important}.msg-pad p{font-size:'+savedFont+'!important}';document.head.appendChild(style)}
       // Load profile photo
       updateProfilePhoto();
+      // Load performance mode
+      var savedPerf=localStorage.getItem('sk_perf_mode');
+      if(savedPerf)applyPerfMode(savedPerf);
+      // Load redeemed codes from localStorage (will verify with server on login)
+      try{var rc=localStorage.getItem('sk_redeemed');if(rc)redeemedCodes=JSON.parse(rc)}catch(e){}
+      // If logged in, check redeem status with server
+      if(!isGuest())checkRedeemStatus();
 
       // Handle PWA shortcut "?action=new" — start fresh chat
       var params=new URLSearchParams(window.location.search);
