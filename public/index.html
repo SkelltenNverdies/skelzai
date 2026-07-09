@@ -294,6 +294,7 @@
       width:12px;
       height:12px;
       margin-left:2px;
+      position:relative;
     }
     .mo-status .status-dot{
       width:7px;
@@ -314,6 +315,20 @@
       background:#10B981;
       box-shadow:0 0 0 2px rgba(16,185,129,0.15);
     }
+    /* Online dot has a subtle live-pulse to indicate "live" status */
+    .ms-online .status-dot::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:50%;
+      background:#10B981;
+      opacity:0;
+      animation:ms-live-pulse 2s ease-out infinite;
+    }
+    @keyframes ms-live-pulse{
+      0%{opacity:0.4;transform:scale(1)}
+      100%{opacity:0;transform:scale(2.2)}
+    }
     .ms-offline .status-dot{
       background:#EF4444;
       box-shadow:0 0 0 2px rgba(239,68,68,0.15);
@@ -324,6 +339,21 @@
     }
     #MOP .mp .mo.ms-row-offline:hover{
       background:rgba(239,68,68,0.08);
+    }
+    /* Rate limit counter — optimized for mobile + desktop */
+    #RATE_COUNTER{
+      transition:background 0.2s,border-color 0.2s;
+      min-width:48px;
+      justify-content:center;
+      font-variant-numeric:tabular-nums;
+    }
+    #RATE_COUNTER:hover{
+      background:rgba(255,255,255,0.06)!important;
+      border-color:rgba(255,255,255,0.1)!important;
+    }
+    @media(max-width:400px){
+      #RATE_COUNTER{padding:2px 6px;font-size:10px;min-width:42px}
+      #topModel{max-width:100px!important}
     }
     /* Reduce motion for accessibility */
     @media(prefers-reduced-motion:reduce){
@@ -803,8 +833,8 @@
           <div class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" style="box-shadow:0 0 8px rgba(16,185,129,.5)"></div>
           <span id="topModel" class="text-sm text-[#C2BFB8] truncate">SkelzAI Turbo</span>
         </div>
-        <!-- Rate limit counter — shows remaining/total daily requests -->
-        <div id="RATE_COUNTER" class="hidden sm:flex items-center gap-1 text-[11px] text-[#7C7770] px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.06] flex-shrink-0" title="Loading..."></div>
+        <!-- Rate limit counter — always visible, auto-updates every 60s -->
+        <div id="RATE_COUNTER" class="flex items-center gap-1 text-[11px] text-[#7C7770] px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.06] flex-shrink-0 cursor-help" title="Loading..."></div>
       </div>
       <div class="flex items-center gap-0.5 flex-shrink-0">
         <button onclick="clearCurChat()" id="clrBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Hapus pesan" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:delete-outline"></span></button>
@@ -856,7 +886,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.5.3 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.5.7 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -886,8 +916,7 @@
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       /* Premium AI (OpenRouter free) — top models need redeem */
-      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B, paling kuat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
-      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, seimbang',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3-nano-30b-a3b:free',provider:'openrouter',label:'Nemotron 3 Nano 30B',desc:'MoE 30B, hemat token',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'Super cepat & ringan',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Multibahasa, 262K context',tag:'Premium',vision:false,cat:'Premium AI'},
@@ -918,20 +947,27 @@
       ,{id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
       /* MorphLLM — single free model from MorphLLM API */
       ,{id:'morph-v3-large',provider:'morph',label:'Morph V3 Large',desc:'MorphLLM — Cepat, coding kuat',tag:'Morph',vision:false,cat:'Powerful AI'}
-      /* NaraRouter — free 7M tokens/day, open-source models. Hemat token. */
-      ,{id:'kimi-k2.7-code-free',provider:'nara',label:'Nara Kimi K2.7 Code',desc:'NaraRouter — Free, coding hemat token',tag:'Nara',vision:false,cat:'Fast Chat'}
-      ,{id:'mimo-v2.5',provider:'nara',label:'Nara MiMo V2.5',desc:'NaraRouter — Xiaomi, ringan & cepat',tag:'Nara',vision:false,cat:'Fast Chat'}
+      /* NaraRouter — free 7M tokens/day. Tested working on free plan:
+         mistral-large, mistral-medium-3-5, tencent-hy3.
+         Other models (kimi, mimo, deepseek, etc.) need paid credits despite
+         the free 5M token quota — appears to be a NaraRouter billing bug. */
+      ,{id:'mistral-large',provider:'nara',label:'Nara Mistral Large',desc:'NaraRouter — Mistral Large, gratis & powerful',tag:'Nara',vision:false,cat:'Powerful AI'}
+      ,{id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'}
+      ,{id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'}
       /* Image Generation (AIHubMix free) — DISABLED: model often returns no_available_channel
       ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
       */
-      /* Gemini models — Google Gemini API (native endpoint, X-goog-api-key).
-         Free tier with generous limits. Supports vision (image analysis).
-         Note: may return "User location is not supported" from some regions. */
+      /* Gemini models — DISABLED: requires permanent AIza... API key in env var.
+         The OAuth token (AQ.Ab8...) expired. To re-enable:
+         1) Get API key from https://aistudio.google.com/app/apikey (AIza... format)
+         2) Set GEMINI_API_KEY env var in Vercel
+         3) Uncomment the models below + restore fallbackKey in api/chat.js
       ,{id:'gemini-flash-latest',provider:'gemini',label:'Gemini Flash (Latest)',desc:'Versi terbaru, hemat & cepat',tag:'GEMINI',vision:true,cat:'Fast Chat'}
       ,{id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
       ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI',redeem:'vision'}
       ,{id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
       ,{id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Super cepat & ringan',tag:'GEMINI',vision:true,cat:'Fast Chat'}
+      */
     ];
 
     /* ===== STATE ===== */
@@ -998,18 +1034,41 @@
       }
     }
     function updateRateLimitUI(){
-      // Show counter in profile menu / model selector button
+      // Show counter in header — always visible, auto-updates
       var s=_rateLimitState;
-      if(s.tier==='admin')return; // admin unlimited — no UI
+      var counterEl=document.getElementById('RATE_COUNTER');
+      if(!counterEl)return;
+      // Admin: unlimited (hide counter, show infinity badge)
+      if(s.tier==='admin'){
+        counterEl.innerHTML='<span class="iconify text-[10px] text-coral-400" data-icon="mdi:infinity"></span> <span class="text-coral-400 font-medium">∞</span>';
+        counterEl.title='Admin: unlimited requests';
+        return;
+      }
+      // Guest/Premium: show remaining/total with color-coded warning
       var remaining=s.remaining!==undefined?s.remaining:(s.limit-s.used);
       var total=s.limit||getRateLimitMax();
-      // Update top header counter (if element exists)
-      var counterEl=document.getElementById('RATE_COUNTER');
-      if(counterEl){
-        var warnClass=remaining<=2?'text-red-400':(remaining<=5?'text-yellow-400':'text-emerald-400');
-        counterEl.innerHTML='<span class="iconify text-[10px]" data-icon="mdi:counter"></span> <span class="'+warnClass+'">'+remaining+'</span>/'+total;
-        counterEl.title=s.tier==='premium'?'Premium: '+remaining+' dari '+total+' request tersisa hari ini':'Guest: '+remaining+' dari '+total+' request tersisa hari ini';
+      var pct=total>0?Math.round((remaining/total)*100):0;
+      var warnClass,icon;
+      if(remaining<=0){
+        warnClass='text-red-400';icon='mdi:alert-circle';
+      }else if(remaining<=2){
+        warnClass='text-red-400';icon='mdi:fire';
+      }else if(remaining<=5){
+        warnClass='text-yellow-400';icon='mdi:lightning-bolt';
+      }else{
+        warnClass='text-emerald-400';icon='mdi:check-circle';
       }
+      counterEl.innerHTML='<span class="iconify text-[10px] '+warnClass+'" data-icon="'+icon+'"></span> <span class="'+warnClass+' font-medium">'+remaining+'</span><span class="text-[#7C7770]/60">/'+total+'</span>';
+      var tierLabel=s.tier==='premium'?'Premium':'Guest';
+      counterEl.title=tierLabel+': '+remaining+' dari '+total+' request tersisa hari ini ('+pct+'%)\nReset: UTC midnight (07:00 WIB)\nAuto-update tiap 60 detik';
+    }
+    // Auto-refresh rate limit every 60 seconds (always running while page is open)
+    var _rateLimitInterval=null;
+    function startRateLimitAutoRefresh(){
+      if(_rateLimitInterval)clearInterval(_rateLimitInterval);
+      _rateLimitInterval=setInterval(function(){
+        checkRateLimit();
+      },60*1000); // every 60s
     }
     function showRateLimitModal(s){
       var tier=s.tier==='guest'?'Guest Plan':'Premium Plan';
@@ -1149,14 +1208,36 @@
     }
 
     /* ===== MODEL SELECTOR ===== */
+    var _statusCheckInterval=null;
     function openMP(){
       buildML();
       var ol=document.getElementById('MOL');ol.classList.remove('hidden');ol.classList.add('flex');
       // Mark button as "used" — stops the pulse animation + hides TAP TO CHANGE badge
       var btn=document.getElementById('MSB');
       if(btn){btn.classList.add('ms-used');btn.classList.remove('ms-pulse')}
+      // AUTO-CHECK status on open (if cache > 5 min old or empty)
+      // Apply cached results immediately for instant feedback, then refresh in background
+      if(_modelStatusCache&&Object.keys(_modelStatusCache).length>0){
+        applyModelStatus(_modelStatusCache);
+      }
+      // Auto-refresh: check immediately if stale (>5min), then every 5 min while open
+      var now=Date.now();
+      if(!_modelStatusCache||now-_modelStatusCacheTime>=5*60*1000){
+        checkModelStatus();
+      }
+      // Set up interval — refresh every 5 minutes while modal is open
+      if(_statusCheckInterval)clearInterval(_statusCheckInterval);
+      _statusCheckInterval=setInterval(function(){
+        // Force refresh (bypass cache) by clearing timestamp
+        _modelStatusCacheTime=0;
+        checkModelStatus();
+      },5*60*1000);
     }
-    function closeMP(){var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex')}
+    function closeMP(){
+      var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex');
+      // Stop auto-refresh interval when modal closes
+      if(_statusCheckInterval){clearInterval(_statusCheckInterval);_statusCheckInterval=null}
+    }
 
     /* ===== MODEL STATUS CHECKER =====
        Calls /api/model-status to ping each model in parallel (max 5 max_tokens).
@@ -3084,8 +3165,16 @@
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
-      // Check rate limit on load (updates counter in header)
+      // Check rate limit on load + start auto-refresh every 60s
       checkRateLimit();
+      startRateLimitAutoRefresh();
+      // Background status check on load (so status is ready when user opens selector)
+      // Delayed 3s to not compete with initial page load
+      setTimeout(function(){
+        if(!_modelStatusCache||Object.keys(_modelStatusCache).length===0){
+          checkModelStatus();
+        }
+      },3000);
       // Model selector: pulse for 6s on first load to draw attention (only if user
       // hasn't opened the selector before in this browser)
       try{

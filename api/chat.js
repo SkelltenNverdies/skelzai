@@ -229,31 +229,28 @@ const PROVIDERS = {
   },
   gemini: {
     // Google Gemini — NATIVE endpoint (not OpenAI-compat).
-    // The OpenAI-compat layer rejects the OAuth token type ("AQ.Ab8..." tokens
+    // The OpenAI-compat layer rejects OAuth tokens ("AQ.Ab8..." tokens
     // return 401 ACCESS_TOKEN_TYPE_UNSUPPORTED). The native :generateContent
-    // endpoint accepts X-goog-api-key header with this token type.
+    // endpoint accepts X-goog-api-key header.
     //
-    // Since native streaming (:streamGenerateContent) ALSO rejects this token
-    // type, we use NON-STREAMING :generateContent and convert the response.
-    // The handler detects isNonStreaming=true and wraps the response as SSE.
+    // IMPORTANT: The previous fallbackKey (AQ.Ab8...) was an OAuth2 access
+    // token that EXPIRED after ~1 hour. It has been removed. To use Gemini,
+    // you MUST set GEMINI_API_KEY env var in Vercel with a PERMANENT API key
+    // (format: AIza...) from https://aistudio.google.com/app/apikey
     //
     // Geo-restriction: free tier works from US/EU/Asia Vercel regions but
     // may 400 ("User location is not supported") from other regions.
     envVar: 'GEMINI_API_KEY',
-    fallbackKey: 'AQ.Ab8RN6L35S7OrshyYH2_YtmYJJhD2hJVqcJ8BZdVFamn7DtkTQ',
+    fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     timeout: 55000,
     isNonStreaming: true,
     // Build native Gemini request: convert OpenAI messages → Gemini contents
     buildRequest(apiKey, model, messages) {
-      // Convert OpenAI messages array to Gemini contents array
-      // System message → systemInstruction (separate field)
-      // User/assistant messages → contents with role user/model
       let systemInstruction = null;
       const contents = [];
       for (const m of messages) {
         if (m.role === 'system') {
-          // Gemini puts system prompt in systemInstruction, not contents
           systemInstruction = {
             parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }]
           };
@@ -480,7 +477,7 @@ const PROVIDERS = {
     //   - "auto" : NaraRouter's smart router (picks cheapest model per query)
     //   - "meta-llama/llama-3.2-3b-instruct" : 3B params, very fast, minimal tokens
     envVar: 'NARA_API_KEY',
-    fallbackKey: 'sk-nry-a84pDo93VoxhnulaZd8mM-2e9gFxj8SERLOjnRMeFtU',
+    fallbackKey: 'sk-nry-1TMCXcslPvpAOd3M9WtBaDbNWZ-FfPndjZd2GBKwgwY',
     url: 'https://router.bynara.id/v1/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -1094,7 +1091,9 @@ export default async function handler(req, res) {
           : config.buildRequest(apiKey, model, accumulatedMessages);
         let contResponse;
         try {
-          contResponse = await fetchWithTimeout(config.url, contReqOptions, config.timeout);
+          // For providers with buildUrl() (e.g. Gemini native), use it.
+          const contUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+          contResponse = await fetchWithTimeout(contUrl, contReqOptions, config.timeout);
         } catch (err) {
           // Network error on continuation — stop, but keep what we have
           break;
@@ -1153,6 +1152,30 @@ export default async function handler(req, res) {
   if (provider === 'github' && response.status === 401) {
     return res.status(401).json({
       error: 'GITHUB_TOKEN tidak valid atau sudah expired. PAT yang di-embed di kode akan otomatis di-revoke oleh GitHub Secret Scanning. Setup: 1) Buka https://github.com/settings/tokens/new 2) Centang scope "repo" 3) Generate PAT 4) Di Vercel Project Settings → Environment Variables → tambah Key=GITHUB_TOKEN Value=ghp_xxx 5) Redeploy. Detail: ' + errDetail
+    });
+  }
+
+  // Gemini 401 — API key missing/expired. The old OAuth token (AQ.Ab8...)
+  // expired. User needs a permanent AIza... key from Google AI Studio.
+  if (provider === 'gemini' && response.status === 401) {
+    return res.status(401).json({
+      error: 'GEMINI_API_KEY tidak diset atau sudah expired. Dapatkan API key permanen (format AIza...) gratis di https://aistudio.google.com/app/apikey lalu tambahkan sebagai Environment Variable GEMINI_API_KEY di Vercel project settings. Detail: ' + errDetail
+    });
+  }
+
+  // NaraRouter 402 — insufficient credits. User needs to join Telegram group
+  // to activate the free 7M tokens/day tier.
+  if (provider === 'nara' && response.status === 402) {
+    return res.status(402).json({
+      error: 'NaraRouter: kredit tidak cukup. Aktifkan free tier 7M tokens/hari dengan: 1) Join Telegram group NaraRouter 2) Buka https://router.bynara.id/settings 3) Link ulang akun setelah join Telegram. Detail: ' + errDetail
+    });
+  }
+
+  // OpenRouter 404 "Provider returned error" — the upstream model was removed
+  // or is temporarily unavailable. Suggest trying another model.
+  if (provider === 'openrouter' && response.status === 404) {
+    return res.status(404).json({
+      error: 'Model ini sedang tidak tersedia di provider (NVIDIA/openrouter). Coba model lain di kategori yang sama, atau klik "Cek Status" di model selector untuk lihat model mana yang online. Detail: ' + errDetail
     });
   }
 

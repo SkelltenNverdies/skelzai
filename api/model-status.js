@@ -37,8 +37,7 @@ const PROVIDERS = {
   },
   gemini: {
     envVar: 'GEMINI_API_KEY',
-    fallbackKey: 'AQ.Ab8RN6L35S7OrshyYH2_YtmYJJhD2hJVqcJ8BZdVFamn7DtkTQ',
-    // Native endpoint for ping (model name goes in path)
+    fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     isGeminiNative: true,
     headers: (k) => ({ 'Content-Type': 'application/json', 'X-goog-api-key': k })
@@ -71,7 +70,7 @@ const PROVIDERS = {
   },
   nara: {
     envVar: 'NARA_API_KEY',
-    fallbackKey: 'sk-nry-a84pDo93VoxhnulaZd8mM-2e9gFxj8SERLOjnRMeFtU',
+    fallbackKey: 'sk-nry-1TMCXcslPvpAOd3M9WtBaDbNWZ-FfPndjZd2GBKwgwY',
     url: 'https://router.bynara.id/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
