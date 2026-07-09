@@ -192,10 +192,9 @@ const PROVIDERS = {
     }
   },
   groq: {
-    envVar: 'GROQ_API_KEY',
-    // Embedded key expired/revoked. User must set GROQ_API_KEY env var.
-    // Get key: https://console.groq.com/keys → Create API Key
-    fallbackKey: null,
+    envVar: 'GROQ_API_KEYS', // Multi-key (comma-separated, 2+ keys = 2x+ limit)
+    singleKeyEnvVar: 'GROQ_API_KEY', // Backward compat: single key
+    fallbackKey: null, // No embedded key — set env var
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 55000,
     // Groq free-tier TPM limits (verified Dec 2024):
@@ -248,9 +247,8 @@ const PROVIDERS = {
     }
   },
   openrouter: {
-    envVar: 'OPENROUTER_API_KEY',
-    // Embedded key expired. User must set OPENROUTER_API_KEY env var.
-    // Get key: https://openrouter.ai/keys → Create Key
+    envVar: 'OPENROUTER_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'OPENROUTER_API_KEY', // Backward compat
     fallbackKey: null,
     url: 'https://openrouter.ai/api/v1/chat/completions',
     timeout: 55000,
@@ -287,7 +285,8 @@ const PROVIDERS = {
     //
     // Geo-restriction: free tier works from US/EU/Asia Vercel regions but
     // may 400 ("User location is not supported") from other regions.
-    envVar: 'GEMINI_API_KEY',
+    envVar: 'GEMINI_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'GEMINI_API_KEY', // Backward compat
     fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     timeout: 55000,
@@ -351,7 +350,8 @@ const PROVIDERS = {
     // Endpoint fallback: GitHub is migrating from models.inference.ai.azure.com
     // to models.github.ai/inference. We try the OLD endpoint first; on 401 we
     // auto-retry the NEW endpoint. This handles both endpoints transparently.
-    envVar: 'GITHUB_TOKEN',
+    envVar: 'GITHUB_TOKENS', // Multi-key (comma-separated PATs)
+    singleKeyEnvVar: 'GITHUB_TOKEN', // Backward compat
     // Embedded PAT (obfuscated to evade GitHub Secret Scanning auto-revoke).
     // Scanning pattern-matches `ghp_[A-Za-z0-9]{36}` in source files. We split
     // the token into 4 chunks and join at runtime — invisible to the scanner.
@@ -404,7 +404,8 @@ const PROVIDERS = {
     // Known issues:
     // - Small models (4B, 10.7B) have 4096 max context → use max_tokens=2000
     // - meta/llama-3.2-3b-instruct always times out → removed from model list
-    envVar: 'NVIDIA_API_KEY',
+    envVar: 'NVIDIA_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'NVIDIA_API_KEY', // Backward compat
     // Embedded key expired. User must set NVIDIA_API_KEY env var.
     // Get key: https://build.nvidia.com/ → Login → API Keys
     fallbackKey: null,
@@ -465,7 +466,8 @@ const PROVIDERS = {
     // AIHubMix — OpenAI-compatible API aggregator
     // Free models available with limits (~7 req/hour after top-up $1)
     // Override via AIHUBMIX_API_KEY env var
-    envVar: 'AIHUBMIX_API_KEY',
+    envVar: 'AIHUBMIX_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'AIHUBMIX_API_KEY', // Backward compat
     // Embedded key expired. User must set AIHUBMIX_API_KEY env var.
     // Get key: https://aihubmix.com → API Keys
     fallbackKey: null,
@@ -495,7 +497,8 @@ const PROVIDERS = {
     //         auto (router picks best), morph-qwen35-397b, morph-glm52-744b, etc.
     // We expose only morph-v3-large as the headline model — it's the best
     // general-purpose model in their lineup.
-    envVar: 'MORPH_API_KEY',
+    envVar: 'MORPH_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'MORPH_API_KEY', // Backward compat
     fallbackKey: 'sk-di3bBG9s4XTXHfuXn71ycpV6E0fXWTd1vZ56Y7AM7A_KezAI',
     url: 'https://api.morphllm.com/v1/chat/completions',
     timeout: 55000,
@@ -527,7 +530,8 @@ const PROVIDERS = {
     // Token-efficient models we expose:
     //   - "auto" : NaraRouter's smart router (picks cheapest model per query)
     //   - "meta-llama/llama-3.2-3b-instruct" : 3B params, very fast, minimal tokens
-    envVar: 'NARA_API_KEY',
+    envVar: 'NARA_API_KEYS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'NARA_API_KEY', // Backward compat
     fallbackKey: 'sk-nry-1TMCXcslPvpAOd3M9WtBaDbNWZ-FfPndjZd2GBKwgwY',
     url: 'https://router.bynara.id/v1/chat/completions',
     timeout: 55000,
@@ -632,6 +636,37 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
+// ============================================================================
+// GENERIC MULTI-KEY RESOLVER
+// ============================================================================
+// For simple providers (Groq, OpenRouter, NVIDIA, AIHubMix, Morph, Nara, GitHub):
+// reads multi-key env var (comma-separated) or falls back to single-key env var.
+// Returns array of API key strings. Empty array = no keys configured.
+// For Qwen/Cloudflare (paired keys), use their custom getKeyPairs() instead.
+// ============================================================================
+function getProviderKeys(config) {
+  const keys = [];
+  // 1. Multi-key env var (comma-separated)
+  if (config.multiKeyEnvVar || config.envVar) {
+    const multi = process.env[config.multiKeyEnvVar || config.envVar];
+    if (multi) {
+      const parts = multi.split(',').map(s => s.trim()).filter(Boolean);
+      keys.push(...parts);
+    }
+  }
+  // 2. Single-key env var (backward compat)
+  if (keys.length === 0 && config.singleKeyEnvVar) {
+    const single = process.env[config.singleKeyEnvVar];
+    if (single) keys.push(single.trim());
+  }
+  // 3. Embedded fallback key
+  if (keys.length === 0 && config.fallbackKey) {
+    const fb = typeof config.fallbackKey === 'function' ? config.fallbackKey() : config.fallbackKey;
+    if (fb) keys.push(fb);
+  }
+  return keys;
+}
+
 // Fetch with connection timeout — timer is cleared once headers arrive.
 // For streaming, the body is read separately and should NOT be aborted by this timer.
 async function fetchWithTimeout(url, options, timeoutMs) {
@@ -721,7 +756,27 @@ export default async function handler(req, res) {
         error: 'QWEN_KEYS belum diset. Set env var di Vercel: QWEN_KEYS=sk-key1|ws-workspace1,sk-key2|ws-workspace2 (format: key|workspace_id, comma-separated). Dapatkan API key + workspace ID di https://dashscope.console.aliyun.com/ → API Keys.'
       });
     }
-    return res.status(500).json({ error: `${config.envVar} not set on server` });
+    if (provider === 'groq') {
+      return res.status(500).json({
+        error: 'GROQ_API_KEY belum diset. Set env var di Vercel: GROQ_API_KEY=gsk_xxxxxxxx. Dapatkan API key gratis di https://console.groq.com/keys → Create API Key.'
+      });
+    }
+    if (provider === 'openrouter') {
+      return res.status(500).json({
+        error: 'OPENROUTER_API_KEY belum diset. Set env var di Vercel: OPENROUTER_API_KEY=sk-or-v1-xxxxx. Dapatkan API key gratis di https://openrouter.ai/keys → Create Key.'
+      });
+    }
+    if (provider === 'nvidia') {
+      return res.status(500).json({
+        error: 'NVIDIA_API_KEY belum diset. Set env var di Vercel: NVIDIA_API_KEY=nvapi-xxxxx. Dapatkan API key gratis di https://build.nvidia.com/ → Login → API Keys.'
+      });
+    }
+    if (provider === 'aihubmix') {
+      return res.status(500).json({
+        error: 'AIHUBMIX_API_KEY belum diset. Set env var di Vercel: AIHUBMIX_API_KEY=sk-xxxxx. Dapatkan API key di https://aihubmix.com → API Keys.'
+      });
+    }
+    return res.status(500).json({ error: `${config.envVar} not set on server. Set env var di Vercel project settings → Environment Variables, lalu redeploy.` });
   }
 
   // Build final messages: system prompt + user-supplied history.
@@ -779,27 +834,19 @@ export default async function handler(req, res) {
 
   // (Legacy Groq TPM block removed — replaced by dynamic max_tokens above.)
 
-  // SINGLE ATTEMPT only — no retry.
-  // Reason: timeout is 50s per request (gives AI time to think for reasoning/vision).
-  // 1 retry would be 50s + 50s = 100s > 60s Vercel maxDuration → FUNCTION_INVOCATION_TIMEOUT.
-  // Special handling: 413 (TPM exceeded) surfaces immediately so frontend can fallback.
-  // EXCEPTION: GitHub provider retries once on 401 with the new models.github.ai endpoint
-  // (GitHub is migrating endpoints — old endpoint may 401 even with valid token).
-  // EXCEPTION: Cloudflare multi-key — round-robin + failover on 401/429.
+  // MULTI-KEY ROUND-ROBIN + FAILOVER for ALL providers.
+  // Qwen & Cloudflare use custom getKeyPairs() (paired keys with workspace/account IDs).
+  // All other providers use generic getProviderKeys() (simple comma-separated keys).
   let lastError = null;
   let response = null;
   let hit413 = false;
   let usedGithubFallback = false;
   try {
-    // Cloudflare multi-key: round-robin + failover
     if (provider === 'cloudflare' && config.getKeyPairs) {
       const pairs = config.getKeyPairs();
       if (pairs.length === 0) {
-        return res.status(500).json({
-          error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel: CLOUDFLARE_API_TOKENS=cfut_key1,cfut_key2 (2 keys = 2x limit).'
-        });
+        return res.status(500).json({ error: 'CLOUDFLARE_API_TOKENS belum diset.' });
       }
-      // Round-robin: use request timestamp to pick starting index
       const startIdx = Math.floor(Date.now() / 1000) % pairs.length;
       for (let attempt = 0; attempt < pairs.length; attempt++) {
         const idx = (startIdx + attempt) % pairs.length;
@@ -808,28 +855,20 @@ export default async function handler(req, res) {
         const requestUrl = config.buildUrlForAccount(pair.accountId, model);
         try {
           response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
-          if (response.ok || (response.status >= 200 && response.status < 300)) break;
+          if (response.status >= 200 && response.status < 300) break;
           if (response.status === 401 || response.status === 403 || response.status === 429) {
             try { await response.text(); } catch(e) {}
-            lastError = new Error(`Cloudflare key ${idx + 1} failed: ${response.status}`);
-            response = null;
-            continue;
+            lastError = new Error('CF key ' + (idx+1) + ' failed: ' + response.status);
+            response = null; continue;
           }
           break;
-        } catch (err) {
-          lastError = err;
-          response = null;
-          continue;
-        }
+        } catch (err) { lastError = err; response = null; continue; }
       }
       if (!response && lastError) throw lastError;
     } else if (provider === 'qwen' && config.getKeyPairs) {
-      // Qwen multi-key: round-robin + failover (same logic as Cloudflare)
       const pairs = config.getKeyPairs();
       if (pairs.length === 0) {
-        return res.status(500).json({
-          error: 'QWEN_KEYS belum diset. Set env var di Vercel: QWEN_KEYS=sk-key1|ws-id1,sk-key2|ws-id2 (2 keys = 2x limit).'
-        });
+        return res.status(500).json({ error: 'QWEN_KEYS belum diset.' });
       }
       const startIdx = Math.floor(Date.now() / 1000) % pairs.length;
       for (let attempt = 0; attempt < pairs.length; attempt++) {
@@ -839,28 +878,47 @@ export default async function handler(req, res) {
         const requestUrl = config.buildUrlForWorkspace(pair.workspaceId);
         try {
           response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
-          if (response.ok || (response.status >= 200 && response.status < 300)) break;
+          if (response.status >= 200 && response.status < 300) break;
           if (response.status === 401 || response.status === 403 || response.status === 429) {
             try { await response.text(); } catch(e) {}
-            lastError = new Error(`Qwen key ${idx + 1} failed: ${response.status}`);
-            response = null;
-            continue;
+            lastError = new Error('Qwen key ' + (idx+1) + ' failed: ' + response.status);
+            response = null; continue;
           }
           break;
-        } catch (err) {
-          lastError = err;
-          response = null;
-          continue;
-        }
+        } catch (err) { lastError = err; response = null; continue; }
       }
       if (!response && lastError) throw lastError;
     } else {
-      // Standard single-key path for all other providers
-      const reqOptions = dynamicMaxTokens
-        ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
-        : config.buildRequest(apiKey, model, finalMessages);
-      const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
-      response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
+      // GENERIC MULTI-KEY for all other providers
+      const keys = getProviderKeys(config);
+      if (keys.length === 0) {
+        const multiVar = config.multiKeyEnvVar || config.envVar;
+        const singleVar = config.singleKeyEnvVar || config.envVar;
+        return res.status(500).json({
+          error: multiVar + ' belum diset. Set env var di Vercel: ' + multiVar + '=key1,key2 (2 keys = 2x limit). Atau ' + singleVar + '=single_key.'
+        });
+      }
+      const startIdx = Math.floor(Date.now() / 1000) % keys.length;
+      for (let attempt = 0; attempt < keys.length; attempt++) {
+        const idx = (startIdx + attempt) % keys.length;
+        const key = keys[idx];
+        const reqOptions = dynamicMaxTokens
+          ? config.buildRequest(key, model, finalMessages, dynamicMaxTokens)
+          : config.buildRequest(key, model, finalMessages);
+        const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+        try {
+          response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
+          if (response.status >= 200 && response.status < 300) break;
+          if (response.status === 401 || response.status === 403 || response.status === 429) {
+            try { await response.text(); } catch(e) {}
+            lastError = new Error(provider + ' key ' + (idx+1) + ' failed: ' + response.status);
+            response = null; continue;
+          }
+          if (response.status === 413) { hit413 = true; lastError = new Error('Token limit exceeded (413)'); break; }
+          break;
+        } catch (err) { lastError = err; response = null; continue; }
+      }
+      if (!response && lastError) throw lastError;
     }
 
     if (response && response.status === 413) {
