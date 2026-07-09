@@ -516,10 +516,12 @@ const PROVIDERS = {
     //
     // Models use @cf/ prefix. Supports streaming (SSE format).
     envVar: 'CLOUDFLARE_API_TOKEN',
-    // Token can be embedded as fallback (account-scoped, but cfut_ tokens
-    // are not auto-revoked like GitHub PATs). Account ID MUST be env var.
-    fallbackKey: 'cfut_CrYQA4JsLqkh1fLyHy7I8nKX8fzyMftcdAPzdawP2e2add2c',
-    // Fallback account ID (embedded — account IDs are not secret, they appear in URLs)
+    // NO fallbackKey — Cloudflare auto-revokes any cfut_ token that appears
+    // in deployed code or Vercel deployment logs (secret scanning).
+    // You MUST set CLOUDFLARE_API_TOKEN env var in Vercel.
+    // Get token: https://dash.cloudflare.com/profile/api-tokens → Create Token → Workers AI
+    fallbackKey: null,
+    // Fallback account ID (account IDs are NOT secret — they appear in dashboard URLs)
     fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
     url: 'https://api.cloudflare.com/client/v4/accounts',
     timeout: 55000,
@@ -1215,6 +1217,15 @@ export default async function handler(req, res) {
   if (provider === 'gemini' && response.status === 401) {
     return res.status(401).json({
       error: 'GEMINI_API_KEY tidak diset atau sudah expired. Dapatkan API key permanen (format AIza...) gratis di https://aistudio.google.com/app/apikey lalu tambahkan sebagai Environment Variable GEMINI_API_KEY di Vercel project settings. Detail: ' + errDetail
+    });
+  }
+
+  // Cloudflare 401 — token missing or auto-revoked. Cloudflare has aggressive
+  // secret scanning that revokes any cfut_ token appearing in deployed code
+  // or Vercel logs. Token MUST be set via env var, never embedded.
+  if (provider === 'cloudflare' && (response.status === 401 || response.status === 403)) {
+    return res.status(401).json({
+      error: 'CLOUDFLARE_API_TOKEN tidak diset atau sudah di-revoke. Cloudflare auto-revoke token cfut_ yang muncul di kode/log deploy. Setup: 1) Buka https://dash.cloudflare.com/profile/api-tokens 2) Create Token → template "Workers AI" 3) Copy token (cfut_xxx) 4) Di Vercel Project Settings → Environment Variables → tambah Key=CLOUDFLARE_API_TOKEN Value=cfut_xxx 5) Redeploy. JANGAN embed token di kode. Detail: ' + errDetail
     });
   }
 

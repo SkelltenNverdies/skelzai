@@ -76,7 +76,8 @@ const PROVIDERS = {
   },
   cloudflare: {
     envVar: 'CLOUDFLARE_API_TOKEN',
-    fallbackKey: 'cfut_CrYQA4JsLqkh1fLyHy7I8nKX8fzyMftcdAPzdawP2e2add2c',
+    // NO fallbackKey — Cloudflare auto-revokes embedded tokens
+    fallbackKey: null,
     fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
     url: 'https://api.cloudflare.com/client/v4/accounts',
     isCloudflareNative: true, // model goes in path, needs account ID
