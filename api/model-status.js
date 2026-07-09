@@ -25,13 +25,13 @@ const PROVIDERS = {
   },
   groq: {
     envVar: 'GROQ_API_KEY',
-    fallbackKey: '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',
+    fallbackKey: null, // Expired — set GROQ_API_KEY env var
     url: 'https://api.groq.com/openai/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   openrouter: {
     envVar: 'OPENROUTER_API_KEY',
-    fallbackKey: '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',
+    fallbackKey: null, // Expired — set OPENROUTER_API_KEY env var
     url: 'https://openrouter.ai/api/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'HTTP-Referer': 'https://skelzai.vercel.app', 'X-Title': 'SkelzAI' })
   },
@@ -52,13 +52,13 @@ const PROVIDERS = {
   },
   nvidia: {
     envVar: 'NVIDIA_API_KEY',
-    fallbackKey: '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',
+    fallbackKey: null, // Expired — set NVIDIA_API_KEY env var
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'Accept': 'application/json' })
   },
   aihubmix: {
     envVar: 'AIHUBMIX_API_KEY',
-    fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
+    fallbackKey: null, // Expired — set AIHUBMIX_API_KEY env var
     url: 'https://aihubmix.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },

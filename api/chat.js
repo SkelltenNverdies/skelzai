@@ -133,16 +133,59 @@ Aturan:
 // Total worst case: 50s < 60s Vercel limit.
 const PROVIDERS = {
   qwen: {
-    envVar: 'QWEN_API_KEY',
-    url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
+    // SkelzAI (Qwen/DashScope) — supports MULTI-KEY for 2x limit.
+    // Each key needs a paired workspace ID (workspace ID appears in URL + header).
+    //
+    // ENV VARS:
+    //   QWEN_KEYS  — comma-separated "key|workspace_id" pairs (2 keys = 2x limit)
+    //     Example: sk-key1aaa|ws-aaaa1111,sk-key2bbb|ws-bbbb2222
+    //   QWEN_API_KEY + QWEN_WORKSPACE_ID  — single key (backward compat)
+    //
+    // Round-robin: request 1 → pair 1, request 2 → pair 2, request 3 → pair 1, ...
+    // Failover: if active key returns 401/429, auto-switch to next pair.
+    envVar: 'QWEN_KEYS', // Primary: multi-key env var
+    singleKeyEnvVar: 'QWEN_API_KEY', // Backward compat: single key
+    fallbackKey: null, // NO embedded key (user must set env var for own keys)
+    // Embedded workspace ID (used as fallback for single-key mode)
+    fallbackWorkspaceId: 'ws-3cudsfbi2d76ndhg',
     timeout: 55000,
-    buildRequest(apiKey, model, messages) {
+    // Get all (key, workspaceId) pairs from env var
+    getKeyPairs() {
+      const pairs = [];
+      // Parse QWEN_KEYS (comma-separated "key|ws_id" pairs)
+      const multi = process.env.QWEN_KEYS;
+      if (multi) {
+        const entries = multi.split(',').map(s => s.trim()).filter(Boolean);
+        for (const entry of entries) {
+          const [key, wsId] = entry.split('|').map(s => s.trim());
+          if (key) {
+            pairs.push({ key, workspaceId: wsId || this.fallbackWorkspaceId });
+          }
+        }
+      }
+      // Fallback: single key mode
+      if (pairs.length === 0) {
+        const singleKey = process.env.QWEN_API_KEY;
+        if (singleKey) {
+          const wsId = process.env.QWEN_WORKSPACE_ID || this.fallbackWorkspaceId;
+          pairs.push({ key: singleKey.trim(), workspaceId: wsId });
+        }
+      }
+      return pairs;
+    },
+    // Build URL for a specific workspace ID
+    buildUrlForWorkspace(workspaceId) {
+      return `https://${workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
+    },
+    // Legacy url (used by single-key path) — uses fallback workspace
+    url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
+    buildRequest(apiKey, model, messages, workspaceId) {
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
-          'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg'
+          'X-DashScope-WorkSpace': workspaceId || this.fallbackWorkspaceId
         },
         body: JSON.stringify({ model, messages, stream: true, max_tokens: 16384, temperature: 0.7, top_p: 0.9 })
       };
@@ -150,7 +193,9 @@ const PROVIDERS = {
   },
   groq: {
     envVar: 'GROQ_API_KEY',
-    fallbackKey: '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',
+    // Embedded key expired/revoked. User must set GROQ_API_KEY env var.
+    // Get key: https://console.groq.com/keys → Create API Key
+    fallbackKey: null,
     url: 'https://api.groq.com/openai/v1/chat/completions',
     timeout: 55000,
     // Groq free-tier TPM limits (verified Dec 2024):
@@ -204,7 +249,9 @@ const PROVIDERS = {
   },
   openrouter: {
     envVar: 'OPENROUTER_API_KEY',
-    fallbackKey: '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',
+    // Embedded key expired. User must set OPENROUTER_API_KEY env var.
+    // Get key: https://openrouter.ai/keys → Create Key
+    fallbackKey: null,
     url: 'https://openrouter.ai/api/v1/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -358,7 +405,9 @@ const PROVIDERS = {
     // - Small models (4B, 10.7B) have 4096 max context → use max_tokens=2000
     // - meta/llama-3.2-3b-instruct always times out → removed from model list
     envVar: 'NVIDIA_API_KEY',
-    fallbackKey: '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',
+    // Embedded key expired. User must set NVIDIA_API_KEY env var.
+    // Get key: https://build.nvidia.com/ → Login → API Keys
+    fallbackKey: null,
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
@@ -417,7 +466,9 @@ const PROVIDERS = {
     // Free models available with limits (~7 req/hour after top-up $1)
     // Override via AIHUBMIX_API_KEY env var
     envVar: 'AIHUBMIX_API_KEY',
-    fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
+    // Embedded key expired. User must set AIHUBMIX_API_KEY env var.
+    // Get key: https://aihubmix.com → API Keys
+    fallbackKey: null,
     url: 'https://aihubmix.com/v1/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -644,12 +695,13 @@ export default async function handler(req, res) {
   // NOTE: GitHub PATs cannot be embedded — GitHub's secret scanning auto-revokes
   // any `ghp_*` token that appears in deployed code. Use the GITHUB_TOKEN env var.
   // For Cloudflare: supports multi-key (CLOUDFLARE_API_TOKENS comma-separated).
+  // For Qwen: supports multi-key (QWEN_KEYS comma-separated "key|ws_id" pairs).
   let apiKey = process.env[config.envVar];
   if (!apiKey && config.fallbackKey) {
     apiKey = config.fallbackKey;
   }
-  // Cloudflare multi-key: if CLOUDFLARE_API_TOKENS not set but CLOUDFLARE_API_TOKEN is, use it
-  if (provider === 'cloudflare' && !apiKey && config.singleKeyEnvVar) {
+  // Cloudflare/Qwen multi-key: if multi-key env var not set but single-key is, use it
+  if ((provider === 'cloudflare' || provider === 'qwen') && !apiKey && config.singleKeyEnvVar) {
     apiKey = process.env[config.singleKeyEnvVar];
   }
   if (!apiKey) {
@@ -662,6 +714,11 @@ export default async function handler(req, res) {
     if (provider === 'cloudflare') {
       return res.status(500).json({
         error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel: CLOUDFLARE_API_TOKENS=cfut_key1,cfut_key2 (comma-separated, 2 keys = 2x limit). Dapatkan token di https://dash.cloudflare.com/profile/api-tokens → Create Token → Workers AI.'
+      });
+    }
+    if (provider === 'qwen') {
+      return res.status(500).json({
+        error: 'QWEN_KEYS belum diset. Set env var di Vercel: QWEN_KEYS=sk-key1|ws-workspace1,sk-key2|ws-workspace2 (format: key|workspace_id, comma-separated). Dapatkan API key + workspace ID di https://dashscope.console.aliyun.com/ → API Keys.'
       });
     }
     return res.status(500).json({ error: `${config.envVar} not set on server` });
@@ -743,29 +800,21 @@ export default async function handler(req, res) {
         });
       }
       // Round-robin: use request timestamp to pick starting index
-      // This distributes load evenly across keys
       const startIdx = Math.floor(Date.now() / 1000) % pairs.length;
-      let triedAll = false;
-      for (let attempt = 0; attempt < pairs.length && !triedAll; attempt++) {
+      for (let attempt = 0; attempt < pairs.length; attempt++) {
         const idx = (startIdx + attempt) % pairs.length;
         const pair = pairs[idx];
         const reqOptions = config.buildRequest(pair.token, model, finalMessages);
         const requestUrl = config.buildUrlForAccount(pair.accountId, model);
         try {
           response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
-          if (response.ok || (response.status >= 200 && response.status < 300)) {
-            // Success — break out of loop
-            break;
-          }
-          // If 401/403 (auth) or 429 (rate-limited), try next key
+          if (response.ok || (response.status >= 200 && response.status < 300)) break;
           if (response.status === 401 || response.status === 403 || response.status === 429) {
-            // Drain response body before retrying
             try { await response.text(); } catch(e) {}
             lastError = new Error(`Cloudflare key ${idx + 1} failed: ${response.status}`);
             response = null;
             continue;
           }
-          // Other errors (4xx/5xx) — break and surface
           break;
         } catch (err) {
           lastError = err;
@@ -773,16 +822,43 @@ export default async function handler(req, res) {
           continue;
         }
       }
-      if (!response && lastError) {
-        throw lastError;
+      if (!response && lastError) throw lastError;
+    } else if (provider === 'qwen' && config.getKeyPairs) {
+      // Qwen multi-key: round-robin + failover (same logic as Cloudflare)
+      const pairs = config.getKeyPairs();
+      if (pairs.length === 0) {
+        return res.status(500).json({
+          error: 'QWEN_KEYS belum diset. Set env var di Vercel: QWEN_KEYS=sk-key1|ws-id1,sk-key2|ws-id2 (2 keys = 2x limit).'
+        });
       }
+      const startIdx = Math.floor(Date.now() / 1000) % pairs.length;
+      for (let attempt = 0; attempt < pairs.length; attempt++) {
+        const idx = (startIdx + attempt) % pairs.length;
+        const pair = pairs[idx];
+        const reqOptions = config.buildRequest(pair.key, model, finalMessages, pair.workspaceId);
+        const requestUrl = config.buildUrlForWorkspace(pair.workspaceId);
+        try {
+          response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
+          if (response.ok || (response.status >= 200 && response.status < 300)) break;
+          if (response.status === 401 || response.status === 403 || response.status === 429) {
+            try { await response.text(); } catch(e) {}
+            lastError = new Error(`Qwen key ${idx + 1} failed: ${response.status}`);
+            response = null;
+            continue;
+          }
+          break;
+        } catch (err) {
+          lastError = err;
+          response = null;
+          continue;
+        }
+      }
+      if (!response && lastError) throw lastError;
     } else {
       // Standard single-key path for all other providers
       const reqOptions = dynamicMaxTokens
         ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
         : config.buildRequest(apiKey, model, finalMessages);
-      // For providers with buildUrl() (e.g. Gemini native, Cloudflare), use it
-      // to construct the full URL with model in the path. Otherwise use config.url.
       const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
       response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
     }
