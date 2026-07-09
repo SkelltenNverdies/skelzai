@@ -518,12 +518,14 @@ const PROVIDERS = {
     envVar: 'CLOUDFLARE_API_TOKEN',
     // Token can be embedded as fallback (account-scoped, but cfut_ tokens
     // are not auto-revoked like GitHub PATs). Account ID MUST be env var.
-    fallbackKey: 'cfut_6FAzJd38B11c3eMvEHyOLlxxSQj2rPZWhBH60ds6430bc721',
+    fallbackKey: 'cfut_CrYQA4JsLqkh1fLyHy7I8nKX8fzyMftcdAPzdawP2e2add2c',
+    // Fallback account ID (embedded — account IDs are not secret, they appear in URLs)
+    fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
     url: 'https://api.cloudflare.com/client/v4/accounts',
     timeout: 55000,
-    // Build full URL — account ID from env var, model in path
+    // Build full URL — account ID from env var or fallback
     buildUrl(model) {
-      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || this.fallbackAccountId;
       if (!accountId) return null; // Will trigger error in handler
       return `${this.url}/${accountId}/ai/run/${model}`;
     },

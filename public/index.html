@@ -912,7 +912,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.6.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.6.1 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -943,15 +943,14 @@
       {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Skelz 3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
 
-      /* ===== 2. Fast Chat — 8 models ===== */
+      /* ===== 2. Fast Chat — 7 models ===== */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'},
-      {id:'@cf/meta/llama-3.1-8b-instruct',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
-      {id:'@cf/meta/llama-3.2-3b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Fast Chat'},
+      {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
       /* ===== 3. Premium AI — 8 models ===== */
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
@@ -963,14 +962,13 @@
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 7 models ===== */
+      /* ===== 4. Vision AI — 6 models ===== */
       {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'Analisis foto, 12B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'@cf/meta/llama-3.2-11b-vision-instruct',provider:'cloudflare',label:'CF Llama 3.2 11B Vision',desc:'Cloudflare — Analisis foto, edge cepat',tag:'CF',vision:true,cat:'Vision AI'},
 
       /* ===== 5. Powerful AI — 13 models ===== */
       {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
@@ -980,8 +978,8 @@
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'@cf/mistral/mistral-7b-instruct-v0.2',provider:'cloudflare',label:'CF Mistral 7B',desc:'Cloudflare — Mistral, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'@cf/qwen/qwen1.5-14b-chat-awq',provider:'cloudflare',label:'CF Qwen 1.5 14B',desc:'Cloudflare — Qwen, multibahasa',tag:'CF',vision:false,cat:'Powerful AI'},
+      {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
+      {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'coding-glm-4.7-free',provider:'aihubmix',label:'GLM 4.7 Coding',desc:'AIHubMix — Coding specialized, gratis',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'coding-glm-4.6-free',provider:'aihubmix',label:'GLM 4.6 Coding',desc:'AIHubMix — Coding, stabil',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
       {id:'coding-minimax-m3-free',provider:'aihubmix',label:'MiniMax M3 Coding',desc:'AIHubMix — Coding + reasoning',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},

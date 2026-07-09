@@ -76,7 +76,8 @@ const PROVIDERS = {
   },
   cloudflare: {
     envVar: 'CLOUDFLARE_API_TOKEN',
-    fallbackKey: 'cfut_6FAzJd38B11c3eMvEHyOLlxxSQj2rPZWhBH60ds6430bc721',
+    fallbackKey: 'cfut_CrYQA4JsLqkh1fLyHy7I8nKX8fzyMftcdAPzdawP2e2add2c',
+    fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
     url: 'https://api.cloudflare.com/client/v4/accounts',
     isCloudflareNative: true, // model goes in path, needs account ID
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
@@ -109,8 +110,8 @@ async function pingModel(providerName, providerConfig, modelId) {
         generationConfig: { maxOutputTokens: 5 }
       });
     } else if (providerConfig.isCloudflareNative) {
-      // Cloudflare Workers AI: account ID from env, model in path
-      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      // Cloudflare Workers AI: account ID from env or fallback, model in path
+      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || providerConfig.fallbackAccountId;
       if (!accountId) {
         return { status: 'offline', reason: 'No CLOUDFLARE_ACCOUNT_ID', code: 'no_account_id' };
       }
