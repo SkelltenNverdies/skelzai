@@ -624,6 +624,34 @@ const PROVIDERS = {
         })
       };
     }
+  },
+  cerebras: {
+    // Cerebras — Ultra-fast inference (fastest LLM inference, 1000+ tokens/sec).
+    // Free tier via cloud.cerebras.ai. OpenAI-compatible API.
+    // Models: llama3.1-8b (fast), llama3.1-70b (powerful), qwen-3-32b (coding)
+    // Supports multi-key: CEREBRAS_API_KEYS=key1,key2 (comma-separated)
+    envVar: 'CEREBRAS_API_KEYS',
+    singleKeyEnvVar: 'CEREBRAS_API_KEY',
+    fallbackKey: 'csk-xt649yfxchcr55xm4jd62dphc4c3y3k59wc9dt86y3x8c3nj',
+    url: 'https://api.cerebras.ai/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
   }
   // aihubmix_image provider REMOVED — gpt-image-2-free frequently returns
   // "no_available_channel" (server-side issue). Commented out from model list too.

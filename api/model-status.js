@@ -134,6 +134,13 @@ const PROVIDERS = {
       return pairs;
     },
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+  },
+  cerebras: {
+    envVar: 'CEREBRAS_API_KEYS',
+    singleKeyEnvVar: 'CEREBRAS_API_KEY',
+    fallbackKey: 'csk-xt649yfxchcr55xm4jd62dphc4c3y3k59wc9dt86y3x8c3nj',
+    url: 'https://api.cerebras.ai/v1/chat/completions',
+    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };
 
