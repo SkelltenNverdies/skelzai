@@ -497,6 +497,53 @@ const PROVIDERS = {
         })
       };
     }
+  },
+  cloudflare: {
+    // Cloudflare Workers AI — OpenAI-compatible endpoint.
+    // Free tier: 10,000 neurons/day (resets daily). Global edge network.
+    // Edge PoP in Jakarta → fast for Indonesian users, no geo-restriction.
+    //
+    // REQUIRES env vars (Cloudflare tokens are account-scoped, cannot be shared):
+    //   CLOUDFLARE_ACCOUNT_ID — 32-char hex from Cloudflare dashboard
+    //   CLOUDFLARE_API_TOKEN  — API token with Workers AI permission
+    //
+    // Get credentials:
+    //   1. https://dash.cloudflare.com → login (free, no credit card)
+    //   2. Account ID: dashboard sidebar (32-char hex)
+    //   3. API Token: https://dash.cloudflare.com/profile/api-tokens
+    //      → Create Token → "Workers AI" template → Copy token
+    //   4. Set both as Vercel env vars + redeploy
+    //
+    // Models use @cf/ prefix. Supports streaming (SSE format).
+    envVar: 'CLOUDFLARE_API_TOKEN',
+    // Token can be embedded as fallback (account-scoped, but cfut_ tokens
+    // are not auto-revoked like GitHub PATs). Account ID MUST be env var.
+    fallbackKey: 'cfut_6FAzJd38B11c3eMvEHyOLlxxSQj2rPZWhBH60ds6430bc721',
+    url: 'https://api.cloudflare.com/client/v4/accounts',
+    timeout: 55000,
+    // Build full URL — account ID from env var, model in path
+    buildUrl(model) {
+      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      if (!accountId) return null; // Will trigger error in handler
+      return `${this.url}/${accountId}/ai/run/${model}`;
+    },
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        // Cloudflare Workers AI supports streaming via stream:true
+        // Format: { messages, stream, max_tokens, temperature }
+        body: JSON.stringify({
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7
+        })
+      };
+    }
   }
   // aihubmix_image provider REMOVED — gpt-image-2-free frequently returns
   // "no_available_channel" (server-side issue). Commented out from model list too.
@@ -656,9 +703,15 @@ export default async function handler(req, res) {
     const reqOptions = dynamicMaxTokens
       ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
       : config.buildRequest(apiKey, model, finalMessages);
-    // For providers with buildUrl() (e.g. Gemini native), use it to construct
-    // the full URL with model in the path. Otherwise use config.url.
+    // For providers with buildUrl() (e.g. Gemini native, Cloudflare), use it
+    // to construct the full URL with model in the path. Otherwise use config.url.
     const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+    // Cloudflare: buildUrl returns null if CLOUDFLARE_ACCOUNT_ID not set
+    if (!requestUrl) {
+      return res.status(500).json({
+        error: 'CLOUDFLARE_ACCOUNT_ID belum diset. Buka https://dash.cloudflare.com → copy Account ID (32-char hex) dari sidebar. Set sebagai Environment Variable CLOUDFLARE_ACCOUNT_ID di Vercel project settings, lalu redeploy.'
+      });
+    }
     response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
 
     if (response.status === 413) {

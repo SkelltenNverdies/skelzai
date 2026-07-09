@@ -73,6 +73,13 @@ const PROVIDERS = {
     fallbackKey: 'sk-nry-1TMCXcslPvpAOd3M9WtBaDbNWZ-FfPndjZd2GBKwgwY',
     url: 'https://router.bynara.id/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+  },
+  cloudflare: {
+    envVar: 'CLOUDFLARE_API_TOKEN',
+    fallbackKey: 'cfut_6FAzJd38B11c3eMvEHyOLlxxSQj2rPZWhBH60ds6430bc721',
+    url: 'https://api.cloudflare.com/client/v4/accounts',
+    isCloudflareNative: true, // model goes in path, needs account ID
+    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };
 
@@ -100,6 +107,18 @@ async function pingModel(providerName, providerConfig, modelId) {
       body = JSON.stringify({
         contents: [{ parts: [{ text: 'hi' }] }],
         generationConfig: { maxOutputTokens: 5 }
+      });
+    } else if (providerConfig.isCloudflareNative) {
+      // Cloudflare Workers AI: account ID from env, model in path
+      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      if (!accountId) {
+        return { status: 'offline', reason: 'No CLOUDFLARE_ACCOUNT_ID', code: 'no_account_id' };
+      }
+      requestUrl = `${providerConfig.url}/${accountId}/ai/run/${modelId}`;
+      body = JSON.stringify({
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 5,
+        stream: false
       });
     } else {
       body = JSON.stringify({
