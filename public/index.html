@@ -285,6 +285,7 @@
        - ms-unknown (gray):  not checked yet
        - ms-checking (yellow, pulse): currently being checked
        - ms-online (green):  model responds OK
+       - ms-rate-limited (yellow): hit provider rate limit (429/413/402/529) — wait & retry
        - ms-offline (red):   model fails (auth/404/timeout/network)
     */
     .mo-status{
@@ -329,6 +330,24 @@
       0%{opacity:0.4;transform:scale(1)}
       100%{opacity:0;transform:scale(2.2)}
     }
+    .ms-rate-limited .status-dot{
+      background:#FCD34D;
+      box-shadow:0 0 0 2px rgba(252,211,77,0.2);
+    }
+    /* Rate-limited dot has a slow warning pulse */
+    .ms-rate-limited .status-dot::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:50%;
+      background:#FCD34D;
+      opacity:0;
+      animation:ms-rate-pulse 1.5s ease-out infinite;
+    }
+    @keyframes ms-rate-pulse{
+      0%{opacity:0.5;transform:scale(1)}
+      100%{opacity:0;transform:scale(1.8)}
+    }
     .ms-offline .status-dot{
       background:#EF4444;
       box-shadow:0 0 0 2px rgba(239,68,68,0.15);
@@ -339,6 +358,13 @@
     }
     #MOP .mp .mo.ms-row-offline:hover{
       background:rgba(239,68,68,0.08);
+    }
+    /* Rate-limited models get a subtle yellow tint */
+    #MOP .mp .mo.ms-row-rate-limited{
+      background:rgba(252,211,77,0.04);
+    }
+    #MOP .mp .mo.ms-row-rate-limited:hover{
+      background:rgba(252,211,77,0.08);
     }
     /* Rate limit counter — optimized for mobile + desktop */
     #RATE_COUNTER{
@@ -886,15 +912,22 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.5.7 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.5.9 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
 
   <script>
-    /* ===== MODELS — categorized, source hidden, all OpenRouter free verified working ===== */
+    /* ===== MODELS — categorized by type, all models grouped together =====
+       Categories (in order):
+       1. SkelzAI      — Skelz original models (Qwen-based, branded as Skelz)
+       2. Fast Chat    — Fast, token-efficient models for daily chat
+       3. Premium AI   — OpenRouter free models (Nemotron, Hy3, coding helpers)
+       4. Vision AI    — Models that can analyze photos/images
+       5. Powerful AI  — Most powerful models (MoE, large params, coding)
+    */
     var MODELS=[
-      /* SkelzAI Originals — branded as Skelz, premium models require login */
+      /* ===== 1. SkelzAI — 14 models ===== */
       {id:'qwen-turbo',provider:'qwen',label:'Skelz Turbo',desc:'Cepat & efisien',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwen-plus',provider:'qwen',label:'Skelz Plus',desc:'Seimbang kuat & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwen-max',provider:'qwen',label:'Skelz Max',desc:'Paling kuat & akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
@@ -909,59 +942,54 @@
       {id:'qwen-vl-plus',provider:'qwen',label:'Skelz Vision Plus',desc:'Analisis foto, seimbang',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Skelz 3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      /* Fast Chat (Groq) */
+
+      /* ===== 2. Fast Chat — 6 models ===== */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      /* Premium AI (OpenRouter free) — top models need redeem */
+      {id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'},
+
+      /* ===== 3. Premium AI — 8 models ===== */
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (reasoning)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3-nano-30b-a3b:free',provider:'openrouter',label:'Nemotron 3 Nano 30B',desc:'MoE 30B, hemat token',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-nano-9b-v2:free',provider:'openrouter',label:'Nemotron Nano 9B V2',desc:'Super cepat & ringan',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3',desc:'Multibahasa, 262K context',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'tencent/hy3:free',provider:'openrouter',label:'Hy3 (OpenRouter)',desc:'Multibahasa, 262K context',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'poolside/laguna-m.1:free',provider:'openrouter',label:'Laguna M.1',desc:'Coding specialist',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat',tag:'Premium',vision:false,cat:'Premium AI'},
-      /* Vision AI (analisis foto) — top models need redeem */
+      {id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'},
+
+      /* ===== 4. Vision AI — 6 models ===== */
       {id:'nvidia/nemotron-nano-12b-v2-vl:free',provider:'openrouter',label:'Nemotron Nano 12B VL',desc:'Analisis foto, 12B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Omni 30B',desc:'Vision + reasoning, 30B',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
-      /* Powerful AI (NVIDIA NIM free) — top models need redeem */
+
+      /* ===== 5. Powerful AI — 10 models ===== */
       {id:'minimaxai/minimax-m3',provider:'nvidia',label:'MiniMax M3',desc:'Multibahasa, 256K context',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'mistralai/ministral-14b-instruct-2512',provider:'nvidia',label:'Ministral 14B',desc:'Mistral, 14B seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'}
-      /* AIHubMix Free Models (limit ~7 req/hour, reset hourly) */
-      ,{id:'coding-glm-4.7-free',provider:'aihubmix',label:'GLM 4.7 Coding',desc:'AIHubMix — Coding specialized, gratis',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'}
-      ,{id:'coding-glm-4.6-free',provider:'aihubmix',label:'GLM 4.6 Coding',desc:'AIHubMix — Coding, stabil',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      ,{id:'coding-minimax-m3-free',provider:'aihubmix',label:'MiniMax M3 Coding',desc:'AIHubMix — Coding + reasoning',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'}
-      ,{id:'coding-minimax-m2.7-free',provider:'aihubmix',label:'MiniMax M2.7 Coding',desc:'AIHubMix — Coding cepat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      ,{id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      ,{id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      ,{id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
-      /* MorphLLM — single free model from MorphLLM API */
-      ,{id:'morph-v3-large',provider:'morph',label:'Morph V3 Large',desc:'MorphLLM — Cepat, coding kuat',tag:'Morph',vision:false,cat:'Powerful AI'}
-      /* NaraRouter — free 7M tokens/day. Tested working on free plan:
-         mistral-large, mistral-medium-3-5, tencent-hy3.
-         Other models (kimi, mimo, deepseek, etc.) need paid credits despite
-         the free 5M token quota — appears to be a NaraRouter billing bug. */
-      ,{id:'mistral-large',provider:'nara',label:'Nara Mistral Large',desc:'NaraRouter — Mistral Large, gratis & powerful',tag:'Nara',vision:false,cat:'Powerful AI'}
-      ,{id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'}
-      ,{id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'}
-      /* Image Generation (AIHubMix free) — DISABLED: model often returns no_available_channel
+      {id:'upstage/solar-10.7b-instruct',provider:'nvidia',label:'Solar 10.7B',desc:'Upstage, seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'coding-glm-4.7-free',provider:'aihubmix',label:'GLM 4.7 Coding',desc:'AIHubMix — Coding specialized, gratis',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},
+      {id:'coding-glm-4.6-free',provider:'aihubmix',label:'GLM 4.6 Coding',desc:'AIHubMix — Coding, stabil',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
+      {id:'coding-minimax-m3-free',provider:'aihubmix',label:'MiniMax M3 Coding',desc:'AIHubMix — Coding + reasoning',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},
+      {id:'coding-minimax-m2.7-free',provider:'aihubmix',label:'MiniMax M2.7 Coding',desc:'AIHubMix — Coding cepat',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
+      {id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
+      {id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
+      {id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
+      {id:'morph-v3-large',provider:'morph',label:'Morph V3 Large',desc:'MorphLLM — Cepat, coding kuat',tag:'Morph',vision:false,cat:'Powerful AI'},
+      {id:'mistral-large',provider:'nara',label:'Nara Mistral Large',desc:'NaraRouter — Mistral Large, gratis & powerful',tag:'Nara',vision:false,cat:'Powerful AI'}
+
+      /* DISABLED models (commented out — not in active list):
+         - gpt-image-2-free (AIHubMix image gen — often returns no_available_channel)
+         - Gemini models (require AIza... API key in GEMINI_API_KEY env var)
       ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
-      */
-      /* Gemini models — DISABLED: requires permanent AIza... API key in env var.
-         The OAuth token (AQ.Ab8...) expired. To re-enable:
-         1) Get API key from https://aistudio.google.com/app/apikey (AIza... format)
-         2) Set GEMINI_API_KEY env var in Vercel
-         3) Uncomment the models below + restore fallbackKey in api/chat.js
       ,{id:'gemini-flash-latest',provider:'gemini',label:'Gemini Flash (Latest)',desc:'Versi terbaru, hemat & cepat',tag:'GEMINI',vision:true,cat:'Fast Chat'}
       ,{id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
       ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI',redeem:'vision'}
@@ -1295,12 +1323,17 @@
         _modelStatusCache=d.results||{};
         _modelStatusCacheTime=Date.now();
         applyModelStatus(_modelStatusCache);
-        var online=0,offline=0;
+        var online=0,offline=0,rateLimited=0;
         for(var k in _modelStatusCache){
-          if(_modelStatusCache[k].status==='online')online++;
-          else if(_modelStatusCache[k].status==='offline')offline++;
+          var st=_modelStatusCache[k].status;
+          if(st==='online')online++;
+          else if(st==='offline')offline++;
+          else if(st==='rate_limited')rateLimited++;
         }
-        toast('Status: '+online+' online, '+offline+' offline','success');
+        var msg='Status: '+online+' online';
+        if(rateLimited>0)msg+=', '+rateLimited+' rate-limited';
+        if(offline>0)msg+=', '+offline+' offline';
+        toast(msg,rateLimited>0?'warning':'success');
       }catch(e){
         toast('Koneksi gagal saat cek status','error');
         for(var i=0;i<allBadges.length;i++){
@@ -1316,14 +1349,21 @@
         var s=results[modelId];
         var badge=document.querySelector('[data-mid-status="'+modelId+'"]');
         if(!badge)continue;
+        var row=badge.closest('.mo');
+        // Clear previous row tints
+        if(row){row.classList.remove('ms-row-offline','ms-row-rate-limited')}
         if(s.status==='online'){
           badge.className='mo-status ms-online flex-shrink-0';
           badge.title='Online — siap dipakai';
+        }else if(s.status==='rate_limited'){
+          // Yellow — provider rate-limited (429/413/402/529). Model works but
+          // temporarily unavailable due to provider-side limits. Try again later.
+          badge.className='mo-status ms-rate-limited flex-shrink-0';
+          badge.title='Rate limited — '+(s.reason||s.code||'tunggu sebentar')+'. Model jalan, coba lagi nanti.';
+          if(row)row.classList.add('ms-row-rate-limited');
         }else if(s.status==='offline'){
           badge.className='mo-status ms-offline flex-shrink-0';
           badge.title='Offline — '+(s.reason||s.code||'tidak respon');
-          // Mark row with red tint
-          var row=badge.closest('.mo');
           if(row)row.classList.add('ms-row-offline');
         }else{
           badge.className='mo-status ms-unknown flex-shrink-0';

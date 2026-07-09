@@ -139,11 +139,21 @@ async function pingModel(providerName, providerConfig, modelId) {
       return { status: 'offline', reason: 'Model not found', code: 'not_found', http: r.status };
     }
     if (r.status === 429) {
-      return { status: 'online', reason: 'Rate limited (still works)', code: 'rate_limited', http: r.status };
+      // Rate limited by provider (OpenRouter/Groq/NVIDIA etc.)
+      // Model is online but temporarily unavailable due to per-minute/per-day limit
+      return { status: 'rate_limited', reason: 'Rate limited (tunggu sebentar)', code: 'rate_limited', http: r.status };
     }
     if (r.status === 413) {
-      // TPM exceeded — model still works, just rate-limited per minute
-      return { status: 'online', reason: 'TPM limit (try again)', code: 'tpm', http: r.status };
+      // TPM (tokens per minute) exceeded — Groq-specific
+      return { status: 'rate_limited', reason: 'TPM limit (tunggu 1 menit)', code: 'tpm', http: r.status };
+    }
+    if (r.status === 402) {
+      // Payment required (e.g. NaraRouter credits)
+      return { status: 'rate_limited', reason: 'Insufficient credits', code: 'credits', http: r.status };
+    }
+    if (r.status === 529) {
+      // Overloaded (provider temporarily overloaded)
+      return { status: 'rate_limited', reason: 'Provider overloaded', code: 'overloaded', http: r.status };
     }
     return { status: 'offline', reason, code: 'http_error', http: r.status };
   } catch (err) {
