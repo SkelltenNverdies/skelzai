@@ -258,18 +258,13 @@
       background:linear-gradient(90deg,rgba(255,107,74,0.18) 0%,rgba(255,107,74,0.06) 100%);
     }
     #MOP .mp .mo:active{transform:scale(0.985)}
-    /* Category headers — clearer separation */
+    /* Category headers — clearer separation with icon + description */
     #MOP .mp .cat-h{
-      font-size:10px;
-      letter-spacing:0.15em;
-      text-transform:uppercase;
-      color:#7C7770;
-      font-weight:600;
-      padding:14px 12px 6px;
-      border-top:1px solid rgba(255,255,255,0.04);
-      margin-top:4px;
+      padding:12px 10px 8px;
+      margin-top:6px;
+      border-top:1px solid rgba(255,255,255,0.05);
     }
-    #MOP .mp .cat-h:first-child{border-top:none;margin-top:0}
+    #MOP .mp .cat-h:first-child{border-top:none;margin-top:0;padding-top:4px}
     /* Tag chip — smaller, less visual noise */
     #MOP .mp .mo .mo-tag{
       font-size:10px;
@@ -283,6 +278,52 @@
       background:rgba(255,107,74,0.1);
       color:#FF8466;
       border-color:rgba(255,107,74,0.2);
+    }
+    /* ===== MODEL STATUS BADGE ===== */
+    /* Small colored dot next to model name indicating online/offline status.
+       States:
+       - ms-unknown (gray):  not checked yet
+       - ms-checking (yellow, pulse): currently being checked
+       - ms-online (green):  model responds OK
+       - ms-offline (red):   model fails (auth/404/timeout/network)
+    */
+    .mo-status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:12px;
+      height:12px;
+      margin-left:2px;
+    }
+    .mo-status .status-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#7C7770;
+      transition:background 0.2s,box-shadow 0.2s;
+    }
+    .ms-checking .status-dot{
+      background:#FCD34D;
+      animation:ms-blink 0.9s ease-in-out infinite;
+    }
+    @keyframes ms-blink{
+      0%,100%{opacity:0.4;transform:scale(0.8)}
+      50%{opacity:1;transform:scale(1.1)}
+    }
+    .ms-online .status-dot{
+      background:#10B981;
+      box-shadow:0 0 0 2px rgba(16,185,129,0.15);
+    }
+    .ms-offline .status-dot{
+      background:#EF4444;
+      box-shadow:0 0 0 2px rgba(239,68,68,0.15);
+    }
+    /* Offline models get a subtle red tint on the row */
+    #MOP .mp .mo.ms-row-offline{
+      background:rgba(239,68,68,0.04);
+    }
+    #MOP .mp .mo.ms-row-offline:hover{
+      background:rgba(239,68,68,0.08);
     }
     /* Reduce motion for accessibility */
     @media(prefers-reduced-motion:reduce){
@@ -310,9 +351,15 @@
             <p class="text-[10px] text-[#7C7770] leading-tight mt-0.5">Tap model untuk mengganti</p>
           </div>
         </div>
-        <button onclick="closeMP()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.05] transition-colors flex-shrink-0">
-          <span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:close"></span>
-        </button>
+        <div class="flex items-center gap-1">
+          <button onclick="checkModelStatus()" id="STATUS_BTN" class="px-2.5 py-1.5 rounded-lg text-[11px] text-[#C2BFB8] hover:bg-white/[0.05] hover:text-coral-400 transition-colors flex items-center gap-1 flex-shrink-0" title="Cek status online semua model">
+            <span class="iconify text-sm" data-icon="mdi:wifi-check"></span>
+            <span class="hidden sm:inline">Cek Status</span>
+          </button>
+          <button onclick="closeMP()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.05] transition-colors flex-shrink-0">
+            <span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:close"></span>
+          </button>
+        </div>
       </div>
       <div class="mp p-2 overflow-y-auto flex-1" id="ML"></div>
     </div>
@@ -559,6 +606,28 @@
     </div>
   </div>
 
+  <!-- RATE LIMIT MODAL (shown when user hits daily limit) -->
+  <div id="RATELIMIT" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)closeM('RATELIMIT')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20">
+      <div class="text-center mb-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/5 border border-red-500/25 flex items-center justify-center mx-auto mb-3"><span class="iconify text-red-400 text-2xl" data-icon="mdi:counter"></span></div>
+        <h3 class="text-xl font-semibold text-cream-50 mb-1">Limit Harian Tercapai</h3>
+        <p id="RATELIMIT_TEXT" class="text-xs text-[#7C7770]">Anda sudah menggunakan semua request hari ini.</p>
+      </div>
+      <div id="RATELIMIT_BODY" class="bg-[#262524]/60 border border-white/[0.06] rounded-xl p-4 mb-4 text-center">
+        <p class="text-[10px] text-[#7C7770] uppercase tracking-wider mb-1">Penggunaan Hari Ini</p>
+        <p id="RATELIMIT_COUNT" class="text-2xl font-bold text-red-400">5/5</p>
+        <p id="RATELIMIT_TIER" class="text-[11px] text-[#7C7770] mt-1">Guest Plan</p>
+      </div>
+      <div id="RATELIMIT_UPGRADE" class="hidden bg-coral-400/5 border border-coral-400/20 rounded-lg p-3 mb-4">
+        <p class="text-[11px] text-coral-300 mb-2 font-medium">Upgrade ke Premium</p>
+        <p class="text-[10px] text-[#7C7770] mb-3 leading-relaxed">Daftar gratis untuk dapat <strong class="text-coral-400">15 request/hari</strong> (3x lipat guest), akses 28+ model AI, dan chat sync antar device.</p>
+        <button onclick="closeM('RATELIMIT');openAuth('register')" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Daftar Gratis</button>
+      </div>
+      <button onclick="closeM('RATELIMIT')" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-[#C2BFB8] bg-white/[0.03] hover:bg-white/[0.05] transition-colors">Tutup</button>
+    </div>
+  </div>
+
   <!-- REDEEM MODAL -->
   <div id="REDEEM" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('REDEEM')">
     <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi max-h-[85vh] overflow-y-auto">
@@ -734,6 +803,8 @@
           <div class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" style="box-shadow:0 0 8px rgba(16,185,129,.5)"></div>
           <span id="topModel" class="text-sm text-[#C2BFB8] truncate">SkelzAI Turbo</span>
         </div>
+        <!-- Rate limit counter — shows remaining/total daily requests -->
+        <div id="RATE_COUNTER" class="hidden sm:flex items-center gap-1 text-[11px] text-[#7C7770] px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.06] flex-shrink-0" title="Loading..."></div>
       </div>
       <div class="flex items-center gap-0.5 flex-shrink-0">
         <button onclick="clearCurChat()" id="clrBtn" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors group disabled:opacity-30 disabled:pointer-events-none" title="Hapus pesan" disabled><span class="iconify text-[#7C7770] group-hover:text-[#E5E3DA] text-base transition-colors" data-icon="mdi:delete-outline"></span></button>
@@ -785,7 +856,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.4.2 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.5.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -793,21 +864,21 @@
   <script>
     /* ===== MODELS — categorized, source hidden, all OpenRouter free verified working ===== */
     var MODELS=[
-      /* SkelzAI Originals (Qwen) — branded as Skelz, premium models require login */
+      /* SkelzAI Originals — branded as Skelz, premium models require login */
       {id:'qwen-turbo',provider:'qwen',label:'Skelz Turbo',desc:'Cepat & efisien',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwen-plus',provider:'qwen',label:'Skelz Plus',desc:'Seimbang kuat & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwen-max',provider:'qwen',label:'Skelz Max',desc:'Paling kuat & akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Qwen3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Skelz 3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Skelz Next 80B',desc:'MoE 80B, seimbang',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3.5-plus',provider:'qwen',label:'Skelz 3.5 Plus',desc:'Generasi terbaru, cepat & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Qwen 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Qwen 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Skelz 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Skelz 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Analisis foto, paling akurat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen-vl-plus',provider:'qwen',label:'Skelz Vision Plus',desc:'Analisis foto, seimbang',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Qwen3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Qwen3 Vision, super cepat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Skelz 3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       /* Fast Chat (Groq) */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
@@ -845,20 +916,113 @@
       ,{id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
       ,{id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
       ,{id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'}
+      /* MorphLLM — single free model from MorphLLM API */
+      ,{id:'morph-v3-large',provider:'morph',label:'Morph V3 Large',desc:'MorphLLM — Cepat, coding kuat',tag:'Morph',vision:false,cat:'Powerful AI'}
+      /* NaraRouter — free 7M tokens/day, open-source models. Hemat token. */
+      ,{id:'auto',provider:'nara',label:'Nara Auto',desc:'NaraRouter — Smart router, hemat token',tag:'Nara',vision:false,cat:'Fast Chat'}
+      ,{id:'meta-llama/llama-3.2-3b-instruct',provider:'nara',label:'Nara Llama 3.2 3B',desc:'NaraRouter — 3B, super hemat token',tag:'Nara',vision:false,cat:'Fast Chat'}
       /* Image Generation (AIHubMix free) — DISABLED: model often returns no_available_channel
       ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
       */
-      /* Gemini models commented out — API key invalid.
-         To re-enable: get valid key from https://aistudio.google.com/app/apikey (format: AIza...)
-      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
-      {id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
-      {id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'},
-      {id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Super cepat & ringan',tag:'GEMINI',vision:true,cat:'Vision AI'}
-      */
+      /* Gemini models — Google Gemini API (OpenAI-compatible endpoint).
+         Free tier with generous limits. Supports vision (image analysis).
+         Note: may return "User location is not supported" from some regions. */
+      ,{id:'gemini-flash-latest',provider:'gemini',label:'Gemini Flash (Latest)',desc:'Versi terbaru, hemat & cepat',tag:'GEMINI',vision:true,cat:'Fast Chat'}
+      ,{id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
+      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI',redeem:'vision'}
+      ,{id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
+      ,{id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Super cepat & ringan',tag:'GEMINI',vision:true,cat:'Fast Chat'}
     ];
 
     /* ===== STATE ===== */
     var chats={},curId=null,generating=false,abortTyping=false,pmOpen=false,selModel=MODELS[0],confirmCb=null,curAttachment=null,cavemanEnabled=true,cavemanLevel='full';
+
+    /* ===== RATE LIMITING (5 req/day guest, 15 req/day premium) =====
+       Device fingerprint stored in localStorage. Counter tracked per-day in KV.
+    */
+    var _deviceId=null;
+    try{
+      _deviceId=localStorage.getItem('sk_device_id');
+      if(!_deviceId){
+        // Generate stable device ID (random 16 hex chars + browser hint)
+        _deviceId=Date.now().toString(36)+Math.random().toString(36).slice(2,10)+navigator.userAgent.length;
+        localStorage.setItem('sk_device_id',_deviceId);
+      }
+    }catch(e){_deviceId='anon_'+Date.now()}
+
+    var _rateLimitState={used:0,limit:15,remaining:15,tier:'guest'};
+    function getRateLimitKey(){return currentUser?currentUser.username:_deviceId}
+    function getRateLimitTier(){return currentUser?'premium':'guest'}
+    function getRateLimitMax(){return currentUser?15:5}
+
+    async function checkRateLimit(){
+      // Call /api/ratelimit to get current usage
+      try{
+        var body={action:'check',deviceId:_deviceId};
+        if(currentUser)body.user=currentUser.username;
+        var r=await fetch('/api/ratelimit',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(body)
+        });
+        var d=await r.json();
+        if(d&&typeof d.used==='number'){
+          _rateLimitState=d;
+          updateRateLimitUI();
+        }
+        return d;
+      }catch(e){
+        // Network error — allow request (soft-fail)
+        return {allowed:true,used:0,limit:getRateLimitMax(),remaining:getRateLimitMax(),tier:getRateLimitTier()};
+      }
+    }
+    async function incrementRateLimit(){
+      // Increment counter after a successful send
+      try{
+        var body={action:'increment',deviceId:_deviceId};
+        if(currentUser)body.user=currentUser.username;
+        if(adminSecret)body.adminSecret=adminSecret;
+        var r=await fetch('/api/ratelimit',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(body)
+        });
+        var d=await r.json();
+        if(d&&typeof d.used==='number'){
+          _rateLimitState=d;
+          updateRateLimitUI();
+        }
+        return d;
+      }catch(e){
+        return {allowed:true};
+      }
+    }
+    function updateRateLimitUI(){
+      // Show counter in profile menu / model selector button
+      var s=_rateLimitState;
+      if(s.tier==='admin')return; // admin unlimited — no UI
+      var remaining=s.remaining!==undefined?s.remaining:(s.limit-s.used);
+      var total=s.limit||getRateLimitMax();
+      // Update top header counter (if element exists)
+      var counterEl=document.getElementById('RATE_COUNTER');
+      if(counterEl){
+        var warnClass=remaining<=2?'text-red-400':(remaining<=5?'text-yellow-400':'text-emerald-400');
+        counterEl.innerHTML='<span class="iconify text-[10px]" data-icon="mdi:counter"></span> <span class="'+warnClass+'">'+remaining+'</span>/'+total;
+        counterEl.title=s.tier==='premium'?'Premium: '+remaining+' dari '+total+' request tersisa hari ini':'Guest: '+remaining+' dari '+total+' request tersisa hari ini';
+      }
+    }
+    function showRateLimitModal(s){
+      var tier=s.tier==='guest'?'Guest Plan':'Premium Plan';
+      var text=s.tier==='guest'
+        ?'Anda sudah menggunakan semua 5 request gratis hari ini. Daftar gratis untuk dapat 15 request/hari.'
+        :'Terima kasih sudah premium! Anda sudah menggunakan 15 request hari ini. Reset besok UTC midnight.';
+      document.getElementById('RATELIMIT_COUNT').textContent=s.used+'/'+s.limit;
+      document.getElementById('RATELIMIT_TIER').textContent=tier;
+      document.getElementById('RATELIMIT_TEXT').textContent=text;
+      var upgrade=document.getElementById('RATELIMIT_UPGRADE');
+      if(s.tier==='guest'){upgrade.classList.remove('hidden')}else{upgrade.classList.add('hidden')}
+      openM('RATELIMIT');
+    }
 
     function save(){
       try{
@@ -994,8 +1158,109 @@
     }
     function closeMP(){var ol=document.getElementById('MOL');ol.classList.add('hidden');ol.classList.remove('flex')}
 
+    /* ===== MODEL STATUS CHECKER =====
+       Calls /api/model-status to ping each model in parallel (max 5 max_tokens).
+       Updates status dots on each model row:
+       - green (ms-online):  model responds OK
+       - red (ms-offline):   model fails (auth/404/timeout/network)
+       Offline models get a subtle red tint on their row.
+       Results cached 5 minutes client-side to avoid hammering the API.
+    */
+    var _modelStatusCache=null;
+    var _modelStatusCacheTime=0;
+    var _modelStatusChecking=false;
+    async function checkModelStatus(){
+      if(_modelStatusChecking)return;
+      // Use cache if < 5 min old
+      var now=Date.now();
+      if(_modelStatusCache&&now-_modelStatusCacheTime<5*60*1000){
+        applyModelStatus(_modelStatusCache);
+        toast('Status (cached): '+Object.keys(_modelStatusCache).length+' model diperiksa','info');
+        return;
+      }
+      _modelStatusChecking=true;
+      var btn=document.getElementById('STATUS_BTN');
+      if(btn){btn.disabled=true;btn.innerHTML='<span class="iconify text-sm animate-spin" data-icon="mdi:loading"></span><span class="hidden sm:inline">Cek...</span>'}
+
+      // Mark all visible models as "checking"
+      var allBadges=document.querySelectorAll('.mo-status');
+      for(var i=0;i<allBadges.length;i++){
+        allBadges[i].className='mo-status ms-checking flex-shrink-0';
+      }
+
+      // Collect visible models (skip locked-by-guest to save API calls)
+      var modelsToCheck=[];
+      for(var i=0;i<MODELS.length;i++){
+        var m=MODELS[i];
+        if(isGuest()&&(m.cat!=='SkelzAI'||m.free===false))continue;
+        modelsToCheck.push({id:m.id,provider:m.provider});
+      }
+
+      try{
+        var r=await fetch('/api/model-status',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({models:modelsToCheck})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          toast('Gagal cek status: '+(d.error||'unknown'),'error');
+          // Reset all to unknown
+          for(var i=0;i<allBadges.length;i++){
+            allBadges[i].className='mo-status ms-unknown flex-shrink-0';
+          }
+          return;
+        }
+        _modelStatusCache=d.results||{};
+        _modelStatusCacheTime=Date.now();
+        applyModelStatus(_modelStatusCache);
+        var online=0,offline=0;
+        for(var k in _modelStatusCache){
+          if(_modelStatusCache[k].status==='online')online++;
+          else if(_modelStatusCache[k].status==='offline')offline++;
+        }
+        toast('Status: '+online+' online, '+offline+' offline','success');
+      }catch(e){
+        toast('Koneksi gagal saat cek status','error');
+        for(var i=0;i<allBadges.length;i++){
+          allBadges[i].className='mo-status ms-unknown flex-shrink-0';
+        }
+      }finally{
+        _modelStatusChecking=false;
+        if(btn){btn.disabled=false;btn.innerHTML='<span class="iconify text-sm" data-icon="mdi:wifi-check"></span><span class="hidden sm:inline">Cek Status</span>'}
+      }
+    }
+    function applyModelStatus(results){
+      for(var modelId in results){
+        var s=results[modelId];
+        var badge=document.querySelector('[data-mid-status="'+modelId+'"]');
+        if(!badge)continue;
+        if(s.status==='online'){
+          badge.className='mo-status ms-online flex-shrink-0';
+          badge.title='Online — siap dipakai';
+        }else if(s.status==='offline'){
+          badge.className='mo-status ms-offline flex-shrink-0';
+          badge.title='Offline — '+(s.reason||s.code||'tidak respon');
+          // Mark row with red tint
+          var row=badge.closest('.mo');
+          if(row)row.classList.add('ms-row-offline');
+        }else{
+          badge.className='mo-status ms-unknown flex-shrink-0';
+          badge.title='Status tidak diketahui';
+        }
+      }
+    }
+
     function buildML(){
       var el=document.getElementById('ML'),html='',lastCat='';
+      // Category metadata: icon + description for nicer headers
+      var CAT_META={
+        'SkelzAI':{icon:'mdi:robot-happy-outline',desc:'Model khas SkelzAI (Skelz series)'},
+        'Fast Chat':{icon:'mdi:lightning-bolt',desc:'Cepat, hemat token, untuk chat harian'},
+        'Premium AI':{icon:'mdi:crown-outline',desc:'Model premium dari OpenRouter (gratis)'},
+        'Vision AI':{icon:'mdi:camera-outline',desc:'Bisa analisis foto / kerjakan soal dari gambar'},
+        'Powerful AI':{icon:'mdi:fire',desc:'Model paling kuat (MoE besar, coding, reasoning)'}
+      };
       // Count models per category for a compact header summary
       var catCounts={};
       for(var i=0;i<MODELS.length;i++){
@@ -1003,15 +1268,34 @@
         if(isGuest()&&(m0.cat!=='SkelzAI'||m0.free===false))continue;
         catCounts[m0.cat]=(catCounts[m0.cat]||0)+1;
       }
-      for(var i=0;i<MODELS.length;i++){
-        var m=MODELS[i];
+      // Build a sorted copy: keep category order, but within each category,
+      // sort free → redeem → locked-redeem (so unlocked models appear first)
+      var sortedModels=MODELS.slice().sort(function(a,b){
+        if(a.cat!==b.cat)return 0; // keep original category order
+        var aLocked=a.redeem&&!isModelUnlocked(a)?1:0;
+        var bLocked=b.redeem&&!isModelUnlocked(b)?1:0;
+        return aLocked-bLocked;
+      });
+      for(var i=0;i<sortedModels.length;i++){
+        var m=sortedModels[i];
         // Guest restriction: only free SkelzAI models for non-logged-in users
         if(isGuest()&&(m.cat!=='SkelzAI'||m.free===false))continue;
         // Logged in but model needs redeem code and not yet redeemed
         var redeemLocked=!isGuest()&&m.redeem&&!isModelUnlocked(m);
         if(m.cat!==lastCat){
-          // Category header with count badge — tidier separation
-          html+='<div class="cat-h flex items-center justify-between"><span>'+m.cat+'</span><span class="text-[9px] text-[#7C7770]/70 font-normal normal-case tracking-normal">'+(catCounts[m.cat]||0)+' model</span></div>';lastCat=m.cat;
+          var meta=CAT_META[m.cat]||{icon:'mdi:chip',desc:''};
+          // Category header with icon + name + count badge + description — tidier
+          html+='<div class="cat-h flex items-start gap-2">'+
+            '<span class="iconify text-coral-400/80 text-base flex-shrink-0 mt-0.5" data-icon="'+meta.icon+'"></span>'+
+            '<div class="flex-1 min-w-0">'+
+              '<div class="flex items-center justify-between gap-2">'+
+                '<span class="text-[11px] uppercase tracking-[0.15em] text-[#9A9690] font-semibold">'+m.cat+'</span>'+
+                '<span class="text-[9px] text-[#7C7770]/70 font-normal normal-case tracking-normal flex-shrink-0">'+(catCounts[m.cat]||0)+' model</span>'+
+              '</div>'+
+              (meta.desc?'<p class="text-[10px] text-[#7C7770]/70 mt-0.5 leading-tight">'+meta.desc+'</p>':'')+
+            '</div>'+
+          '</div>';
+          lastCat=m.cat;
         }
         var isSel=m.id===selModel.id;
         var lockIcon='';
@@ -1025,9 +1309,13 @@
         }
         // Row: icon column + content + tag column
         var visionIcon=m.vision?'<span class="iconify text-[11px] text-coral-400/80 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>':'';
+        // Status badge — updated by checkModelStatus(). Default: unknown (gray dot)
+        var statusBadge='<span class="mo-status ms-unknown flex-shrink-0" data-mid-status="'+m.id+'" title="Klik Cek Status untuk cek online">'+
+          '<span class="status-dot"></span>'+
+        '</span>';
         html+='<div class="mo flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg'+(isSel?' sel':'')+lockedClass+'" data-mid="'+m.id+'">';
         html+='<div class="flex-1 min-w-0">';
-        html+='<div class="flex items-center gap-1.5 mb-0.5"><p class="text-sm text-cream-50 truncate font-medium">'+esc(m.label)+'</p>'+lockIcon+visionIcon+'</div>';
+        html+='<div class="flex items-center gap-1.5 mb-0.5"><p class="text-sm text-cream-50 truncate font-medium">'+esc(m.label)+'</p>'+lockIcon+visionIcon+statusBadge+'</div>';
         html+='<p class="text-[11px] text-[#7C7770] truncate">'+esc(m.desc)+'</p>';
         html+='</div>';
         html+='<span class="mo-tag flex-shrink-0">'+m.tag+'</span>';
@@ -1776,6 +2064,8 @@
           updHist();updTop();
           // Release the sync guard — future save() calls will sync normally.
           _loadingFromServer=false;
+          // Re-check rate limit (now using premium tier)
+          checkRateLimit();
           // Load settings
           if(d.settings){
             if(d.settings.themeColor){
@@ -2684,11 +2974,27 @@
     }
 
     /* ===== SEND ===== */
-    function sendMsg(){
+    async function sendMsg(){
       if(generating)return;
       var inp=document.getElementById('CI'),text=inp.value.trim();
       if(!text&&!curAttachment)return;
       if(curAttachment&&curAttachment.processing){toast('File sedang diproses, tunggu sebentar...','warning');return}
+
+      // === RATE LIMIT CHECK ===
+      // Guest: 5 req/day, Premium: 15 req/day. Admin: unlimited.
+      var limit=await checkRateLimit();
+      if(limit&&!limit.allowed){
+        var tier=limit.tier==='guest'?'Guest':'Premium';
+        var msg=tier+' limit harian tercapai ('+limit.used+'/'+limit.limit+'). ';
+        if(limit.tier==='guest'){
+          msg+='Login untuk dapat 15 request/hari, atau tunggu reset (UTC midnight).';
+        }else{
+          msg+='Reset besok UTC midnight. Terima kasih sudah premium!';
+        }
+        showRateLimitModal(limit);
+        toast(msg,'error');
+        return;
+      }
 
       var attachment=curAttachment;
       var isImageAttachment=attachment&&attachment.preview;
@@ -2742,6 +3048,8 @@
       callAPIStreamWithFallback(msgContent, imageArg).then(function(result){
         if(curId&&chats[curId]&&result&&result.content){
           chats[curId].messages.push({role:'assistant',content:result.content,fb:!!result.fallback});
+          // Increment daily rate limit counter (only on successful send)
+          incrementRateLimit();
         }
       }).catch(function(e){hideThinking();addError(e.message)}).finally(function(){generating=false;updBtn();updHist();updTop();save();streamAbortController=null});
     }
@@ -2776,6 +3084,8 @@
       if(curId&&chats[curId])loadChat(curId);
       document.getElementById('CI').focus();
       updateCavemanUI();
+      // Check rate limit on load (updates counter in header)
+      checkRateLimit();
       // Model selector: pulse for 6s on first load to draw attention (only if user
       // hasn't opened the selector before in this browser)
       try{

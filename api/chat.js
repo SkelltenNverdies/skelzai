@@ -228,8 +228,16 @@ const PROVIDERS = {
     }
   },
   gemini: {
+    // Google Gemini — OpenAI-compatible endpoint (v1beta/openai/).
+    // Native generateContent endpoint is NOT used because it doesn't support
+    // streaming in the OpenAI SSE format our frontend expects.
+    // The OpenAI-compat layer supports streaming + is a drop-in replacement.
+    //
+    // Note: Gemini free tier has geo-restrictions — works from Vercel's
+    // US/EU/Asia edge regions but may 400 ("User location is not supported")
+    // from some regions. Override via GEMINI_API_KEY env var if needed.
     envVar: 'GEMINI_API_KEY',
-    fallbackKey: 'AQ.Ab8RN6J9_yC_bHZLwPq8TZs3pIiY60wN3yY28XBAiOvZwWPdwg',
+    fallbackKey: 'AQ.Ab8RN6L35S7OrshyYH2_YtmYJJhD2hJVqcJ8BZdVFamn7DtkTQ',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
@@ -374,6 +382,66 @@ const PROVIDERS = {
     envVar: 'AIHUBMIX_API_KEY',
     fallbackKey: 'sk-1HC6NVINqXe2OTrP7dEaF00c1b5a40C6Ab0bC929F0173350',
     url: 'https://aihubmix.com/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
+  },
+  morph: {
+    // MorphLLM — OpenAI-compatible API. Free tier via API key.
+    // Models: morph-v3-fast (fast, cheap), morph-v3-large (better quality),
+    //         auto (router picks best), morph-qwen35-397b, morph-glm52-744b, etc.
+    // We expose only morph-v3-large as the headline model — it's the best
+    // general-purpose model in their lineup.
+    envVar: 'MORPH_API_KEY',
+    fallbackKey: 'sk-di3bBG9s4XTXHfuXn71ycpV6E0fXWTd1vZ56Y7AM7A_KezAI',
+    url: 'https://api.morphllm.com/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
+  },
+  nara: {
+    // NaraRouter — OpenAI-compatible AI gateway (router.bynara.id)
+    // Free 7M tokens/day (resets daily). 34+ open-source models via one endpoint.
+    // NOTE: API key requires user to join NaraRouter's Telegram group first
+    // (visit https://router.bynara.id/settings to link after joining Telegram).
+    // Override via NARA_API_KEY env var.
+    //
+    // Token-efficient models we expose:
+    //   - "auto" : NaraRouter's smart router (picks cheapest model per query)
+    //   - "meta-llama/llama-3.2-3b-instruct" : 3B params, very fast, minimal tokens
+    envVar: 'NARA_API_KEY',
+    fallbackKey: 'sk-nry-a84pDo93VoxhnulaZd8mM-2e9gFxj8SERLOjnRMeFtU',
+    url: 'https://router.bynara.id/v1/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
@@ -799,6 +867,12 @@ export default async function handler(req, res) {
   // ===== STREAMING RESPONSE =====
   // Stream SSE chunks from upstream to client in real-time.
   // This prevents timeout — AI starts "typing" as soon as first token arrives.
+  //
+  // AUTO-CONTINUE: if a stream ends with finish_reason='length' (truncated due
+  // to max_tokens), we automatically send a follow-up request with the prior
+  // assistant content + "lanjutkan" prompt and stream it inline. Up to 3 rounds.
+  // This fixes the "kode terpotong" complaint — long code blocks now finish
+  // seamlessly without user having to type "lanjutkan".
   if (response && response.ok && response.body) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -806,93 +880,141 @@ export default async function handler(req, res) {
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let streamDone = false;
-
     function sendSSE(obj) {
       try {
         res.write(`data: ${JSON.stringify(obj)}\n\n`);
-        // Force flush — critical for Vercel to send chunks immediately
         if (typeof res.flush === 'function') res.flush();
       } catch(e) {}
     }
 
-    function processLine(line) {
-      // Handle \r\n line endings — strip \r
+    // processLine: parses one SSE line. Returns:
+    //   - { done: true }  if stream signaled completion ([DONE] or finish_reason)
+    //   - { done: false } otherwise
+    // Side effects: forwards content/reasoning to client via sendSSE; updates `state`.
+    function processLine(line, state) {
       const trimmed = line.replace(/\r$/, '').trim();
-      if (!trimmed) return false;
-      
-      // Some providers send "data:" some send "data: " — handle both
-      if (!trimmed.startsWith('data:')) return false;
+      if (!trimmed) return { done: false };
+
+      if (!trimmed.startsWith('data:')) return { done: false };
       const data = trimmed.slice(5).trim();
-      if (!data) return false;
-      
-      if (data === '[DONE]') return true; // signal done
-      
+      if (!data) return { done: false };
+
+      if (data === '[DONE]') return { done: true };
+
       try {
         const parsed = JSON.parse(data);
         const choice = parsed.choices && parsed.choices[0];
-        if (!choice) return false;
-        
+        if (!choice) return { done: false };
+
         const delta = choice.delta || {};
-        
-        // Forward content chunks
-        if (delta.content) sendSSE({ content: delta.content });
-        
-        // Forward reasoning chunks (for reasoning models)
-        if (delta.reasoning) sendSSE({ reasoning: delta.reasoning });
-        
-        // Check for finish_reason — signal completion
-        if (choice.finish_reason) {
-          if (choice.finish_reason === 'length') {
-            // Response was truncated due to max_tokens
-            sendSSE({ content: '\n\n*[Respons terpotong karena batas token. Lanjutkan dengan "lanjutkan" untuk melanjutkan.]*' });
-          }
-          return true; // signal done
+
+        if (delta.content) {
+          state.content += delta.content;
+          sendSSE({ content: delta.content });
         }
-        
-        // Also check message.content (some providers send full message in stream)
+
+        if (delta.reasoning) {
+          sendSSE({ reasoning: delta.reasoning });
+        }
+
+        if (choice.finish_reason) {
+          state.finishReason = choice.finish_reason;
+          return { done: true };
+        }
+
         if (choice.message && choice.message.content) {
+          state.content += choice.message.content;
           sendSSE({ content: choice.message.content });
         }
       } catch(e) { /* skip unparseable */ }
-      return false;
+      return { done: false };
+    }
+
+    // streamResponse: reads one upstream response to completion, returns state
+    async function streamResponse(resp, state) {
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            if (buffer.trim()) {
+              const lines = buffer.split('\n');
+              for (const line of lines) {
+                if (processLine(line, state).done) break;
+              }
+            }
+            break;
+          }
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          let stop = false;
+          for (const line of lines) {
+            if (processLine(line, state).done) { stop = true; break; }
+          }
+          if (stop) break;
+        }
+      } catch (err) {
+        state.error = err.message;
+      } finally {
+        try { reader.cancel(); } catch(e) {}
+      }
+      return state;
     }
 
     try {
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) {
-          // Reader finished — process any remaining buffer
-          if (buffer.trim()) {
-            const lines = buffer.split('\n');
-            for (const line of lines) {
-              if (processLine(line)) { streamDone = true; break; }
-            }
-          }
+      // Round 1: stream the original response
+      let state = { content: '', finishReason: null, error: null };
+      await streamResponse(response, state);
+
+      // AUTO-CONTINUE: if truncated by max_tokens, automatically request continuation
+      // Up to 3 rounds. Each round: append prior assistant content + "lanjutkan" user msg.
+      let continueRounds = 0;
+      const MAX_CONT_ROUNDS = 3;
+      let accumulatedContent = state.content;
+      let accumulatedMessages = finalMessages.slice(); // copy
+
+      while (state.finishReason === 'length' && continueRounds < MAX_CONT_ROUNDS && !state.error) {
+        continueRounds++;
+        // Build continuation messages:
+        //   [system, ...originalMessages, assistant: accumulatedContent, user: "lanjutkan"]
+        accumulatedMessages = finalMessages.slice();
+        accumulatedMessages.push({ role: 'assistant', content: accumulatedContent });
+        accumulatedMessages.push({ role: 'user', content: 'Lanjutkan dari bagian terakhir. Jangan ulangi bagian yang sudah ada, langsung lanjutkan kodenya/jawabannya.' });
+
+        // Build new request (same provider/model/key, new messages)
+        const contReqOptions = dynamicMaxTokens
+          ? config.buildRequest(apiKey, model, accumulatedMessages, dynamicMaxTokens)
+          : config.buildRequest(apiKey, model, accumulatedMessages);
+        let contResponse;
+        try {
+          contResponse = await fetchWithTimeout(config.url, contReqOptions, config.timeout);
+        } catch (err) {
+          // Network error on continuation — stop, but keep what we have
           break;
         }
-        
-        buffer += decoder.decode(value, { stream: true });
-        // Split by \n (handles both \n and \r\n since we strip \r in processLine)
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep incomplete line
-        
-        for (const line of lines) {
-          if (processLine(line)) { 
-            streamDone = true; 
-            break; 
-          }
+        if (!contResponse || !contResponse.ok) {
+          // Upstream error on continuation — stop, but keep what we have
+          break;
         }
+
+        // Stream the continuation
+        state = { content: '', finishReason: null, error: null };
+        await streamResponse(contResponse, state);
+        // Append continuation content to accumulator (state.content is just this round)
+        accumulatedContent += state.content;
       }
-      
-      // Always send done signal to frontend
+
+      // If after all rounds we're STILL truncated, give a small note
+      if (state.finishReason === 'length' && continueRounds >= MAX_CONT_ROUNDS) {
+        sendSSE({ content: '\n\n*[Masih terpotong setelah 3x auto-continue. Ketik "lanjutkan" untuk melanjutkan manual.]*' });
+      }
+
       sendSSE({ done: true });
       res.end();
     } catch (err) {
-      // On error, send what we have + error message + done
       sendSSE({ error: err.message });
       sendSSE({ done: true });
       try { res.end(); } catch(e) {}
