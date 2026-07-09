@@ -21,8 +21,29 @@ const PROVIDERS = {
     envVar: 'QWEN_KEYS',
     singleKeyEnvVar: 'QWEN_API_KEY',
     fallbackKey: null,
-    url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
-    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg' })
+    fallbackWorkspaceId: 'ws-3cudsfbi2d76ndhg',
+    isQwenNative: true,
+    url: 'https://ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
+    getKeyPairs() {
+      const pairs = [];
+      const multi = process.env.QWEN_KEYS;
+      if (multi) {
+        const entries = multi.split(',').map(s => s.trim()).filter(Boolean);
+        for (const entry of entries) {
+          const [key, wsId] = entry.split('|').map(s => s.trim());
+          if (key) pairs.push({ key, workspaceId: wsId || this.fallbackWorkspaceId });
+        }
+      }
+      if (pairs.length === 0) {
+        const singleKey = process.env.QWEN_API_KEY;
+        if (singleKey) {
+          const wsId = process.env.QWEN_WORKSPACE_ID || this.fallbackWorkspaceId;
+          pairs.push({ key: singleKey.trim(), workspaceId: wsId });
+        }
+      }
+      return pairs;
+    },
+    headers: (k, wsId) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'X-DashScope-WorkSpace': wsId || 'ws-3cudsfbi2d76ndhg' })
   },
   groq: {
     envVar: 'GROQ_API_KEYS',
@@ -137,6 +158,63 @@ function getProviderKeys(providerConfig) {
 }
 
 async function pingModel(providerName, providerConfig, modelId) {
+  // Qwen multi-key: paired keys (key + workspaceId)
+  if (providerConfig.isQwenNative && providerConfig.getKeyPairs) {
+    const pairs = providerConfig.getKeyPairs();
+    if (pairs.length === 0) {
+      return { status: 'offline', reason: 'No QWEN_KEYS set', code: 'no_key' };
+    }
+    const pair = pairs[0];
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const requestUrl = `https://${pair.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
+      const body = JSON.stringify({
+        model: modelId,
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 5,
+        stream: false
+      });
+      const r = await fetch(requestUrl, {
+        method: 'POST',
+        headers: providerConfig.headers(pair.key, pair.workspaceId),
+        body,
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      if (r.ok) return { status: 'online', code: 'ok' };
+      // Try second key if first fails
+      if ((r.status === 401 || r.status === 403 || r.status === 429) && pairs.length > 1) {
+        try { await r.text(); } catch(e) {}
+        const pair2 = pairs[1];
+        const c2 = new AbortController();
+        const t2 = setTimeout(() => c2.abort(), 12000);
+        try {
+          const url2 = `https://${pair2.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
+          const r2 = await fetch(url2, {
+            method: 'POST',
+            headers: providerConfig.headers(pair2.key, pair2.workspaceId),
+            body,
+            signal: c2.signal
+          });
+          clearTimeout(t2);
+          if (r2.ok) return { status: 'online', code: 'ok' };
+          if (r2.status === 429) return { status: 'rate_limited', reason: 'Rate limited', code: 'rate_limited', http: r2.status };
+          if (r2.status === 401 || r2.status === 403) return { status: 'offline', reason: 'Auth failed', code: 'auth', http: r2.status };
+          return { status: 'offline', reason: `HTTP ${r2.status}`, code: 'http_error', http: r2.status };
+        } catch (e2) { clearTimeout(t2); return { status: 'offline', reason: 'Timeout', code: 'timeout' }; }
+      }
+      if (r.status === 429) return { status: 'rate_limited', reason: 'Rate limited', code: 'rate_limited', http: r.status };
+      if (r.status === 401 || r.status === 403) return { status: 'offline', reason: 'Auth failed', code: 'auth', http: r.status };
+      return { status: 'offline', reason: `HTTP ${r.status}`, code: 'http_error', http: r.status };
+    } catch (err) {
+      clearTimeout(timer);
+      const msg = err.message || '';
+      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (12s)', code: 'timeout' };
+      return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
+    }
+  }
+
   // Cloudflare multi-key: get key pairs, use first available for ping
   if (providerConfig.isCloudflareNative && providerConfig.getKeyPairs) {
     const pairs = providerConfig.getKeyPairs();
