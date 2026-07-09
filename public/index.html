@@ -943,7 +943,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.7.4 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.7.5 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -2801,8 +2801,8 @@
         var totalChars=content.length;
 
         // Target duration: scale with content length but cap for snappy feel.
-        // ~3ms per char, min 600ms, max 3500ms.
-        var duration=Math.min(3500,Math.max(600,totalChars*3));
+        // ~2ms per char, min 400ms, max 2500ms (was 3ms/600ms/3500ms — too slow)
+        var duration=Math.min(2500,Math.max(400,totalChars*2));
 
         var startTime=null;
         var lastRenderTime=0;
@@ -2995,14 +2995,22 @@
                   }
                   fullContent+=parsed.content;
                   // Use requestAnimationFrame for smooth 60fps rendering
-                  // Throttle to 50ms for better performance on low-end devices
+                  // Throttle to 30ms for responsive feel (was 50ms — too laggy)
                   var now=Date.now();
-                  if(now-lastRenderTime>=50){
+                  if(now-lastRenderTime>=30){
                     if(renderRAF)cancelAnimationFrame(renderRAF);
                     renderRAF=requestAnimationFrame(function(){
-                      ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                      // Only parse markdown on chunks containing code blocks or formatting
+                      // For plain text chunks, use textContent for faster rendering
+                      if(fullContent.indexOf('```')!==-1||fullContent.indexOf('*')!==-1||fullContent.indexOf('#')!==-1||fullContent.indexOf('[')!==-1){
+                        ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                      }else{
+                        ta.textContent=fullContent;
+                        var cursor=document.createElement('span');cursor.className='typing-cursor';ta.appendChild(cursor);
+                      }
                       lastRenderTime=Date.now();
-                      scrollBot();
+                      // Use requestAnimationFrame for scroll to avoid layout thrashing
+                      requestAnimationFrame(function(){var a=document.getElementById('CA');a.scrollTop=a.scrollHeight});
                     });
                   }
                 }
@@ -3021,14 +3029,20 @@
                   if(done){
                     // Already rendered in processChunk
                     if(!fullContent && reasoningContent)fullContent=reasoningContent;
+                    // GUARANTEED final render with full markdown parsing
+                    if(renderRAF)cancelAnimationFrame(renderRAF);
+                    ta.innerHTML=parseMD(fullContent||reasoningContent);
+                    requestAnimationFrame(function(){var a=document.getElementById('CA');a.scrollTop=a.scrollHeight});
                     resolve({content:fullContent, fallback:isFallback});
                     return;
                   }
                 }
                 // Final render — ensure full content is displayed without cursor
+                // CRITICAL: always parseMD on final render to catch any formatting
+                // that was skipped during streaming (plain text optimization)
                 if(renderRAF)cancelAnimationFrame(renderRAF);
                 ta.innerHTML=parseMD(fullContent||reasoningContent);
-                scrollBot();
+                requestAnimationFrame(function(){var a=document.getElementById('CA');a.scrollTop=a.scrollHeight});
                 // If no content but reasoning exists, use reasoning
                 if(!fullContent && reasoningContent)fullContent=reasoningContent;
                 resolve({content:fullContent, fallback:isFallback});
@@ -3036,10 +3050,10 @@
               }
               var done=processChunk(decoder.decode(result.value,{stream:true}));
               if(done){
-                // Final render without cursor
+                // Final render without cursor — GUARANTEED markdown parse
                 if(renderRAF)cancelAnimationFrame(renderRAF);
                 ta.innerHTML=parseMD(fullContent||reasoningContent);
-                scrollBot();
+                requestAnimationFrame(function(){var a=document.getElementById('CA');a.scrollTop=a.scrollHeight});
                 if(!fullContent && reasoningContent)fullContent=reasoningContent;
                 resolve({content:fullContent, fallback:isFallback});
                 return;
