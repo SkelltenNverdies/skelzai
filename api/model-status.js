@@ -107,6 +107,26 @@ const PROVIDERS = {
   }
 };
 
+
+// Generic multi-key resolver for simple providers
+function getProviderKeys(providerConfig) {
+  const keys = [];
+  const multi = process.env[providerConfig.envVar];
+  if (multi) {
+    const parts = multi.split(',').map(s => s.trim()).filter(Boolean);
+    keys.push(...parts);
+  }
+  if (keys.length === 0 && providerConfig.singleKeyEnvVar) {
+    const single = process.env[providerConfig.singleKeyEnvVar];
+    if (single) keys.push(single.trim());
+  }
+  if (keys.length === 0 && providerConfig.fallbackKey) {
+    const fb = typeof providerConfig.fallbackKey === 'function' ? providerConfig.fallbackKey() : providerConfig.fallbackKey;
+    if (fb) keys.push(fb);
+  }
+  return keys;
+}
+
 async function pingModel(providerName, providerConfig, modelId) {
   // Cloudflare multi-key: get key pairs, use first available for ping
   if (providerConfig.isCloudflareNative && providerConfig.getKeyPairs) {
@@ -184,16 +204,13 @@ async function pingModel(providerName, providerConfig, modelId) {
     }
   }
 
-  // Standard single-key path for all other providers
-  let apiKey = process.env[providerConfig.envVar];
-  if (!apiKey && providerConfig.fallbackKey) {
-    apiKey = typeof providerConfig.fallbackKey === 'function'
-      ? providerConfig.fallbackKey()
-      : providerConfig.fallbackKey;
+  // Standard multi-key path for all other providers
+  const keys = getProviderKeys(providerConfig);
+  if (keys.length === 0) {
+    return { status: 'offline', reason: 'No API key set', code: 'no_key' };
   }
-  if (!apiKey) {
-    return { status: 'offline', reason: 'No API key', code: 'no_key' };
-  }
+  // Use first key for ping (round-robin would pick random, but ping just needs 1)
+  let apiKey = keys[0];
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000); // 12s ping timeout

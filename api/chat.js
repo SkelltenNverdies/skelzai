@@ -726,58 +726,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Unknown provider: ${provider}` });
   }
 
-  // Prefer env var; fall back to embedded default key (only some providers have one).
-  // NOTE: GitHub PATs cannot be embedded — GitHub's secret scanning auto-revokes
-  // any `ghp_*` token that appears in deployed code. Use the GITHUB_TOKEN env var.
-  // For Cloudflare: supports multi-key (CLOUDFLARE_API_TOKENS comma-separated).
-  // For Qwen: supports multi-key (QWEN_KEYS comma-separated "key|ws_id" pairs).
-  let apiKey = process.env[config.envVar];
-  if (!apiKey && config.fallbackKey) {
-    apiKey = config.fallbackKey;
+  // KEY RESOLUTION: All providers now use multi-key round-robin.
+  // - Qwen & Cloudflare have custom getKeyPairs() (paired keys).
+  // - All other providers use generic getProviderKeys() which checks:
+  //   1. Multi-key env var (comma-separated)  2. Single-key env var  3. Embedded fallback
+  // The actual key selection + round-robin + failover happens in the request block below.
+  // Here we just verify at least one key exists (for early error if totally unconfigured).
+  let apiKey = null;
+  if (provider === 'cloudflare' || provider === 'qwen') {
+    // Paired providers — check in their own handler below
+    const pairs = config.getKeyPairs ? config.getKeyPairs() : [];
+    if (pairs.length > 0) apiKey = pairs[0].token || pairs[0].key;
+  } else {
+    // Generic providers — use getProviderKeys()
+    const keys = getProviderKeys(config);
+    if (keys.length > 0) apiKey = keys[0];
   }
-  // Cloudflare/Qwen multi-key: if multi-key env var not set but single-key is, use it
-  if ((provider === 'cloudflare' || provider === 'qwen') && !apiKey && config.singleKeyEnvVar) {
-    apiKey = process.env[config.singleKeyEnvVar];
-  }
-  if (!apiKey) {
-    // Provider-specific helpful error message
-    if (provider === 'github') {
-      return res.status(500).json({
-        error: 'GitHub token belum diset. Buat PAT baru di https://github.com/settings/tokens (classic, scope: repo) lalu tambahkan sebagai Environment Variable GITHUB_TOKEN di Vercel project settings. GitHub auto-revoke PAT yang di-embed di kode.'
-      });
-    }
-    if (provider === 'cloudflare') {
-      return res.status(500).json({
-        error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel: CLOUDFLARE_API_TOKENS=cfut_key1,cfut_key2 (comma-separated, 2 keys = 2x limit). Dapatkan token di https://dash.cloudflare.com/profile/api-tokens → Create Token → Workers AI.'
-      });
-    }
-    if (provider === 'qwen') {
-      return res.status(500).json({
-        error: 'QWEN_KEYS belum diset. Set env var di Vercel: QWEN_KEYS=sk-key1|ws-workspace1,sk-key2|ws-workspace2 (format: key|workspace_id, comma-separated). Dapatkan API key + workspace ID di https://dashscope.console.aliyun.com/ → API Keys.'
-      });
-    }
-    if (provider === 'groq') {
-      return res.status(500).json({
-        error: 'GROQ_API_KEY belum diset. Set env var di Vercel: GROQ_API_KEY=gsk_xxxxxxxx. Dapatkan API key gratis di https://console.groq.com/keys → Create API Key.'
-      });
-    }
-    if (provider === 'openrouter') {
-      return res.status(500).json({
-        error: 'OPENROUTER_API_KEY belum diset. Set env var di Vercel: OPENROUTER_API_KEY=sk-or-v1-xxxxx. Dapatkan API key gratis di https://openrouter.ai/keys → Create Key.'
-      });
-    }
-    if (provider === 'nvidia') {
-      return res.status(500).json({
-        error: 'NVIDIA_API_KEY belum diset. Set env var di Vercel: NVIDIA_API_KEY=nvapi-xxxxx. Dapatkan API key gratis di https://build.nvidia.com/ → Login → API Keys.'
-      });
-    }
-    if (provider === 'aihubmix') {
-      return res.status(500).json({
-        error: 'AIHUBMIX_API_KEY belum diset. Set env var di Vercel: AIHUBMIX_API_KEY=sk-xxxxx. Dapatkan API key di https://aihubmix.com → API Keys.'
-      });
-    }
-    return res.status(500).json({ error: `${config.envVar} not set on server. Set env var di Vercel project settings → Environment Variables, lalu redeploy.` });
-  }
+
 
   // Build final messages: system prompt + user-supplied history.
   // For Groq 8B (very tight 6000 TPM), use compact system prompt to save tokens.
