@@ -37,9 +37,11 @@ const PROVIDERS = {
   },
   gemini: {
     envVar: 'GEMINI_API_KEY',
-    fallbackKey: 'AQ.Ab8RN6J9_yC_bHZLwPq8TZs3pIiY60wN3yY28XBAiOvZwWPdwg',
-    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+    fallbackKey: 'AQ.Ab8RN6L35S7OrshyYH2_YtmYJJhD2hJVqcJ8BZdVFamn7DtkTQ',
+    // Native endpoint for ping (model name goes in path)
+    url: 'https://generativelanguage.googleapis.com/v1beta/models',
+    isGeminiNative: true,
+    headers: (k) => ({ 'Content-Type': 'application/json', 'X-goog-api-key': k })
   },
   github: {
     envVar: 'GITHUB_TOKEN',
@@ -90,13 +92,26 @@ async function pingModel(providerName, providerConfig, modelId) {
   const timer = setTimeout(() => controller.abort(), 12000); // 12s ping timeout
 
   try {
-    const body = JSON.stringify({
-      model: modelId,
-      messages: [{ role: 'user', content: 'hi' }],
-      max_tokens: 5,
-      stream: false
-    });
-    const r = await fetch(providerConfig.url, {
+    let requestUrl = providerConfig.url;
+    let body;
+
+    // Gemini native: model goes in path, body uses contents format
+    if (providerConfig.isGeminiNative) {
+      requestUrl = `${providerConfig.url}/${modelId}:generateContent`;
+      body = JSON.stringify({
+        contents: [{ parts: [{ text: 'hi' }] }],
+        generationConfig: { maxOutputTokens: 5 }
+      });
+    } else {
+      body = JSON.stringify({
+        model: modelId,
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 5,
+        stream: false
+      });
+    }
+
+    const r = await fetch(requestUrl, {
       method: 'POST',
       headers: providerConfig.headers(apiKey),
       body,

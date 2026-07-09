@@ -228,34 +228,74 @@ const PROVIDERS = {
     }
   },
   gemini: {
-    // Google Gemini — OpenAI-compatible endpoint (v1beta/openai/).
-    // Native generateContent endpoint is NOT used because it doesn't support
-    // streaming in the OpenAI SSE format our frontend expects.
-    // The OpenAI-compat layer supports streaming + is a drop-in replacement.
+    // Google Gemini — NATIVE endpoint (not OpenAI-compat).
+    // The OpenAI-compat layer rejects the OAuth token type ("AQ.Ab8..." tokens
+    // return 401 ACCESS_TOKEN_TYPE_UNSUPPORTED). The native :generateContent
+    // endpoint accepts X-goog-api-key header with this token type.
     //
-    // Note: Gemini free tier has geo-restrictions — works from Vercel's
-    // US/EU/Asia edge regions but may 400 ("User location is not supported")
-    // from some regions. Override via GEMINI_API_KEY env var if needed.
+    // Since native streaming (:streamGenerateContent) ALSO rejects this token
+    // type, we use NON-STREAMING :generateContent and convert the response.
+    // The handler detects isNonStreaming=true and wraps the response as SSE.
+    //
+    // Geo-restriction: free tier works from US/EU/Asia Vercel regions but
+    // may 400 ("User location is not supported") from other regions.
     envVar: 'GEMINI_API_KEY',
     fallbackKey: 'AQ.Ab8RN6L35S7OrshyYH2_YtmYJJhD2hJVqcJ8BZdVFamn7DtkTQ',
-    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    url: 'https://generativelanguage.googleapis.com/v1beta/models',
     timeout: 55000,
+    isNonStreaming: true,
+    // Build native Gemini request: convert OpenAI messages → Gemini contents
     buildRequest(apiKey, model, messages) {
+      // Convert OpenAI messages array to Gemini contents array
+      // System message → systemInstruction (separate field)
+      // User/assistant messages → contents with role user/model
+      let systemInstruction = null;
+      const contents = [];
+      for (const m of messages) {
+        if (m.role === 'system') {
+          // Gemini puts system prompt in systemInstruction, not contents
+          systemInstruction = {
+            parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }]
+          };
+        } else if (m.role === 'user') {
+          contents.push({
+            role: 'user',
+            parts: typeof m.content === 'string'
+              ? [{ text: m.content }]
+              : (Array.isArray(m.content)
+                  ? m.content.map(c => c.type === 'text' ? { text: c.text } : { inline_data: { mime_type: c.image_url?.mime_type || 'image/png', data: c.image_url?.url?.split(',')[1] || '' } }).filter(p => p.text || p.inline_data?.data)
+                  : [{ text: String(m.content) }])
+          });
+        } else if (m.role === 'assistant') {
+          contents.push({
+            role: 'model',
+            parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }]
+          });
+        }
+      }
+
+      const body = {
+        contents,
+        generationConfig: {
+          maxOutputTokens: 16384,
+          temperature: 0.7,
+          topP: 0.9
+        }
+      };
+      if (systemInstruction) body.systemInstruction = systemInstruction;
+
       return {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'X-goog-api-key': apiKey
         },
-        body: JSON.stringify({
-          model,
-          messages,
-          stream: true,
-          max_tokens: 16384,
-          temperature: 0.7,
-          top_p: 0.9
-        })
+        body: JSON.stringify(body)
       };
+    },
+    // Build full URL (model name is in the path, not body)
+    buildUrl(model) {
+      return `${this.url}/${model}:generateContent`;
     }
   },
   github: {
@@ -619,7 +659,10 @@ export default async function handler(req, res) {
     const reqOptions = dynamicMaxTokens
       ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
       : config.buildRequest(apiKey, model, finalMessages);
-    response = await fetchWithTimeout(config.url, reqOptions, config.timeout);
+    // For providers with buildUrl() (e.g. Gemini native), use it to construct
+    // the full URL with model in the path. Otherwise use config.url.
+    const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+    response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
 
     if (response.status === 413) {
       // TPM exceeded on Groq — surface immediately so frontend can fallback to SkelzAI Turbo.
@@ -862,6 +905,67 @@ export default async function handler(req, res) {
     return res.status(502).json({
       error: 'Image generation failed — ' + errDetail + '. Model free mungkin sedang tidak tersedia (no_available_channel), coba lagi nanti.'
     });
+  }
+
+  // ===== NON-STREAMING RESPONSE (e.g. Gemini native :generateContent) =====
+  // For providers with isNonStreaming=true, the response is a single JSON object
+  // (not SSE). We parse it, convert to OpenAI format, and send as a single SSE
+  // chunk so the frontend's streaming parser works unchanged.
+  if (response && response.ok && config.isNonStreaming) {
+    try {
+      const data = await response.json();
+      // Gemini native format: { candidates: [{ content: { parts: [{ text }], role: 'model' }, finishReason: 'STOP' }] }
+      if (provider === 'gemini' && data.candidates && data.candidates[0]) {
+        const candidate = data.candidates[0];
+        const parts = candidate.content && candidate.content.parts || [];
+        let content = '';
+        for (const p of parts) {
+          if (p.text) content += p.text;
+        }
+        const finishReason = candidate.finishReason ? candidate.finishReason.toLowerCase() : 'stop';
+
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+
+        // Send full content as one chunk
+        if (content) {
+          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        }
+        // If truncated by max_tokens, signal it (frontend auto-continue will handle)
+        if (finishReason === 'max_tokens' || finishReason === 'length') {
+          // We'll handle auto-continue below
+        }
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+        return;
+      }
+
+      // Generic fallback: try OpenAI format
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        const content = data.choices[0].message.content || '';
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+        if (content) res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+        return;
+      }
+
+      // Unknown format — surface error
+      return res.status(502).json({
+        error: `${provider}: unexpected response format — ${JSON.stringify(data).substring(0, 200)}`
+      });
+    } catch (err) {
+      return res.status(502).json({
+        error: `${provider}: failed to parse response — ${err.message}`
+      });
+    }
   }
 
   // ===== STREAMING RESPONSE =====
