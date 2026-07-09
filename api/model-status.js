@@ -173,13 +173,13 @@ async function pingModel(providerName, providerConfig, modelId) {
     }
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const timer = setTimeout(() => controller.abort(), 6000);
     try {
       const requestUrl = `https://${pair.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
       const body = JSON.stringify({
         model: modelId,
         messages: [{ role: 'user', content: 'hi' }],
-        max_tokens: 5,
+        max_tokens: 1,
         stream: false
       });
       const r = await fetch(requestUrl, {
@@ -195,7 +195,7 @@ async function pingModel(providerName, providerConfig, modelId) {
         try { await r.text(); } catch(e) {}
         const pair2 = pairs[1];
         const c2 = new AbortController();
-        const t2 = setTimeout(() => c2.abort(), 12000);
+        const t2 = setTimeout(() => c2.abort(), 6000);
         try {
           const url2 = `https://${pair2.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
           const r2 = await fetch(url2, {
@@ -217,7 +217,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     } catch (err) {
       clearTimeout(timer);
       const msg = err.message || '';
-      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (12s)', code: 'timeout' };
+      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (6s)', code: 'timeout' };
       return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
     }
   }
@@ -231,12 +231,12 @@ async function pingModel(providerName, providerConfig, modelId) {
     // Ping with first key pair
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const timer = setTimeout(() => controller.abort(), 6000);
     try {
       const requestUrl = `${providerConfig.url}/${pair.accountId}/ai/run/${modelId}`;
       const body = JSON.stringify({
         messages: [{ role: 'user', content: 'hi' }],
-        max_tokens: 5,
+        max_tokens: 1,
         stream: false
       });
       const r = await fetch(requestUrl, {
@@ -252,7 +252,7 @@ async function pingModel(providerName, providerConfig, modelId) {
         try { await r.text(); } catch(e) {}
         const pair2 = pairs[1];
         const controller2 = new AbortController();
-        const timer2 = setTimeout(() => controller2.abort(), 12000);
+        const timer2 = setTimeout(() => controller2.abort(), 6000);
         try {
           const requestUrl2 = `${providerConfig.url}/${pair2.accountId}/ai/run/${modelId}`;
           const r2 = await fetch(requestUrl2, {
@@ -274,7 +274,7 @@ async function pingModel(providerName, providerConfig, modelId) {
           return { status: 'offline', reason: reason2, code: 'http_error', http: r2.status };
         } catch (err2) {
           clearTimeout(timer2);
-          return { status: 'offline', reason: 'Timeout/network', code: 'network' };
+          return { status: 'offline', reason: 'Timeout (6s)', code: 'network' };
         }
       }
       // Single key failed — classify error
@@ -292,7 +292,7 @@ async function pingModel(providerName, providerConfig, modelId) {
       clearTimeout(timer);
       const msg = err.message || '';
       if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
-        return { status: 'offline', reason: 'Timeout (12s)', code: 'timeout' };
+        return { status: 'offline', reason: 'Timeout (6s)', code: 'timeout' };
       }
       return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
     }
@@ -307,7 +307,7 @@ async function pingModel(providerName, providerConfig, modelId) {
   let apiKey = keys[0];
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000); // 12s ping timeout
+  const timer = setTimeout(() => controller.abort(), 6000); // 6s ping timeout
 
   try {
     let requestUrl = providerConfig.url;
@@ -324,7 +324,7 @@ async function pingModel(providerName, providerConfig, modelId) {
       body = JSON.stringify({
         model: modelId,
         messages: [{ role: 'user', content: 'hi' }],
-        max_tokens: 5,
+        max_tokens: 1,
         stream: false
       });
     }
@@ -379,7 +379,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     clearTimeout(timer);
     const msg = err.message || '';
     if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
-      return { status: 'offline', reason: 'Timeout (12s)', code: 'timeout' };
+      return { status: 'offline', reason: 'Timeout (6s)', code: 'timeout' };
     }
     return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
   }
@@ -409,7 +409,7 @@ export default async function handler(req, res) {
   }
 
   // Run all pings in parallel (with concurrency cap to avoid overwhelming)
-  const CONCURRENCY = 8;
+  const CONCURRENCY = 20;
   const results = {};
   let idx = 0;
 
