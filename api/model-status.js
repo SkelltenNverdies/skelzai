@@ -75,17 +75,116 @@ const PROVIDERS = {
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   cloudflare: {
-    envVar: 'CLOUDFLARE_API_TOKEN',
-    // NO fallbackKey — Cloudflare auto-revokes embedded tokens
-    fallbackKey: null,
-    fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
+    envVar: 'CLOUDFLARE_API_TOKENS', // Multi-key (comma-separated)
+    singleKeyEnvVar: 'CLOUDFLARE_API_TOKEN', // Backward compat
+    fallbackKey: null, // NO embedded key
+    fallbackAccountIds: [
+      '875ba4ced4c0968ae308efc355afbf6e', // Account 1
+      '2245ed8bb7b5a0546a952fb1240e929f'  // Account 2
+    ],
     url: 'https://api.cloudflare.com/client/v4/accounts',
-    isCloudflareNative: true, // model goes in path, needs account ID
+    isCloudflareNative: true,
+    // Get key pairs (same logic as chat.js)
+    getKeyPairs() {
+      const pairs = [];
+      let tokens = [];
+      const multi = process.env.CLOUDFLARE_API_TOKENS;
+      if (multi) {
+        tokens = multi.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      if (tokens.length === 0) {
+        const single = process.env.CLOUDFLARE_API_TOKEN;
+        if (single) tokens = [single.trim()];
+      }
+      const overrideAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      for (let i = 0; i < tokens.length; i++) {
+        const accountId = overrideAccountId || this.fallbackAccountIds[i] || this.fallbackAccountIds[0];
+        pairs.push({ token: tokens[i], accountId });
+      }
+      return pairs;
+    },
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };
 
 async function pingModel(providerName, providerConfig, modelId) {
+  // Cloudflare multi-key: get key pairs, use first available for ping
+  if (providerConfig.isCloudflareNative && providerConfig.getKeyPairs) {
+    const pairs = providerConfig.getKeyPairs();
+    if (pairs.length === 0) {
+      return { status: 'offline', reason: 'No CLOUDFLARE_API_TOKENS set', code: 'no_key' };
+    }
+    // Ping with first key pair
+    const pair = pairs[0];
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const requestUrl = `${providerConfig.url}/${pair.accountId}/ai/run/${modelId}`;
+      const body = JSON.stringify({
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 5,
+        stream: false
+      });
+      const r = await fetch(requestUrl, {
+        method: 'POST',
+        headers: providerConfig.headers(pair.token),
+        body,
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      if (r.ok) return { status: 'online', code: 'ok' };
+      // Try second key if first fails with auth/rate-limit
+      if ((r.status === 401 || r.status === 403 || r.status === 429) && pairs.length > 1) {
+        try { await r.text(); } catch(e) {}
+        const pair2 = pairs[1];
+        const controller2 = new AbortController();
+        const timer2 = setTimeout(() => controller2.abort(), 12000);
+        try {
+          const requestUrl2 = `${providerConfig.url}/${pair2.accountId}/ai/run/${modelId}`;
+          const r2 = await fetch(requestUrl2, {
+            method: 'POST',
+            headers: providerConfig.headers(pair2.token),
+            body,
+            signal: controller2.signal
+          });
+          clearTimeout(timer2);
+          if (r2.ok) return { status: 'online', code: 'ok' };
+          const errText2 = await r2.text().catch(() => '');
+          let reason2 = `HTTP ${r2.status}`;
+          try {
+            const e = JSON.parse(errText2);
+            if (e.errors && e.errors[0] && e.errors[0].message) reason2 = e.errors[0].message.substring(0, 80);
+          } catch(_) {}
+          if (r2.status === 401 || r2.status === 403) return { status: 'offline', reason: 'Auth failed', code: 'auth', http: r2.status };
+          if (r2.status === 429) return { status: 'rate_limited', reason: 'Rate limited', code: 'rate_limited', http: r2.status };
+          return { status: 'offline', reason: reason2, code: 'http_error', http: r2.status };
+        } catch (err2) {
+          clearTimeout(timer2);
+          return { status: 'offline', reason: 'Timeout/network', code: 'network' };
+        }
+      }
+      // Single key failed — classify error
+      const errText = await r.text().catch(() => '');
+      let reason = `HTTP ${r.status}`;
+      try {
+        const e = JSON.parse(errText);
+        if (e.errors && e.errors[0] && e.errors[0].message) reason = e.errors[0].message.substring(0, 80);
+      } catch(_) {}
+      if (r.status === 401 || r.status === 403) return { status: 'offline', reason: 'Auth failed', code: 'auth', http: r.status };
+      if (r.status === 429) return { status: 'rate_limited', reason: 'Rate limited', code: 'rate_limited', http: r.status };
+      if (r.status === 404) return { status: 'offline', reason: 'Model not found', code: 'not_found', http: r.status };
+      return { status: 'offline', reason, code: 'http_error', http: r.status };
+    } catch (err) {
+      clearTimeout(timer);
+      const msg = err.message || '';
+      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
+        return { status: 'offline', reason: 'Timeout (12s)', code: 'timeout' };
+      }
+      return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
+    }
+  }
+
+  // Standard single-key path for all other providers
   let apiKey = process.env[providerConfig.envVar];
   if (!apiKey && providerConfig.fallbackKey) {
     apiKey = typeof providerConfig.fallbackKey === 'function'
@@ -109,18 +208,6 @@ async function pingModel(providerName, providerConfig, modelId) {
       body = JSON.stringify({
         contents: [{ parts: [{ text: 'hi' }] }],
         generationConfig: { maxOutputTokens: 5 }
-      });
-    } else if (providerConfig.isCloudflareNative) {
-      // Cloudflare Workers AI: account ID from env or fallback, model in path
-      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || providerConfig.fallbackAccountId;
-      if (!accountId) {
-        return { status: 'offline', reason: 'No CLOUDFLARE_ACCOUNT_ID', code: 'no_account_id' };
-      }
-      requestUrl = `${providerConfig.url}/${accountId}/ai/run/${modelId}`;
-      body = JSON.stringify({
-        messages: [{ role: 'user', content: 'hi' }],
-        max_tokens: 5,
-        stream: false
       });
     } else {
       body = JSON.stringify({

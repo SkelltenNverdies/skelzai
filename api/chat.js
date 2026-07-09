@@ -499,37 +499,60 @@ const PROVIDERS = {
     }
   },
   cloudflare: {
-    // Cloudflare Workers AI — OpenAI-compatible endpoint.
-    // Free tier: 10,000 neurons/day (resets daily). Global edge network.
-    // Edge PoP in Jakarta → fast for Indonesian users, no geo-restriction.
+    // Cloudflare Workers AI — supports MULTI-KEY for 2x free tier (10K neurons/day each).
+    // Cloudflare auto-revokes any cfut_ token that appears in deployed code/logs.
+    // ALL API keys MUST be set via env var. Account IDs are embedded (not secret).
     //
-    // REQUIRES env vars (Cloudflare tokens are account-scoped, cannot be shared):
-    //   CLOUDFLARE_ACCOUNT_ID — 32-char hex from Cloudflare dashboard
-    //   CLOUDFLARE_API_TOKEN  — API token with Workers AI permission
+    // ENV VARS:
+    //   CLOUDFLARE_API_TOKENS  — comma-separated API tokens (2 keys = 2x limit)
+    //     Example: cfut_key1aaa,cfut_key2bbb
+    //   CLOUDFLARE_API_TOKEN   — single key (backward compat, used if TOKENS not set)
+    //   CLOUDFLARE_ACCOUNT_ID  — override account ID (optional, per-key override)
     //
-    // Get credentials:
-    //   1. https://dash.cloudflare.com → login (free, no credit card)
-    //   2. Account ID: dashboard sidebar (32-char hex)
-    //   3. API Token: https://dash.cloudflare.com/profile/api-tokens
-    //      → Create Token → "Workers AI" template → Copy token
-    //   4. Set both as Vercel env vars + redeploy
-    //
-    // Models use @cf/ prefix. Supports streaming (SSE format).
-    envVar: 'CLOUDFLARE_API_TOKEN',
-    // NO fallbackKey — Cloudflare auto-revokes any cfut_ token that appears
-    // in deployed code or Vercel deployment logs (secret scanning).
-    // You MUST set CLOUDFLARE_API_TOKEN env var in Vercel.
-    // Get token: https://dash.cloudflare.com/profile/api-tokens → Create Token → Workers AI
-    fallbackKey: null,
-    // Fallback account ID (account IDs are NOT secret — they appear in dashboard URLs)
-    fallbackAccountId: '2245ed8bb7b5a0546a952fb1240e929f',
+    // Round-robin: request 1 → pair 1, request 2 → pair 2, request 3 → pair 1, ...
+    // Failover: if active key returns 401/429, auto-switch to next pair.
+    envVar: 'CLOUDFLARE_API_TOKENS', // Primary: multi-key env var
+    singleKeyEnvVar: 'CLOUDFLARE_API_TOKEN', // Backward compat: single key
+    fallbackKey: null, // NO embedded key — Cloudflare revokes them
+    // Embedded account IDs (NOT secret — appear in dashboard URLs).
+    // Index 0 pairs with token[0], index 1 pairs with token[1], etc.
+    fallbackAccountIds: [
+      '875ba4ced4c0968ae308efc355afbf6e', // Account 1 (your new account)
+      '2245ed8bb7b5a0546a952fb1240e929f'  // Account 2 (your old account)
+    ],
     url: 'https://api.cloudflare.com/client/v4/accounts',
     timeout: 55000,
-    // Build full URL — account ID from env var or fallback
-    buildUrl(model) {
-      const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || this.fallbackAccountId;
-      if (!accountId) return null; // Will trigger error in handler
+    // Get all (token, accountId) pairs from env var + embedded account IDs
+    getKeyPairs() {
+      const pairs = [];
+      // Parse CLOUDFLARE_API_TOKENS (comma-separated) OR CLOUDFLARE_API_TOKEN (single)
+      let tokens = [];
+      const multi = process.env.CLOUDFLARE_API_TOKENS;
+      if (multi) {
+        tokens = multi.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      if (tokens.length === 0) {
+        const single = process.env.CLOUDFLARE_API_TOKEN;
+        if (single) tokens = [single.trim()];
+      }
+      // Pair each token with corresponding account ID
+      // If user sets CLOUDFLARE_ACCOUNT_ID (single), use it for ALL tokens
+      const overrideAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+      for (let i = 0; i < tokens.length; i++) {
+        const accountId = overrideAccountId || this.fallbackAccountIds[i] || this.fallbackAccountIds[0];
+        pairs.push({ token: tokens[i], accountId });
+      }
+      return pairs;
+    },
+    // Build full URL for a specific account ID
+    buildUrlForAccount(accountId, model) {
       return `${this.url}/${accountId}/ai/run/${model}`;
+    },
+    // Legacy buildUrl (used by handler) — uses first available pair
+    buildUrl(model) {
+      const pairs = this.getKeyPairs();
+      if (pairs.length === 0) return null;
+      return this.buildUrlForAccount(pairs[0].accountId, model);
     },
     buildRequest(apiKey, model, messages) {
       return {
@@ -538,8 +561,6 @@ const PROVIDERS = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        // Cloudflare Workers AI supports streaming via stream:true
-        // Format: { messages, stream, max_tokens, temperature }
         body: JSON.stringify({
           messages,
           stream: true,
@@ -622,15 +643,25 @@ export default async function handler(req, res) {
   // Prefer env var; fall back to embedded default key (only some providers have one).
   // NOTE: GitHub PATs cannot be embedded — GitHub's secret scanning auto-revokes
   // any `ghp_*` token that appears in deployed code. Use the GITHUB_TOKEN env var.
+  // For Cloudflare: supports multi-key (CLOUDFLARE_API_TOKENS comma-separated).
   let apiKey = process.env[config.envVar];
   if (!apiKey && config.fallbackKey) {
     apiKey = config.fallbackKey;
+  }
+  // Cloudflare multi-key: if CLOUDFLARE_API_TOKENS not set but CLOUDFLARE_API_TOKEN is, use it
+  if (provider === 'cloudflare' && !apiKey && config.singleKeyEnvVar) {
+    apiKey = process.env[config.singleKeyEnvVar];
   }
   if (!apiKey) {
     // Provider-specific helpful error message
     if (provider === 'github') {
       return res.status(500).json({
         error: 'GitHub token belum diset. Buat PAT baru di https://github.com/settings/tokens (classic, scope: repo) lalu tambahkan sebagai Environment Variable GITHUB_TOKEN di Vercel project settings. GitHub auto-revoke PAT yang di-embed di kode.'
+      });
+    }
+    if (provider === 'cloudflare') {
+      return res.status(500).json({
+        error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel: CLOUDFLARE_API_TOKENS=cfut_key1,cfut_key2 (comma-separated, 2 keys = 2x limit). Dapatkan token di https://dash.cloudflare.com/profile/api-tokens → Create Token → Workers AI.'
       });
     }
     return res.status(500).json({ error: `${config.envVar} not set on server` });
@@ -697,28 +728,66 @@ export default async function handler(req, res) {
   // Special handling: 413 (TPM exceeded) surfaces immediately so frontend can fallback.
   // EXCEPTION: GitHub provider retries once on 401 with the new models.github.ai endpoint
   // (GitHub is migrating endpoints — old endpoint may 401 even with valid token).
+  // EXCEPTION: Cloudflare multi-key — round-robin + failover on 401/429.
   let lastError = null;
   let response = null;
   let hit413 = false;
   let usedGithubFallback = false;
   try {
-    // For Groq, pass dynamically-computed max_tokens so we never request more
-    // than the TPM budget allows. For other providers, buildRequest uses its own defaults.
-    const reqOptions = dynamicMaxTokens
-      ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
-      : config.buildRequest(apiKey, model, finalMessages);
-    // For providers with buildUrl() (e.g. Gemini native, Cloudflare), use it
-    // to construct the full URL with model in the path. Otherwise use config.url.
-    const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
-    // Cloudflare: buildUrl returns null if CLOUDFLARE_ACCOUNT_ID not set
-    if (!requestUrl) {
-      return res.status(500).json({
-        error: 'CLOUDFLARE_ACCOUNT_ID belum diset. Buka https://dash.cloudflare.com → copy Account ID (32-char hex) dari sidebar. Set sebagai Environment Variable CLOUDFLARE_ACCOUNT_ID di Vercel project settings, lalu redeploy.'
-      });
+    // Cloudflare multi-key: round-robin + failover
+    if (provider === 'cloudflare' && config.getKeyPairs) {
+      const pairs = config.getKeyPairs();
+      if (pairs.length === 0) {
+        return res.status(500).json({
+          error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel: CLOUDFLARE_API_TOKENS=cfut_key1,cfut_key2 (2 keys = 2x limit).'
+        });
+      }
+      // Round-robin: use request timestamp to pick starting index
+      // This distributes load evenly across keys
+      const startIdx = Math.floor(Date.now() / 1000) % pairs.length;
+      let triedAll = false;
+      for (let attempt = 0; attempt < pairs.length && !triedAll; attempt++) {
+        const idx = (startIdx + attempt) % pairs.length;
+        const pair = pairs[idx];
+        const reqOptions = config.buildRequest(pair.token, model, finalMessages);
+        const requestUrl = config.buildUrlForAccount(pair.accountId, model);
+        try {
+          response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
+          if (response.ok || (response.status >= 200 && response.status < 300)) {
+            // Success — break out of loop
+            break;
+          }
+          // If 401/403 (auth) or 429 (rate-limited), try next key
+          if (response.status === 401 || response.status === 403 || response.status === 429) {
+            // Drain response body before retrying
+            try { await response.text(); } catch(e) {}
+            lastError = new Error(`Cloudflare key ${idx + 1} failed: ${response.status}`);
+            response = null;
+            continue;
+          }
+          // Other errors (4xx/5xx) — break and surface
+          break;
+        } catch (err) {
+          lastError = err;
+          response = null;
+          continue;
+        }
+      }
+      if (!response && lastError) {
+        throw lastError;
+      }
+    } else {
+      // Standard single-key path for all other providers
+      const reqOptions = dynamicMaxTokens
+        ? config.buildRequest(apiKey, model, finalMessages, dynamicMaxTokens)
+        : config.buildRequest(apiKey, model, finalMessages);
+      // For providers with buildUrl() (e.g. Gemini native, Cloudflare), use it
+      // to construct the full URL with model in the path. Otherwise use config.url.
+      const requestUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+      response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
     }
-    response = await fetchWithTimeout(requestUrl, reqOptions, config.timeout);
 
-    if (response.status === 413) {
+    if (response && response.status === 413) {
       // TPM exceeded on Groq — surface immediately so frontend can fallback to SkelzAI Turbo.
       hit413 = true;
       lastError = new Error(`Token limit exceeded (413)`);
