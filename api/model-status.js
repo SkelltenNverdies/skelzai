@@ -18,32 +18,37 @@ function setCors(res) {
 // To add a new provider, also update chat.js PROVIDERS.
 const PROVIDERS = {
   qwen: {
-    envVar: 'QWEN_API_KEY',
+    envVar: 'QWEN_KEYS',
+    singleKeyEnvVar: 'QWEN_API_KEY',
     fallbackKey: null,
     url: 'https://ws-3cudsfbi2d76ndhg.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'X-DashScope-WorkSpace': 'ws-3cudsfbi2d76ndhg' })
   },
   groq: {
-    envVar: 'GROQ_API_KEY',
+    envVar: 'GROQ_API_KEYS',
+    singleKeyEnvVar: 'GROQ_API_KEY',
     fallbackKey: null, // Expired — set GROQ_API_KEY env var
     url: 'https://api.groq.com/openai/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   openrouter: {
-    envVar: 'OPENROUTER_API_KEY',
+    envVar: 'OPENROUTER_API_KEYS',
+    singleKeyEnvVar: 'OPENROUTER_API_KEY',
     fallbackKey: null, // Expired — set OPENROUTER_API_KEY env var
     url: 'https://openrouter.ai/api/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'HTTP-Referer': 'https://skelzai.vercel.app', 'X-Title': 'SkelzAI' })
   },
   gemini: {
-    envVar: 'GEMINI_API_KEY',
+    envVar: 'GEMINI_API_KEYS',
+    singleKeyEnvVar: 'GEMINI_API_KEY',
     fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     isGeminiNative: true,
     headers: (k) => ({ 'Content-Type': 'application/json', 'X-goog-api-key': k })
   },
   github: {
-    envVar: 'GITHUB_TOKEN',
+    envVar: 'GITHUB_TOKENS',
+    singleKeyEnvVar: 'GITHUB_TOKEN',
     // Obfuscated PAT (chunks reassembled at runtime — evades GitHub Secret Scanning)
     _pat: ['ghp_bpeQBz', 'XMbsEFdQ4O', 't3TN15h0SY', '9UVl1pBB19'],
     get fallbackKey() { return this._pat.join(''); },
@@ -51,25 +56,29 @@ const PROVIDERS = {
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'Accept': 'application/json' })
   },
   nvidia: {
-    envVar: 'NVIDIA_API_KEY',
+    envVar: 'NVIDIA_API_KEYS',
+    singleKeyEnvVar: 'NVIDIA_API_KEY',
     fallbackKey: null, // Expired — set NVIDIA_API_KEY env var
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'Accept': 'application/json' })
   },
   aihubmix: {
-    envVar: 'AIHUBMIX_API_KEY',
+    envVar: 'AIHUBMIX_API_KEYS',
+    singleKeyEnvVar: 'AIHUBMIX_API_KEY',
     fallbackKey: null, // Expired — set AIHUBMIX_API_KEY env var
     url: 'https://aihubmix.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   morph: {
-    envVar: 'MORPH_API_KEY',
+    envVar: 'MORPH_API_KEYS',
+    singleKeyEnvVar: 'MORPH_API_KEY',
     fallbackKey: 'sk-di3bBG9s4XTXHfuXn71ycpV6E0fXWTd1vZ56Y7AM7A_KezAI',
     url: 'https://api.morphllm.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   nara: {
-    envVar: 'NARA_API_KEY',
+    envVar: 'NARA_API_KEYS',
+    singleKeyEnvVar: 'NARA_API_KEY',
     fallbackKey: 'sk-nry-1TMCXcslPvpAOd3M9WtBaDbNWZ-FfPndjZd2GBKwgwY',
     url: 'https://router.bynara.id/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
