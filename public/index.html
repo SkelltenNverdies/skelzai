@@ -381,10 +381,38 @@
       #RATE_COUNTER{padding:2px 6px;font-size:10px;min-width:42px}
       #topModel{max-width:100px!important}
     }
+    /* UI PERFORMANCE OPTIMIZATIONS — lighter & smoother */
+    /* GPU acceleration for animated elements */
+    .mo-status,.ms-btn,#RATE_COUNTER,.amsi{
+      transform:translateZ(0);
+      will-change:transform,opacity;
+    }
+    /* Reduce layout thrashing on model list */
+    #MOP .mp .mo{
+      contain:layout style;
+    }
+    /* Smooth scroll for model selector */
+    #MOP .mp{
+      scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;
+    }
+    /* Debounce hover effects on mobile (prevent sticky hover) */
+    @media(hover:none){
+      #MOP .mp .mo:hover{
+        background:transparent;
+        border-color:transparent;
+      }
+      #RATE_COUNTER:hover{
+        background:rgba(255,255,255,0.03)!important;
+      }
+    }
+    /* Optimize toast animations */
+    .te{transform:translateZ(0);will-change:transform,opacity}
     /* Reduce motion for accessibility */
     @media(prefers-reduced-motion:reduce){
       *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
       .afl{animation:none!important}
+      .ms-online .status-dot::after,.ms-rate-limited .status-dot::after{animation:none!important}
     }
   </style>
 </head>
@@ -793,8 +821,11 @@
         </div>
       </div>
 
-      <!-- Admin Panel Section -->
-      <div class="mb-5 pt-4 border-t border-white/[0.06]">
+      <!-- Admin Panel Section — HIDDEN from regular users.
+           Only visible when: admin secret is saved in localStorage (admin device)
+           OR user is logged in as special admin account (username starts with "admin").
+           Regular users never see this section. -->
+      <div id="ADMIN_PANEL_SECTION" class="mb-5 pt-4 border-t border-white/[0.06] hidden">
         <div class="flex items-center justify-between mb-2.5">
           <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider flex items-center gap-1.5"><span class="iconify text-sm text-coral-400/70" data-icon="mdi:shield-account-outline"></span>Admin Panel</label>
           <span id="ADMIN_STATUS_BADGE" class="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.05] text-[#7C7770] hidden">Login</span>
@@ -912,7 +943,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.7.3 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.7.4 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1774,6 +1805,22 @@
     }catch(e){}
 
     function settingsAdminInit(){
+      var section=document.getElementById('ADMIN_PANEL_SECTION');
+      if(!section)return;
+      // SHOW admin panel only if:
+      // 1. adminSecret is saved in localStorage (admin already logged in on this device), OR
+      // 2. currentUser username starts with "admin" (special admin account)
+      var isAdminDevice=false;
+      try{isAdminDevice=!!localStorage.getItem('sk_admin_secret')}catch(e){}
+      var isAdminUser=currentUser&&currentUser.username&&currentUser.username.toLowerCase().indexOf('admin')===0;
+      if(!adminSecret&&!isAdminDevice&&!isAdminUser){
+        // Regular user — hide admin panel completely
+        section.classList.add('hidden');
+        return;
+      }
+      // Admin device or admin user — show section
+      section.classList.remove('hidden');
+
       var loginEl=document.getElementById('SETTINGS_ADMIN_LOGIN');
       var dashEl=document.getElementById('SETTINGS_ADMIN_DASH');
       var badge=document.getElementById('ADMIN_STATUS_BADGE');
