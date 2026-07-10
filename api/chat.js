@@ -24,9 +24,12 @@ SAAT USER MEMINTA KODE (hanya jika diminta):
 - Tulis SETIAP BARIS kode dari awal sampai akhir, termasuk import, deklarasi, fungsi, dan penutup
 - Include error handling (try-catch) yang masuk akal
 - Berikan komentar singkat di bagian penting
-- Jika kode panjang, tetap tulis lengkap — JANGAN dipotong atau diringkas
+- Jika kode SANGAT panjang (ratusan baris), TETAP tulis lengkap — JANGAN dipotong atau diringkas
+- JANGAN pernah bilang "kode dilanjutkan di bawah" atau "kode sebelumnya terpotong" — tulis SEMUA kode dalam satu code block
+- Jika kode terlalu panjang untuk satu jawaban, sistem akan auto-continue — kamu TETAP tulis kode lengkap tanpa khawatir batas panjang
 - Pastikan kode siap pakai (copy-paste langsung jalan)
 - Berikan penjelasan singkat sebelum kode, lalu cara menjalankan setelahnya
+- PENTING: JANGAN pernah minta user "ketik lanjutkan" — sistem auto-continue, kamu cukup tulis kode sampai selesai
 
 SAAT MENGANALISIS FOTO/SOAL DARI GAMBAR:
 - Baca soal/pertanyaan di foto dengan teliti, sebutkan apa yang kamu lihat
@@ -62,7 +65,7 @@ Aturan:
 4. Kalau ditanya "apa itu X" — jelaskan pakai kalimat biasa, jangan langsung kasih kode
 5. Kalau ambigu, tanya klarifikasi 1 kalimat
 
-Kalau diminta kode: kasih kode LENGKAP 100% (no "..." atau TODO), tulis SETIAP BARIS dari awal sampai akhir, siap pakai, + penjelasan singkat + cara jalanin. Kode panjang TETAP LENGKAP, jangan dipotong.
+Kalau diminta kode: kasih kode LENGKAP 100% (no "..." atau TODO), tulis SETIAP BARIS dari awal sampai akhir, siap pakai, + penjelasan singkat + cara jalanin. Kode panjang TETAP LENGKAP, jangan dipotong. JANGAN bilang "terpotong" atau minta user "lanjutkan" — sistem auto-continue 10x, kamu tulis saja sampai selesai.
 
 Kalau analisis foto/soal: baca teliti, jawab PAKAI BAHASA SEDERHANA, langkah per langkah, jelaskan kenapa, akhiri dengan jawaban jelas.
 
@@ -1210,9 +1213,52 @@ export default async function handler(req, res) {
         if (content) {
           res.write(`data: ${JSON.stringify({ content })}\n\n`);
         }
-        // If truncated by max_tokens, signal it (frontend auto-continue will handle)
-        if (finishReason === 'max_tokens' || finishReason === 'length') {
-          // We'll handle auto-continue below
+        // Check if truncated — if so, DON'T send done yet, let auto-continue handle it
+        if (finishReason !== 'max_tokens' && finishReason !== 'length') {
+          res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+          res.end();
+          return;
+        }
+        // Truncated — fall through to auto-continue loop
+        // Set state so the auto-continue block below can pick it up
+        // (We need to set response to null so the streaming block doesn't run,
+        //  but we need to set state for auto-continue)
+        // Actually, we need to restructure — the auto-continue is in the streaming block.
+        // For non-streaming, we handle auto-continue here:
+        let nsContent = content;
+        let nsMessages = finalMessages.slice();
+        let nsRounds = 0;
+        const NS_MAX = 10;
+        while ((finishReason === 'max_tokens' || finishReason === 'length') && nsRounds < NS_MAX) {
+          nsRounds++;
+          nsMessages.push({ role: 'assistant', content: nsContent });
+          nsMessages.push({ role: 'user', content: 'LANJUTKAN kode/jawaban dari titik terakhir. Jangan ulangi bagian yang sudah ada. Langsung tulis kelanjutannya.' });
+          const nsReqOpts = config.buildRequest(apiKey, model, nsMessages);
+          const nsUrl = config.buildUrl ? config.buildUrl.call(config, model) : config.url;
+          try {
+            const nsRes = await fetchWithTimeout(nsUrl, nsReqOpts, config.timeout);
+            if (!nsRes || !nsRes.ok) break;
+            const nsData = await nsRes.json();
+            // Parse response (Gemini format)
+            if (provider === 'gemini' && nsData.candidates && nsData.candidates[0]) {
+              const parts = nsData.candidates[0].content?.parts || [];
+              let nsPart = '';
+              for (const p of parts) { if (p.text) nsPart += p.text; }
+              nsContent += nsPart;
+              if (nsPart) res.write(`data: ${JSON.stringify({ content: nsPart })}\n\n`);
+              finishReason = nsData.candidates[0].finishReason?.toLowerCase() || 'stop';
+            } else if (nsData.choices && nsData.choices[0]) {
+              const nsPart = nsData.choices[0].message?.content || '';
+              nsContent += nsPart;
+              if (nsPart) res.write(`data: ${JSON.stringify({ content: nsPart })}\n\n`);
+              finishReason = nsData.choices[0].finish_reason || 'stop';
+            } else {
+              break;
+            }
+          } catch (e) { break; }
+        }
+        if ((finishReason === 'max_tokens' || finishReason === 'length') && nsRounds >= NS_MAX) {
+          res.write(`data: ${JSON.stringify({ content: '\n\n*[Masih terpotong setelah 10x auto-continue. Ketik "lanjutkan" untuk melanjutkan manual.]*' })}\n\n`);
         }
         res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
         res.end();
@@ -1352,7 +1398,7 @@ export default async function handler(req, res) {
       // AUTO-CONTINUE: if truncated by max_tokens, automatically request continuation
       // Up to 3 rounds. Each round: append prior assistant content + "lanjutkan" user msg.
       let continueRounds = 0;
-      const MAX_CONT_ROUNDS = 3;
+      const MAX_CONT_ROUNDS = 10;
       let accumulatedContent = state.content;
       let accumulatedMessages = finalMessages.slice(); // copy
 
@@ -1362,7 +1408,7 @@ export default async function handler(req, res) {
         //   [system, ...originalMessages, assistant: accumulatedContent, user: "lanjutkan"]
         accumulatedMessages = finalMessages.slice();
         accumulatedMessages.push({ role: 'assistant', content: accumulatedContent });
-        accumulatedMessages.push({ role: 'user', content: 'Lanjutkan dari bagian terakhir. Jangan ulangi bagian yang sudah ada, langsung lanjutkan kodenya/jawabannya.' });
+        accumulatedMessages.push({ role: 'user', content: 'LANJUTKAN kode/jawaban dari titik terakhir. Jangan ulangi bagian yang sudah ada. Langsung tulis kelanjutannya dalam code block yang sama. Jangan bilang "berikut kelanjutannya" — langsung tulis kodenya.' });
 
         // Build new request (same provider/model/key, new messages)
         const contReqOptions = dynamicMaxTokens
@@ -1391,7 +1437,7 @@ export default async function handler(req, res) {
 
       // If after all rounds we're STILL truncated, give a small note
       if (state.finishReason === 'length' && continueRounds >= MAX_CONT_ROUNDS) {
-        sendSSE({ content: '\n\n*[Masih terpotong setelah 3x auto-continue. Ketik "lanjutkan" untuk melanjutkan manual.]*' });
+        sendSSE({ content: '\n\n*[Masih terpotong setelah 10x auto-continue. Ketik "lanjutkan" untuk melanjutkan manual.]*' });
       }
 
       sendSSE({ done: true });
