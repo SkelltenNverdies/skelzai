@@ -147,6 +147,22 @@ const PROVIDERS = {
     fallbackKey: null,
     url: 'https://api.bluesminds.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+  },
+  pollinations: {
+    envVar: 'POLLINATIONS_API_KEY',
+    fallbackKey: null,
+    url: 'https://image.pollinations.ai/prompt/test?width=64&height=64',
+    isPollinations: true,
+    headers: (k) => ({})
+  },
+  cloudflare_image: {
+    envVar: 'CLOUDFLARE_API_TOKENS',
+    singleKeyEnvVar: 'CLOUDFLARE_API_TOKEN',
+    fallbackKey: null,
+    fallbackAccountIds: ['875ba4ced4c0968ae308efc355afbf6e', '2245ed8bb7b5a0546a952fb1240e929f'],
+    url: 'https://api.cloudflare.com/client/v4/accounts',
+    isCloudflareImage: true,
+    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };
 

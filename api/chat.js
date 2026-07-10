@@ -683,6 +683,67 @@ const PROVIDERS = {
         })
       };
     }
+  },
+  pollinations: {
+    // Pollinations.ai — FREE image generation, NO API KEY needed.
+    // URL format: https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true
+    // Returns image directly (JPEG/PNG). No env var needed.
+    envVar: 'POLLINATIONS_API_KEY', // Optional (for higher limits)
+    fallbackKey: null,
+    url: 'https://image.pollinations.ai/prompt',
+    timeout: 55000,
+    isImageGen: true,
+    isPollinations: true,
+    buildRequest(apiKey, model, messages) {
+      let prompt = 'generate an image';
+      for (const m of messages) {
+        if (m.role === 'user' && typeof m.content === 'string') {
+          prompt = m.content;
+        }
+      }
+      const encoded = encodeURIComponent(prompt.substring(0, 500));
+      const url = `${this.url}/${encoded}?width=1024&height=1024&nologo=true&model=flux`;
+      return {
+        method: 'GET',
+        headers: {},
+        url: url // Store URL in request for fetchWithTimeout
+      };
+    }
+  },
+  cloudflare_image: {
+    // Cloudflare Workers AI — Image Generation (Flux-1-Schnell, SDXL)
+    // Free 10K neurons/day. Uses /v1/images/generations endpoint.
+    // Requires CLOUDFLARE_API_TOKENS env var (same as chat models).
+    envVar: 'CLOUDFLARE_API_TOKENS',
+    singleKeyEnvVar: 'CLOUDFLARE_API_TOKEN',
+    fallbackKey: null,
+    url: 'https://api.cloudflare.com/client/v4/accounts',
+    timeout: 55000,
+    isImageGen: true,
+    isCloudflareImage: true,
+    fallbackAccountIds: [
+      '875ba4ced4c0968ae308efc355afbf6e',
+      '2245ed8bb7b5a0546a952fb1240e929f'
+    ],
+    buildRequest(apiKey, model, messages) {
+      let prompt = 'generate an image';
+      for (const m of messages) {
+        if (m.role === 'user' && typeof m.content === 'string') {
+          prompt = m.content;
+        }
+      }
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ prompt })
+      };
+    },
+    buildUrlForAccount(accountId, model) {
+      return `${this.url}/${accountId}/ai/run/${model}`;
+    }
   }
   // aihubmix_image provider REMOVED — gpt-image-2-free frequently returns
   // "no_available_channel" (server-side issue). Commented out from model list too.
@@ -1125,7 +1186,31 @@ export default async function handler(req, res) {
     let imageData = null;
     let responseJson = null;
 
-    if (response && response.ok) {
+    // Pollinations: returns image binary (not JSON). URL is the image.
+    if (config.isPollinations) {
+      // For Pollinations, the response IS the image — just use the URL directly
+      let prompt = 'generate an image';
+      for (const m of messages) {
+        if (m.role === 'user' && typeof m.content === 'string') {
+          prompt = m.content;
+        }
+      }
+      const encoded = encodeURIComponent(prompt.substring(0, 500));
+      const imgUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&model=flux`;
+      // Send the URL to frontend — it will load the image
+      sendImageSSE(imgUrl);
+      return;
+    }
+
+    // Cloudflare image gen: returns { success: true, result: { image: "base64..." } }
+    if (config.isCloudflareImage && response && response.ok) {
+      responseJson = await response.json().catch(() => ({}));
+      if (responseJson.success && responseJson.result && responseJson.result.image) {
+        imageData = 'data:image/png;base64,' + responseJson.result.image;
+      }
+    }
+
+    if (response && response.ok && !config.isPollinations && !config.isCloudflareImage) {
       responseJson = await response.json().catch(() => ({}));
       // Check if this is an async Replicate prediction (status: starting/processing)
       if (responseJson.id && (responseJson.status === 'starting' || responseJson.status === 'processing')) {
