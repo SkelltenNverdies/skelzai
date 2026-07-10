@@ -651,6 +651,33 @@ const PROVIDERS = {
         })
       };
     }
+  },
+  bluesminds: {
+    // BluesMinds — OpenAI-compatible API aggregator (api.bluesminds.com)
+    // Free 500 credits at signup (GitHub login). 200+ models including GPT-5, Claude, Kimi.
+    // Supports multi-key: BLUESMINDS_API_KEYS=key1,key2,key3 (3x limit)
+    envVar: 'BLUESMINDS_API_KEYS',
+    singleKeyEnvVar: 'BLUESMINDS_API_KEY',
+    fallbackKey: null,
+    url: 'https://api.bluesminds.com/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 16384,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
   }
   // aihubmix_image provider REMOVED — gpt-image-2-free frequently returns
   // "no_available_channel" (server-side issue). Commented out from model list too.

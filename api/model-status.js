@@ -140,6 +140,13 @@ const PROVIDERS = {
     fallbackKey: 'csk-xt649yfxchcr55xm4jd62dphc4c3y3k59wc9dt86y3x8c3nj',
     url: 'https://api.cerebras.ai/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+  },
+  bluesminds: {
+    envVar: 'BLUESMINDS_API_KEYS',
+    singleKeyEnvVar: 'BLUESMINDS_API_KEY',
+    fallbackKey: null,
+    url: 'https://api.bluesminds.com/v1/chat/completions',
+    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };
 
