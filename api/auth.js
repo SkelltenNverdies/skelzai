@@ -226,14 +226,12 @@ export default async function handler(req, res) {
       };
       await kvSet(`session:${sessionToken}`, sessionData, 7 * 24 * 60 * 60);
 
-      // Track session in user data (max 2 concurrent sessions)
+      // Track session in user data (UNLIMITED devices — no limit)
       userData.sessions = userData.sessions || [];
       userData.sessions.push({ token: sessionToken, device: sessionData.device, created: Date.now() });
-      if (userData.sessions.length > 2) {
-        const oldSession = userData.sessions.shift();
-        if (oldSession && oldSession.token) {
-          await kvDel(`session:${oldSession.token}`);
-        }
+      // Keep only last 10 sessions to prevent unbounded growth (but don't delete older ones)
+      if (userData.sessions.length > 10) {
+        userData.sessions = userData.sessions.slice(-10);
       }
       await kvSet(userKey, userData);
 
@@ -288,22 +286,23 @@ export default async function handler(req, res) {
       };
       await kvSet(`session:${sessionToken}`, sessionData, 7 * 24 * 60 * 60);
 
-      // Track session — allow max 2 concurrent devices
+      // Track session — UNLIMITED devices (no limit)
       userData.sessions = userData.sessions || [];
       userData.sessions = userData.sessions.filter(function(s) {
         return s && s.token;
       });
-      if (userData.sessions.length >= 2) {
-        userData.sessions.shift();
-      }
       userData.sessions.push({ token: sessionToken, device: sessionData.device, created: Date.now() });
+      // Keep only last 10 sessions to prevent unbounded growth
+      if (userData.sessions.length > 10) {
+        userData.sessions = userData.sessions.slice(-10);
+      }
       await kvSet(userKey, userData);
 
       return res.status(200).json({
         success: true,
         token: sessionToken,
         username: userData.username,
-        message: 'Login berhasil! Aktif di ' + userData.sessions.length + ' device.'
+        message: 'Login berhasil! Aktif di ' + userData.sessions.length + ' device (unlimited).'
       });
     }
 

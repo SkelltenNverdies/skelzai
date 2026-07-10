@@ -291,11 +291,11 @@
     .mo-status{
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      width:12px;
-      height:12px;
-      margin-left:2px;
+      justify-content:flex-start;
+      margin-left:4px;
       position:relative;
+      min-width:12px;
+      height:14px;
     }
     .mo-status .status-dot{
       width:7px;
@@ -365,12 +365,15 @@
       background:#EF4444;
       box-shadow:0 0 0 2px rgba(239,68,68,0.15);
     }
-    /* Status text label next to dot */
+    /* Status text label next to dot — elegant, small, muted */
     .mo-status .status-text{
       font-size:9px;
-      margin-left:3px;
+      margin-left:4px;
       white-space:nowrap;
       line-height:1;
+      font-weight:500;
+      letter-spacing:0.02em;
+      opacity:0.9;
     }
     .ms-online .status-text{color:#10B981}
     .ms-slow .status-text{color:#FCD34D}
@@ -976,7 +979,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.0.1 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.1.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -2198,13 +2201,33 @@
     function handleProfilePhoto(e){
       var f=e.target.files[0];
       if(!f)return;
-      if(f.size>2000000){toast('Foto terlalu besar (maks 2MB)','error');e.target.value='';return}
+      if(f.size>5000000){toast('Foto terlalu besar (maks 5MB)','error');e.target.value='';return}
       var r=new FileReader();
       r.onload=function(ev){
         var photo=ev.target.result;
-        localStorage.setItem('sk_photo',photo);
-        updateProfilePhoto();
-        toast('Foto profil diperbarui!','success');
+        // Compress image to max 200x200 JPEG quality 0.7 to avoid
+        // Vercel FUNCTION_PAYLOAD_TOO_LARGE (4.5MB body limit).
+        // Base64 of a 200x200 JPEG at 0.7 quality ≈ 5-15KB (well under limit).
+        var img=new Image();
+        img.onload=function(){
+          var canvas=document.createElement('canvas');
+          var maxDim=200;
+          var w=img.width,h=img.height;
+          if(w>h){if(w>maxDim){h=h*maxDim/w;w=maxDim}}else{if(h>maxDim){w=w*maxDim/h;h=maxDim}}
+          canvas.width=w;canvas.height=h;
+          var ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,w,h);
+          var compressed=canvas.toDataURL('image/jpeg',0.7);
+          localStorage.setItem('sk_photo',compressed);
+          updateProfilePhoto();
+          // Sync to server if logged in
+          if(authToken&&currentUser){
+            syncUserData();
+          }
+          toast('Foto profil diperbarui!','success');
+        };
+        img.onerror=function(){toast('Gagal memproses foto','error')};
+        img.src=photo;
       };
       r.onerror=function(){toast('Gagal membaca foto','error')};
       r.readAsDataURL(f);
@@ -2318,6 +2341,15 @@
               localStorage.setItem('sk_caveman_level',cavemanLevel);
               updateCavemanUI();
             }
+            // Load profile photo from server (sync across devices)
+            if(d.settings.profilePhoto){
+              localStorage.setItem('sk_photo',d.settings.profilePhoto);
+              updateProfilePhoto();
+            }else{
+              // No photo on server — clear local photo
+              localStorage.removeItem('sk_photo');
+              updateProfilePhoto();
+            }
           }
           // CRITICAL: After loading user data, reload redeem status from server.
           // Redeem codes are stored in DB2 (separate from auth DB1), so we MUST
@@ -2350,7 +2382,8 @@
             settings:{
               themeColor:JSON.parse(localStorage.getItem('sk_theme_color')||'null'),
               fontSize:localStorage.getItem('sk_font_size')||'15px',
-              cavemanLevel:cavemanLevel
+              cavemanLevel:cavemanLevel,
+              profilePhoto:localStorage.getItem('sk_photo')||null
             }
           })
         });
@@ -2486,6 +2519,13 @@
         currentUser=null;
         authToken=null;
         localStorage.removeItem('sk_session');
+        // Clear user-specific data: profile photo, redeemed codes, unlocked categories
+        localStorage.removeItem('sk_photo');
+        localStorage.removeItem('sk_redeemed');
+        window._unlockedCategories=[];
+        window._unlockedModels=[];
+        redeemedCodes=[];
+        updateProfilePhoto();
         updateAuthUI();
         // Reset to first model (SkelzAI Turbo)
         selModel=MODELS[0];
