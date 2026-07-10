@@ -307,7 +307,8 @@ async function pingModel(providerName, providerConfig, modelId) {
   let apiKey = keys[0];
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 6000); // 6s ping timeout
+  const timer = setTimeout(() => controller.abort(), 6000);
+  const pingStart = Date.now();
 
   try {
     let requestUrl = providerConfig.url;
@@ -336,8 +337,14 @@ async function pingModel(providerName, providerConfig, modelId) {
       signal: controller.signal
     });
     clearTimeout(timer);
+    const pingDuration = Date.now() - pingStart;
 
-    if (r.ok) return { status: 'online', code: 'ok' };
+    if (r.ok) {
+      if (pingDuration > 3000) {
+        return { status: 'slow', reason: 'Slow (' + Math.round(pingDuration/1000) + 's)', code: 'slow', duration: pingDuration };
+      }
+      return { status: 'online', code: 'ok', duration: pingDuration };
+    }
 
     // Read error body for context (truncated)
     const errText = await r.text().catch(() => '');
