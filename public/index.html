@@ -56,7 +56,7 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{height:100%}
     body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.015em}
-    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.3)}
+    ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.35)}
     /* Glass surfaces — subtle, warm dark */
     .glass-s{background:rgba(38,37,36,.92);backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.07);box-shadow:0 12px 40px -12px rgba(0,0,0,.5)}
     .glass-i{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06)}
@@ -87,9 +87,9 @@
     .td{width:5px;height:5px;border-radius:50%;background:#D97757;display:inline-block;margin:0 2px}
     .td:nth-child(1){animation:pd 1.4s infinite ease-in-out}.td:nth-child(2){animation:pd 1.4s infinite ease-in-out .2s}.td:nth-child(3){animation:pd 1.4s infinite ease-in-out .4s}
     /* Code blocks — Claude.ai style: subtle dark, rounded */
-    .cb{background:#161514;border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin:14px 0;font-size:13px}
-    .chdr{background:rgba(255,255,255,.025);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px;color:#9C9590}
-    .chdr .lang-label{text-transform:uppercase;letter-spacing:.06em;font-weight:500;color:#D97757;font-size:10px}
+    .cb{background:#161514;border:1px solid rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin:14px 0;font-size:13px;box-shadow:0 2px 10px -2px rgba(0,0,0,.35)}
+    .chdr{background:rgba(255,255,255,.03);padding:9px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);font-size:11px;color:#9C9590}
+    .chdr .lang-label{text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#D97757;font-size:10px;padding:2px 8px;background:rgba(217,119,87,.08);border:1px solid rgba(217,119,87,.15);border-radius:5px}
     .chdr button{padding:4px 10px;border-radius:6px;transition:all .15s;color:#9C9590;font-size:11px}
     .chdr button:hover{background:rgba(217,119,87,.1);color:#D97757}
     .cc{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code','SF Mono',Consolas,monospace;line-height:1.6;color:#E5E3DA;white-space:pre;font-size:13px}
@@ -104,10 +104,11 @@
     .ci{resize:none;max-height:160px;min-height:24px;scrollbar-width:none}.ci::-webkit-scrollbar{display:none}
     .te{animation:fiu .3s cubic-bezier(.4,0,.2,1) forwards}.tx{animation:fi .2s ease-out reverse forwards}
     /* Send button — Claude.ai style: subtle when idle, coral when active */
-    .sbtn{transition:all .2s cubic-bezier(.4,0,.2,1);background:rgba(255,255,255,.05);color:#7C7770}
-    .sbtn.on{background:#D97757;color:#fff;box-shadow:0 2px 12px -3px rgba(217,119,87,.5)}
+    .sbtn{transition:all .15s ease;background:rgba(255,255,255,.05);color:#9C9590}
+    .sbtn.on{background:linear-gradient(135deg,#D97757 0%,#C75F3F 100%);color:#fff;box-shadow:0 2px 16px -2px rgba(217,119,87,.5),0 0 0 1px rgba(217,119,87,.2)}
     .sbtn:not(.on):disabled{background:rgba(255,255,255,.03);color:rgba(124,119,112,.3)}
-    .sbtn.on:active{transform:scale(.95)}
+    .sbtn.on:active{transform:scale(.92)}
+    .sbtn.on:hover{transform:scale(1.06);box-shadow:0 4px 22px -2px rgba(217,119,87,.6),0 0 0 1px rgba(217,119,87,.3)}
     /* Suggestion chips — Claude.ai style: minimal cards */
     .chip{transition:all .2s cubic-bezier(.4,0,.2,1);cursor:pointer;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
     .chip:hover{background:rgba(255,255,255,.05);border-color:rgba(217,119,87,.2);transform:translateY(-1px)}
@@ -147,7 +148,7 @@
     .mc{transition:opacity .2s}
     /* Input container — Claude.ai pill style */
     .input-container{transition:all .2s cubic-bezier(.4,0,.2,1)}
-    .input-container:focus-within{box-shadow:0 0 0 1px rgba(217,119,87,.25),0 4px 24px -8px rgba(217,119,87,.2);border-color:rgba(217,119,87,.25)!important;background:rgba(38,37,36,.9)!important}
+    .input-container:focus-within{box-shadow:0 0 0 1px rgba(217,119,87,.35),0 0 0 4px rgba(217,119,87,.08),0 8px 32px -8px rgba(217,119,87,.25);border-color:rgba(217,119,87,.35)!important;background:rgba(38,37,36,.92)!important}
     .ma button{transition:all .15s;color:#7C7770}
     .ma button:hover{background:rgba(217,119,87,.08);color:#D97757;transform:scale(1.08)}
     .modal-overlay{transition:opacity .2s}
@@ -450,6 +451,103 @@
       .afl{animation:none!important}
       .ms-online .status-dot::after,.ms-rate-limited .status-dot::after{animation:none!important}
     }
+    /* ===== UI IMPROVEMENTS v2 ===== */
+    /* General smooth transitions on interactive elements (0.15s ease) */
+    button,a,.chip,.si-i,.mo,.att-chip{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .15s ease,box-shadow .15s ease,opacity .15s ease}
+    .iconify{transition:color .15s ease}
+    /* ===== FILE UPLOAD "+" POPUP MENU ===== */
+    .fu-wrap{position:relative}
+    .fu-btn{transition:all .15s ease;color:#9C9590}
+    .fu-btn:hover{background:rgba(255,255,255,.05);color:#E5E3DA;transform:scale(1.05)}
+    .fu-btn.open{background:rgba(217,119,87,.12);color:#D97757;transform:rotate(45deg)}
+    .fu-menu{
+      position:absolute;bottom:calc(100% + 10px);left:0;
+      min-width:248px;max-width:calc(100vw - 32px);
+      background:rgba(38,37,36,.97);
+      backdrop-filter:blur(24px) saturate(140%);
+      -webkit-backdrop-filter:blur(24px) saturate(140%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      box-shadow:0 16px 48px -12px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.2);
+      padding:6px;z-index:60;
+      transform-origin:bottom left;
+      opacity:0;visibility:hidden;
+      transform:translateY(8px) scale(.96);
+      pointer-events:none;
+      transition:opacity .15s ease,transform .15s cubic-bezier(.4,0,.2,1),visibility .15s;
+    }
+    .fu-menu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}
+    .fu-item{
+      display:flex;align-items:center;gap:12px;
+      width:100%;padding:10px 12px;
+      border-radius:10px;
+      transition:background .15s ease,transform .1s ease;
+      text-align:left;color:#E5E3DA;
+    }
+    .fu-item:hover{background:rgba(217,119,87,.1)}
+    .fu-item:active{transform:scale(.98)}
+    .fu-ic{
+      width:34px;height:34px;border-radius:9px;
+      background:rgba(217,119,87,.08);
+      border:1px solid rgba(217,119,87,.14);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;color:#D97757;
+    }
+    .fu-ic .iconify{font-size:18px;color:#D97757}
+    .fu-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .fu-t{font-size:13px;color:#E5E3DA;font-weight:500;line-height:1.2}
+    .fu-d{font-size:10px;color:#7C7770;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* ===== CHAT BARU BUTTON — prominent + first-load pulse ===== */
+    .new-chat-btn{
+      background:linear-gradient(135deg,rgba(217,119,87,.14) 0%,rgba(217,119,87,.06) 100%);
+      border:1px solid rgba(217,119,87,.28);
+      color:#D97757;
+      transition:all .15s ease;
+      position:relative;font-weight:600;
+    }
+    .new-chat-btn:hover{
+      background:linear-gradient(135deg,rgba(217,119,87,.22) 0%,rgba(217,119,87,.12) 100%);
+      border-color:rgba(217,119,87,.45);
+      box-shadow:0 6px 20px -6px rgba(217,119,87,.4);
+      transform:translateY(-1px);
+      color:#E8A48D;
+    }
+    .new-chat-btn:active{transform:translateY(0) scale(.98)}
+    @keyframes ncPulse{
+      0%{box-shadow:0 0 0 0 rgba(217,119,87,.5)}
+      70%{box-shadow:0 0 0 10px rgba(217,119,87,0)}
+      100%{box-shadow:0 0 0 0 rgba(217,119,87,0)}
+    }
+    .new-chat-btn.nc-pulse{animation:ncPulse 1.6s ease-out 1s 3}
+    /* ===== SEARCH — clear button + highlight ===== */
+    .srch-in:focus{border-color:rgba(217,119,87,.35)!important;background:rgba(38,37,36,.8)!important;box-shadow:0 0 0 3px rgba(217,119,87,.06)}
+    #SRCH:placeholder-shown~#SRCH_CLEAR{display:none!important}
+    .srch-clear{color:#7C7770;transition:all .15s ease}
+    .srch-clear:hover{color:#D97757;background:rgba(217,119,87,.1)}
+    .srch-hl{background:rgba(217,119,87,.28);color:#FAF9F5;border-radius:2px;padding:0 1px;font-weight:500}
+    /* ===== MESSAGE AVATAR — slightly larger, better gradient ===== */
+    .msg-av{
+      width:32px;height:32px;
+      background:linear-gradient(135deg,rgba(217,119,87,.22) 0%,rgba(168,74,46,.12) 100%);
+      border-color:rgba(217,119,87,.25)!important;
+      box-shadow:0 2px 10px -3px rgba(217,119,87,.2),inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .msg-av .iconify{font-size:16px}
+    /* ===== MESSAGE ACTIONS BAR — cleaner ===== */
+    .ma{margin-left:-4px}
+    .ma button{border-radius:8px}
+    .ma button:hover{background:rgba(217,119,87,.1);color:#D97757;transform:scale(1.1)}
+    /* ===== MODEL SELECTOR — smoother ===== */
+    .ms-btn{transition:all .15s ease}
+    /* ===== TEXTAREA — cleaner placeholder ===== */
+    #CI::placeholder{color:#7C7770;opacity:.85}
+    /* ===== INPUT CONTAINER — subtle idle border ===== */
+    .input-container{border-color:rgba(255,255,255,.07)}
+    /* Responsive: popup narrower on small screens */
+    @media(max-width:480px){
+      .fu-menu{min-width:220px}
+      .fu-d{font-size:9px}
+    }
   </style>
 </head>
 <body class="font-sans">
@@ -495,16 +593,17 @@
       <button onclick="togSB()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:close"></span></button>
     </div>
     <div class="p-3">
-      <button onclick="newChat()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-coral-400/25 bg-coral-400/8 hover:bg-coral-400/10 transition-all active:scale-[0.98]">
-        <span class="iconify text-coral-400 text-base" data-icon="mdi:plus"></span>
-        <span class="text-sm text-coral-400 font-medium">Chat Baru</span>
+      <button onclick="newChat()" class="new-chat-btn nc-pulse w-full flex items-center justify-center gap-2.5 px-3 py-3 rounded-xl">
+        <span class="iconify text-base" data-icon="mdi:plus"></span>
+        <span class="text-sm font-medium">Chat Baru</span>
       </button>
     </div>
     <div class="flex-1 overflow-y-auto px-3 pb-3">
       <!-- Search bar -->
       <div class="mb-2 px-2 relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
-        <input id="SRCH" type="text" placeholder="Cari chat..." oninput="debounceSearch()" class="w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-3 py-1.5 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+        <input id="SRCH" type="text" placeholder="Cari chat..." oninput="debounceSearch()" class="srch-in w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
+        <button id="SRCH_CLEAR" onclick="document.getElementById('SRCH').value='';debounceSearch();document.getElementById('SRCH').focus()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
       </div>
       <div class="mb-2 px-2 flex items-center justify-between">
         <span class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium">Riwayat</span>
@@ -970,16 +1069,36 @@
           <button onclick="removeAttachment()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
         </div>
         <div class="input-container glass-i rounded-2xl px-3 sm:px-4 py-3 flex items-end gap-2 sm:gap-3 transition-all focus-within:border-coral-400/25 focus-within:bg-[#262524]/85">
-          <button type="button" onclick="document.getElementById('FI').click()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0 mb-0.5" title="Upload file (foto/PDF/DOCX/teks, maks 20MB)"><span class="iconify text-[#7C7770] text-lg" data-icon="mdi:paperclip"></span></button>
+          <div class="fu-wrap relative flex-shrink-0 mb-0.5">
+            <button type="button" id="FUB" onclick="togFUMenu(event)" class="fu-btn w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" title="Lampirkan file (foto/PDF/DOCX/teks, maks 20MB)"><span class="iconify text-lg" data-icon="mdi:plus"></span></button>
+            <div id="FUM" class="fu-menu">
+              <button type="button" onclick="setFAccept('image')" class="fu-item">
+                <span class="fu-ic"><span class="iconify" data-icon="mdi:image-outline"></span></span>
+                <div class="fu-txt"><span class="fu-t">Foto / Gambar</span><span class="fu-d">JPG, PNG, WEBP, GIF, BMP, SVG</span></div>
+              </button>
+              <button type="button" onclick="setFAccept('doc')" class="fu-item">
+                <span class="fu-ic"><span class="iconify" data-icon="mdi:file-document-outline"></span></span>
+                <div class="fu-txt"><span class="fu-t">Dokumen (PDF / DOCX)</span><span class="fu-d">PDF, DOC, DOCX — teks diekstrak</span></div>
+              </button>
+              <button type="button" onclick="setFAccept('text')" class="fu-item">
+                <span class="fu-ic"><span class="iconify" data-icon="mdi:code-braces"></span></span>
+                <div class="fu-txt"><span class="fu-t">File Teks / Code</span><span class="fu-d">TXT, JS, PY, MD, JSON, HTML, CSS...</span></div>
+              </button>
+              <button type="button" onclick="setFAccept('all')" class="fu-item">
+                <span class="fu-ic"><span class="iconify" data-icon="mdi:file-outline"></span></span>
+                <div class="fu-txt"><span class="fu-t">File Lainnya</span><span class="fu-d">Semua tipe file (maks 20MB)</span></div>
+              </button>
+            </div>
+          </div>
           <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg" class="hidden" onchange="handleFile(event)">
-          <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-cream-50 placeholder-ink-600 outline-none leading-relaxed py-1" placeholder="Ketik pesan atau lampirkan file (foto/PDF/DOCX/teks)..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
+          <textarea id="CI" class="ci flex-1 bg-transparent text-sm text-cream-50 placeholder-ink-600 outline-none leading-relaxed py-1" placeholder="Tulis pesan untuk SkelzAI..." rows="1" oninput="onInput()" onkeydown="onKey(event)"></textarea>
           <button type="button" id="MIC_BTN" onclick="toggleVoiceInput()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0 mb-0.5" title="Voice input (mic)"><span class="iconify text-[#7C7770] text-lg" data-icon="mdi:microphone"></span></button>
           <button type="button" id="SBtn" onclick="onSendClick()" class="sbtn w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mb-0.5" disabled>
             <span id="SIco" class="iconify text-base" data-icon="mdi:arrow-up"></span>
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.3.1 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.4.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1220,6 +1339,7 @@
     /* ===== HELPERS ===== */
     function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
     function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+    function hl(text,q){if(!q)return esc(text);var safe=esc(text);var qe=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');try{return safe.replace(new RegExp('('+qe+')','gi'),'<mark class="srch-hl">$1</mark>')}catch(e){return esc(text)}}
     function scrollBot(){var a=document.getElementById('CA');requestAnimationFrame(function(){a.scrollTop=a.scrollHeight})}
     function openM(id){var e=document.getElementById(id);e.classList.remove('hidden');e.classList.add('flex')}
     function closeM(id){var e=document.getElementById(id);e.classList.add('hidden');e.classList.remove('flex')}
@@ -1625,7 +1745,7 @@
         var id=ids[i],ch=chats[id],act=id===curId?' act':'';
         var pinIcon=ch.pinned?'mdi:pin':'mdi:pin-outline';
         var pinColor=ch.pinned?'text-coral-400':'text-[#7C7770]';
-        html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+esc(ch.title)+'</span><span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span></div><button onclick="togglePin(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-coral-400/10 flex-shrink-0" title="'+(ch.pinned?'Unpin':'Pin')+'"><span class="iconify '+pinColor+' text-xs transition-colors" data-icon="'+pinIcon+'"></span></button><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>';
+        html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+hl(ch.title,srch)+'</span><span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span></div><button onclick="togglePin(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-coral-400/10 flex-shrink-0" title="'+(ch.pinned?'Unpin':'Pin')+'"><span class="iconify '+pinColor+' text-xs transition-colors" data-icon="'+pinIcon+'"></span></button><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>';
       }
       el.innerHTML=html;
     }
@@ -2909,7 +3029,7 @@
       } else {
         // AI message: no bubble, just text with subtle avatar (Claude.ai style)
         var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
-        d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="msg-av w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
       }
       c.appendChild(d);
     }
@@ -2919,7 +3039,7 @@
     /* ===== THINKING ===== */
     function showThinking(){
       var c=document.getElementById('MC'),d=document.createElement('div');d.id='TI';d.className='mc afi';
-      d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="think-box"><div class="think-orbit"><div class="think-orbit-core"></div><div class="think-orbit-ring"></div><div class="think-orbit-dot"></div></div><span class="think-text">Sedang berpikir</span></div></div></div>';
+      d.innerHTML='<div class="flex gap-3"><div class="msg-av w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="think-box"><div class="think-orbit"><div class="think-orbit-core"></div><div class="think-orbit-ring"></div><div class="think-orbit-dot"></div></div><span class="think-text">Sedang berpikir</span></div></div></div>';
       c.appendChild(d);scrollBot();
     }
     function hideThinking(){var e=document.getElementById('TI');if(e)e.remove()}
@@ -2929,7 +3049,7 @@
       return new Promise(function(resolve){
         var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
         var idx=chats[curId]?chats[curId].messages.length-1:0;
-        d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+        d.innerHTML='<div class="flex gap-3"><div class="msg-av w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
         c.appendChild(d);
         var ta=d.querySelector('.md');
 
@@ -3076,7 +3196,7 @@
           // Create AI message DOM element for streaming
           var c=document.getElementById('MC'),d=document.createElement('div');d.className='mc afu';
           var idx=chats[streamChatId]?chats[streamChatId].messages.length:0;
-          d.innerHTML='<div class="flex gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
+          d.innerHTML='<div class="flex gap-3"><div class="msg-av w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed"></div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
           c.appendChild(d);
           var ta=d.querySelector('.md');
           var fullContent='';
@@ -3551,6 +3671,41 @@
       function hideInstallMenuItem(){
         var li=document.getElementById('INSTALL_LI');
         if(li)li.classList.add('hidden');
+      }
+    });
+  </script>
+  <script>
+    /* ===== FILE UPLOAD "+" POPUP MENU BEHAVIOR =====
+       Adds toggle + outside-click close for the file-type picker.
+       Does NOT modify any existing logic — purely additive. */
+    function togFUMenu(e){
+      if(e)e.stopPropagation();
+      var m=document.getElementById('FUM'),b=document.getElementById('FUB');
+      if(!m)return;
+      var isOpen=m.classList.toggle('open');
+      if(b){if(isOpen)b.classList.add('open');else b.classList.remove('open')}
+    }
+    function setFAccept(type){
+      var fi=document.getElementById('FI');if(!fi)return;
+      var m={image:'image/*',doc:'.pdf,.docx,.doc',text:'.txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log',all:''};
+      fi.setAttribute('accept',m[type]||'');
+      var menu=document.getElementById('FUM'),btn=document.getElementById('FUB');
+      if(menu)menu.classList.remove('open');
+      if(btn)btn.classList.remove('open');
+      fi.click();
+    }
+    document.addEventListener('click',function(e){
+      var m=document.getElementById('FUM'),b=document.getElementById('FUB');
+      if(!m)return;
+      if(m.classList.contains('open')&&!e.target.closest('.fu-wrap')){
+        m.classList.remove('open');
+        if(b)b.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){
+        var m=document.getElementById('FUM'),b=document.getElementById('FUB');
+        if(m&&m.classList.contains('open')){m.classList.remove('open');if(b)b.classList.remove('open')}
       }
     });
   </script>
