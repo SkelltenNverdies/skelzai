@@ -150,7 +150,7 @@ const PROVIDERS = {
   },
   pollinations: {
     envVar: 'POLLINATIONS_API_KEY',
-    fallbackKey: null,
+    fallbackKey: 'none',
     url: 'https://image.pollinations.ai/prompt/test?width=64&height=64',
     isPollinations: true,
     headers: (k) => ({})
@@ -162,6 +162,7 @@ const PROVIDERS = {
     fallbackAccountIds: ['875ba4ced4c0968ae308efc355afbf6e', '2245ed8bb7b5a0546a952fb1240e929f'],
     url: 'https://api.cloudflare.com/client/v4/accounts',
     isCloudflareImage: true,
+    isCloudflareNative: true, // Reuse CF native ping logic
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   }
 };

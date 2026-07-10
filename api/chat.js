@@ -688,8 +688,9 @@ const PROVIDERS = {
     // Pollinations.ai — FREE image generation, NO API KEY needed.
     // URL format: https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true
     // Returns image directly (JPEG/PNG). No env var needed.
-    envVar: 'POLLINATIONS_API_KEY', // Optional (for higher limits)
-    fallbackKey: null,
+    envVar: 'POLLINATIONS_API_KEY',
+    singleKeyEnvVar: 'POLLINATIONS_API_KEY',
+    fallbackKey: 'none', // Dummy key — Pollinations doesn't need auth
     url: 'https://image.pollinations.ai/prompt',
     timeout: 55000,
     isImageGen: true,
@@ -712,7 +713,7 @@ const PROVIDERS = {
   },
   cloudflare_image: {
     // Cloudflare Workers AI — Image Generation (Flux-1-Schnell, SDXL)
-    // Free 10K neurons/day. Uses /v1/images/generations endpoint.
+    // Free 10K neurons/day. Uses /ai/run/{model} endpoint.
     // Requires CLOUDFLARE_API_TOKENS env var (same as chat models).
     envVar: 'CLOUDFLARE_API_TOKENS',
     singleKeyEnvVar: 'CLOUDFLARE_API_TOKEN',
@@ -725,6 +726,11 @@ const PROVIDERS = {
       '875ba4ced4c0968ae308efc355afbf6e',
       '2245ed8bb7b5a0546a952fb1240e929f'
     ],
+    getKeyPairs() {
+      // Reuse Cloudflare chat provider's key pairs logic
+      const cfConfig = PROVIDERS.cloudflare;
+      return cfConfig.getKeyPairs ? cfConfig.getKeyPairs.call(cfConfig) : [];
+    },
     buildRequest(apiKey, model, messages) {
       let prompt = 'generate an image';
       for (const m of messages) {
@@ -1202,7 +1208,36 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Cloudflare image gen: returns { success: true, result: { image: "base64..." } }
+    // Cloudflare image gen: use multi-key (paired with account IDs)
+    if (config.isCloudflareImage && config.getKeyPairs) {
+      const pairs = config.getKeyPairs();
+      if (pairs.length === 0) {
+        return res.status(500).json({ error: 'CLOUDFLARE_API_TOKENS belum diset. Set env var di Vercel untuk image generation.' });
+      }
+      for (let attempt = 0; attempt < pairs.length; attempt++) {
+        const pair = pairs[attempt];
+        const imgUrl = config.buildUrlForAccount(pair.accountId, model);
+        const reqOpts = config.buildRequest(pair.token, model, finalMessages);
+        try {
+          const imgRes = await fetchWithTimeout(imgUrl, reqOpts, config.timeout);
+          if (imgRes.ok) {
+            const imgData = await imgRes.json().catch(() => ({}));
+            if (imgData.success && imgData.result && imgData.result.image) {
+              imageData = 'data:image/png;base64,' + imgData.result.image;
+              break;
+            }
+          }
+          // Try next key on auth error
+          if (imgRes.status === 401 || imgRes.status === 403) {
+            try { await imgRes.text(); } catch(e) {}
+            continue;
+          }
+          break;
+        } catch (e) { continue; }
+      }
+    }
+
+    // Old Cloudflare image gen handler (kept for backward compat)
     if (config.isCloudflareImage && response && response.ok) {
       responseJson = await response.json().catch(() => ({}));
       if (responseJson.success && responseJson.result && responseJson.result.image) {
