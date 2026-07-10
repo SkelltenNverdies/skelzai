@@ -188,6 +188,23 @@ function getProviderKeys(providerConfig) {
 }
 
 async function pingModel(providerName, providerConfig, modelId) {
+  // Pollinations: no API key needed, just test if URL returns image
+  if (providerConfig.isPollinations) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    try {
+      const r = await fetch('https://image.pollinations.ai/prompt/test?width=64&height=64&nologo=true', {
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      if (r.ok) return { status: 'online', code: 'ok' };
+      return { status: 'offline', reason: 'HTTP ' + r.status, code: 'http_error' };
+    } catch (e) {
+      clearTimeout(timer);
+      return { status: 'offline', reason: 'Timeout', code: 'timeout' };
+    }
+  }
+
   // Qwen multi-key: paired keys (key + workspaceId)
   if (providerConfig.isQwenNative && providerConfig.getKeyPairs) {
     const pairs = providerConfig.getKeyPairs();
