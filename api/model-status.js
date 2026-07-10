@@ -213,7 +213,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     }
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
       const requestUrl = `https://${pair.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
       const body = JSON.stringify({
@@ -235,7 +235,7 @@ async function pingModel(providerName, providerConfig, modelId) {
         try { await r.text(); } catch(e) {}
         const pair2 = pairs[1];
         const c2 = new AbortController();
-        const t2 = setTimeout(() => c2.abort(), 3000);
+        const t2 = setTimeout(() => c2.abort(), 5000);
         try {
           const url2 = `https://${pair2.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
           const r2 = await fetch(url2, {
@@ -257,9 +257,20 @@ async function pingModel(providerName, providerConfig, modelId) {
     } catch (err) {
       clearTimeout(timer);
       const msg = err.message || '';
-      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (3s)', code: 'timeout' };
+      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (5s)', code: 'timeout' };
       return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
     }
+  }
+
+  // Cloudflare image gen: if CF token is configured, assume online
+  // (same token works for both chat and image — no need for separate ping)
+  if (providerConfig.isCloudflareImage) {
+    const cfConfig = PROVIDERS.cloudflare;
+    const pairs = cfConfig.getKeyPairs ? cfConfig.getKeyPairs.call(cfConfig) : [];
+    if (pairs.length > 0) {
+      return { status: 'online', code: 'ok', reason: 'CF token configured' };
+    }
+    return { status: 'offline', reason: 'No CF token', code: 'no_key' };
   }
 
   // Cloudflare multi-key: get key pairs, use first available for ping
@@ -271,7 +282,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     // Ping with first key pair
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
       const requestUrl = `${providerConfig.url}/${pair.accountId}/ai/run/${modelId}`;
       const body = JSON.stringify({
@@ -292,7 +303,7 @@ async function pingModel(providerName, providerConfig, modelId) {
         try { await r.text(); } catch(e) {}
         const pair2 = pairs[1];
         const controller2 = new AbortController();
-        const timer2 = setTimeout(() => controller2.abort(), 3000);
+        const timer2 = setTimeout(() => controller2.abort(), 5000);
         try {
           const requestUrl2 = `${providerConfig.url}/${pair2.accountId}/ai/run/${modelId}`;
           const r2 = await fetch(requestUrl2, {
@@ -314,7 +325,7 @@ async function pingModel(providerName, providerConfig, modelId) {
           return { status: 'offline', reason: reason2, code: 'http_error', http: r2.status };
         } catch (err2) {
           clearTimeout(timer2);
-          return { status: 'offline', reason: 'Timeout (3s)', code: 'network' };
+          return { status: 'offline', reason: 'Timeout (5s)', code: 'network' };
         }
       }
       // Single key failed — classify error
@@ -332,7 +343,7 @@ async function pingModel(providerName, providerConfig, modelId) {
       clearTimeout(timer);
       const msg = err.message || '';
       if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
-        return { status: 'offline', reason: 'Timeout (3s)', code: 'timeout' };
+        return { status: 'offline', reason: 'Timeout (5s)', code: 'timeout' };
       }
       return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
     }
@@ -347,7 +358,7 @@ async function pingModel(providerName, providerConfig, modelId) {
   let apiKey = keys[0];
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 3000);
+  const timer = setTimeout(() => controller.abort(), 5000);
   const pingStart = Date.now();
 
   try {
@@ -380,7 +391,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     const pingDuration = Date.now() - pingStart;
 
     if (r.ok) {
-      if (pingDuration > 2000) {
+      if (pingDuration > 3000) {
         return { status: 'slow', reason: 'Slow (' + Math.round(pingDuration/1000) + 's)', code: 'slow', duration: pingDuration };
       }
       return { status: 'online', code: 'ok', duration: pingDuration };
@@ -426,7 +437,7 @@ async function pingModel(providerName, providerConfig, modelId) {
     clearTimeout(timer);
     const msg = err.message || '';
     if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
-      return { status: 'offline', reason: 'Timeout (3s)', code: 'timeout' };
+      return { status: 'offline', reason: 'Timeout (5s)', code: 'timeout' };
     }
     return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
   }
@@ -456,7 +467,7 @@ export default async function handler(req, res) {
   }
 
   // Run all pings in parallel (with concurrency cap to avoid overwhelming)
-  const CONCURRENCY = 40;
+  const CONCURRENCY = 25;
   const results = {};
   let idx = 0;
 

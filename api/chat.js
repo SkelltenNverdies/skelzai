@@ -1217,7 +1217,7 @@ export default async function handler(req, res) {
       for (let attempt = 0; attempt < pairs.length; attempt++) {
         const pair = pairs[attempt];
         const imgUrl = config.buildUrlForAccount(pair.accountId, model);
-        const reqOpts = config.buildRequest(pair.token, model, finalMessages);
+        const reqOpts = config.buildRequest(pair.token, model, messages);
         try {
           const imgRes = await fetchWithTimeout(imgUrl, reqOpts, config.timeout);
           if (imgRes.ok) {
