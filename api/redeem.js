@@ -103,9 +103,9 @@ async function kvGet(key) {
 }
 
 async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return false;
+  if (!KV_URL || !KV_TOKEN) return false;
   try {
-    await fetch(`${process.env.KV_REST_API_URL}/set/${key}`, {
+    await fetch(`${KV_URL}/set/${key}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${KV_TOKEN}`,
@@ -122,7 +122,7 @@ async function kvDel(key) {
   try {
     await fetch(`${KV_URL}/del/${key}`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}` }
+      headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
     });
     return true;
   } catch (e) { return false; }
@@ -437,8 +437,8 @@ export default async function handler(req, res) {
       // Upstash supports SCAN via /scan/{cursor}
       let cursor = 0;
       const allCodes = [];
-      const kvUrl = process.env.KV_REST_API_URL;
-      const kvToken = process.env.KV_REST_API_TOKEN;
+      const kvUrl = KV_URL;
+      const kvToken = KV_TOKEN;
       do {
         try {
           const r = await fetch(`${kvUrl}/scan/${cursor}?MATCH=rcode:*&COUNT=200`, {
