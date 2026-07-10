@@ -466,8 +466,7 @@ const PROVIDERS = {
     // AIHubMix — OpenAI-compatible API aggregator
     // Free models available with limits (~7 req/hour after top-up $1)
     // Override via AIHUBMIX_API_KEY env var
-    envVar: 'AIHUBMIX_API_KEYS', // Multi-key (comma-separated)
-    singleKeyEnvVar: 'AIHUBMIX_API_KEY', // Backward compat
+    envVar: 'AIHUBMIX_API_KEY', // Single key only
     // Embedded key expired. User must set AIHUBMIX_API_KEY env var.
     // Get key: https://aihubmix.com → API Keys
     fallbackKey: null,

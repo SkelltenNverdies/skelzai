@@ -979,7 +979,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.1.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.1.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1036,7 +1036,7 @@
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
 
-      /* ===== 5. Powerful AI — 13 models ===== */
+      /* ===== 5. Powerful AI — 7 models ===== */
       {id:'z-ai/glm-5.2',provider:'nvidia',label:'GLM 5.2',desc:'Zhipu AI, cerdas & cepat',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'mistralai/ministral-14b-instruct-2512',provider:'nvidia',label:'Ministral 14B',desc:'Mistral, 14B seimbang',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'stockmark/stockmark-2-100b-instruct',provider:'nvidia',label:'Stockmark 2 100B',desc:'Japanese AI, 100B',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
@@ -1046,13 +1046,6 @@
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'coding-glm-4.7-free',provider:'aihubmix',label:'GLM 4.7 Coding',desc:'AIHubMix — Coding specialized, gratis',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'coding-glm-4.6-free',provider:'aihubmix',label:'GLM 4.6 Coding',desc:'AIHubMix — Coding, stabil',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
-      {id:'coding-minimax-m3-free',provider:'aihubmix',label:'MiniMax M3 Coding',desc:'AIHubMix — Coding + reasoning',tag:'AIHubMix',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'coding-minimax-m2.7-free',provider:'aihubmix',label:'MiniMax M2.7 Coding',desc:'AIHubMix — Coding cepat',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
-      {id:'coding-minimax-m2.5-free',provider:'aihubmix',label:'MiniMax M2.5 Coding',desc:'AIHubMix — Coding ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
-      {id:'coding-minimax-m2.1-free',provider:'aihubmix',label:'MiniMax M2.1 Coding',desc:'AIHubMix — Coding hemat',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
-      {id:'coding-minimax-m2-free',provider:'aihubmix',label:'MiniMax M2 Coding',desc:'AIHubMix — Coding super ringan',tag:'AIHubMix',vision:false,cat:'Powerful AI'},
-      {id:'morph-v3-large',provider:'morph',label:'Morph V3 Large',desc:'MorphLLM — Cepat, coding kuat',tag:'Morph',vision:false,cat:'Powerful AI'},
       {id:'mistral-large',provider:'nara',label:'Nara Mistral Large',desc:'NaraRouter — Mistral Large, gratis & powerful',tag:'Nara',vision:false,cat:'Powerful AI'}
 
       /* DISABLED models (commented out — not in active list):
@@ -2702,9 +2695,27 @@
       }else if(isImage){
         var r=new FileReader();
         r.onload=function(ev){
-          curAttachment={name:f.name,size:f.size,type:f.type||ext,preview:ev.target.result,extracted:null,processing:false};
-          showAttachment();
-          toast('Image "'+f.name+'" dimuat ('+formatSize(f.size)+')','success');
+          // COMPRESS image before storing as attachment to avoid
+          // Vercel FUNCTION_PAYLOAD_TOO_LARGE (4.5MB body limit).
+          // Resize to max 1024x1024, JPEG quality 0.8.
+          // A 1024x1024 JPEG at 0.8 quality ≈ 100-300KB (well under 4.5MB).
+          var img=new Image();
+          img.onload=function(){
+            var canvas=document.createElement('canvas');
+            var maxDim=1024;
+            var w=img.width,h=img.height;
+            if(w>h){if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}}else{if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}}
+            canvas.width=w;canvas.height=h;
+            var ctx=canvas.getContext('2d');
+            ctx.drawImage(img,0,0,w,h);
+            var compressed=canvas.toDataURL('image/jpeg',0.8);
+            var compressedSize=Math.round(compressed.length*0.75); // approx binary size
+            curAttachment={name:f.name,size:compressedSize,type:'image/jpeg',preview:compressed,extracted:null,processing:false};
+            showAttachment();
+            toast('Image "'+f.name+'" dimuat ('+formatSize(compressedSize)+')','success');
+          };
+          img.onerror=function(){toast('Gagal memproses image','error');removeAttachment()};
+          img.src=ev.target.result;
         };
         r.onerror=function(){toast('Gagal membaca image','error');removeAttachment()};
         r.readAsDataURL(f);

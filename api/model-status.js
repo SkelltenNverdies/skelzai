@@ -84,8 +84,7 @@ const PROVIDERS = {
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}`, 'Accept': 'application/json' })
   },
   aihubmix: {
-    envVar: 'AIHUBMIX_API_KEYS',
-    singleKeyEnvVar: 'AIHUBMIX_API_KEY',
+    envVar: 'AIHUBMIX_API_KEY',
     fallbackKey: null, // Expired — set AIHUBMIX_API_KEY env var
     url: 'https://aihubmix.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
