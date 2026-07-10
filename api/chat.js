@@ -277,20 +277,14 @@ const PROVIDERS = {
   },
   gemini: {
     // Google Gemini — NATIVE endpoint (not OpenAI-compat).
-    // The OpenAI-compat layer rejects OAuth tokens ("AQ.Ab8..." tokens
-    // return 401 ACCESS_TOKEN_TYPE_UNSUPPORTED). The native :generateContent
-    // endpoint accepts X-goog-api-key header.
-    //
-    // IMPORTANT: The previous fallbackKey (AQ.Ab8...) was an OAuth2 access
-    // token that EXPIRED after ~1 hour. It has been removed. To use Gemini,
-    // you MUST set GEMINI_API_KEY env var in Vercel with a PERMANENT API key
-    // (format: AIza...) from https://aistudio.google.com/app/apikey
-    //
-    // Geo-restriction: free tier works from US/EU/Asia Vercel regions but
-    // may 400 ("User location is not supported") from other regions.
+    // Supports multi-key: GEMINI_API_KEYS=key1,key2,key3 (comma-separated)
+    // The native :generateContent endpoint accepts X-goog-api-key header.
+    // New Google API keys use "AQ.Ab8..." format (OAuth access tokens).
+    // Old format was "AIza..." — both work with X-goog-api-key header.
+    // Geo-restriction: free tier works from US/EU/Asia Vercel regions.
     envVar: 'GEMINI_API_KEYS', // Multi-key (comma-separated)
     singleKeyEnvVar: 'GEMINI_API_KEY', // Backward compat
-    fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
+    fallbackKey: 'AQ.Ab8RN6INF3cPkUYF8YhAFYNS8TRS2KeEu0jpAmf_uTXRJf6VCg',
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     timeout: 55000,
     isNonStreaming: true,

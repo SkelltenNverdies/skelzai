@@ -21,8 +21,8 @@ function setCors(res) {
 }
 
 const GUEST_LIMIT = 5;      // Not logged in
-const MEMBER_LIMIT = 10;    // Logged in (no redeem code)
-const PREMIUM_LIMIT = 20;   // Logged in + has redeem code
+const MEMBER_LIMIT = 12;    // Logged in (no redeem code)
+const PREMIUM_LIMIT = 25;   // Logged in + has redeem code
 
 // KV helpers — use KV2_* (DB2: ratelimit + redeem) first, fallback to KV_* (DB1)
 // This splits load: auth.js uses DB1, ratelimit.js + redeem.js use DB2

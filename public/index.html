@@ -548,7 +548,26 @@
       .fu-menu{min-width:220px}
       .fu-d{font-size:9px}
     }
-  </style>
+  
+    /* ===== STREAMING SMOOTHNESS ===== */
+    .md{word-break:break-word;overflow-wrap:break-word;-webkit-text-size-adjust:100%}
+    .typing-cursor{display:inline-block;width:2px;height:1em;background:#D97757;margin-left:2px;vertical-align:text-bottom;animation:tc-blink 0.8s steps(2) infinite;border-radius:1px}
+    @keyframes tc-blink{0%,50%{opacity:1}51%,100%{opacity:0.2}}
+    #CA{scroll-behavior:smooth;overscroll-behavior:contain}
+    .mc.afu{animation:msg-fade-in 0.25s ease-out}
+    @keyframes msg-fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    #TI{animation:thinking-pulse 1.5s ease-in-out infinite}
+    @keyframes thinking-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+    .md pre{overflow-x:auto;max-width:100%;contain:content}
+    .md code{font-variant-ligatures:none}
+    .input-container{transition:border-color 0.2s ease,box-shadow 0.2s ease,background 0.2s ease}
+    .ci{transition:background 0.12s ease,transform 0.08s ease}
+    .ci:active{transform:scale(0.98)}
+    .amsi{animation:modal-slide-in 0.2s ease-out}
+    @keyframes modal-slide-in{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .te{animation:toast-in 0.2s ease-out}
+    @keyframes toast-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+</style>
 </head>
 <body class="font-sans">
 
@@ -840,7 +859,7 @@
       </div>
       <div id="RATELIMIT_UPGRADE" class="hidden bg-coral-400/5 border border-coral-400/20 rounded-lg p-3 mb-4">
         <p class="text-[11px] text-coral-300 mb-2 font-medium">Upgrade ke Premium</p>
-        <p class="text-[10px] text-[#7C7770] mb-3 leading-relaxed">Daftar gratis untuk dapat <strong class="text-coral-400">10 request/hari</strong> (2x lipat guest), akses 28+ model AI, dan chat sync antar device.</p>
+        <p class="text-[10px] text-[#7C7770] mb-3 leading-relaxed">Daftar gratis untuk dapat <strong class="text-coral-400">12 request/hari</strong> (Member) atau <strong class="text-coral-400">25 request/hari</strong> (Premium setelah redeem code), akses 28+ model AI, dan chat sync antar device.</p>
         <button onclick="closeM('RATELIMIT');openAuth('register')" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Daftar Gratis</button>
       </div>
       <button onclick="closeM('RATELIMIT')" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-[#C2BFB8] bg-white/[0.03] hover:bg-white/[0.05] transition-colors">Tutup</button>
@@ -1098,7 +1117,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.4.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.6.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1170,14 +1189,14 @@
 
       /* DISABLED models (commented out — not in active list):
          - gpt-image-2-free (AIHubMix image gen — often returns no_available_channel)
-         - Gemini models (require AIza... API key in GEMINI_API_KEY env var)
       ,{id:'gpt-image-2-free',provider:'aihubmix_image',label:'Image Generator',desc:'AIHubMix — Generate gambar dari teks, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
-      ,{id:'gemini-flash-latest',provider:'gemini',label:'Gemini Flash (Latest)',desc:'Versi terbaru, hemat & cepat',tag:'GEMINI',vision:true,cat:'Fast Chat'}
-      ,{id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
-      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI',redeem:'vision'}
-      ,{id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
-      ,{id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Super cepat & ringan',tag:'GEMINI',vision:true,cat:'Fast Chat'}
       */
+      /* Gemini models — re-enabled with new API key (AQ.Ab8... format, multi-key supported) */
+      ,{id:'gemini-flash-latest',provider:'gemini',label:'Gemini Flash',desc:'Google — Hemat & cepat, gratis',tag:'GEMINI',vision:false,cat:'Fast Chat'}
+      ,{id:'gemini-2.0-flash-lite',provider:'gemini',label:'Gemini 2.0 Flash Lite',desc:'Google — Super ringan & cepat',tag:'GEMINI',vision:false,cat:'Fast Chat'}
+      ,{id:'gemini-2.5-flash',provider:'gemini',label:'Gemini 2.5 Flash',desc:'Google — Cepat & kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
+      ,{id:'gemini-2.0-flash',provider:'gemini',label:'Gemini 2.0 Flash',desc:'Google — Gratis, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI'}
+      ,{id:'gemini-2.5-pro',provider:'gemini',label:'Gemini 2.5 Pro',desc:'Google — Paling kuat, ANALISIS FOTO',tag:'GEMINI',vision:true,cat:'Vision AI',redeem:'vision'}
     ];
 
     /* ===== STATE ===== */
@@ -1207,7 +1226,7 @@
     function getRateLimitMax(){
       if(!currentUser)return 5;
       var hasRedeem=(window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0);
-      return hasRedeem?20:10;
+      return hasRedeem?25:12;
     }
 
     async function checkRateLimit(){
@@ -1302,7 +1321,7 @@
     function showRateLimitModal(s){
       var tier=s.tier==='guest'?'Guest Plan':s.tier==='member'?'Member Plan':'Premium Plan';
       var text=s.tier==='guest'
-        ?'Anda sudah menggunakan semua 5 request gratis hari ini. Daftar gratis untuk dapat 10 request/hari (Member) atau 20 request/hari (Premium).'
+        ?'Anda sudah menggunakan semua 5 request gratis hari ini. Daftar/login gratis untuk menjadi Member (12 request/hari) atau redeem code untuk Premium (25 request/hari).'
         :'Anda sudah menggunakan semua request hari ini. Reset besok UTC midnight (07:00 WIB).';
       document.getElementById('RATELIMIT_COUNT').textContent=s.used+'/'+s.limit;
       document.getElementById('RATELIMIT_TIER').textContent=tier;
@@ -2529,16 +2548,16 @@
         un.textContent=currentUser.username;
         if(pp){
           if(isRedeemed()){
-            pp.textContent='Premium — All Models Unlocked';
+            pp.textContent='Premium — 25 req/hari';
           }else{
-            pp.textContent='Member — 10 req/hari';
+            pp.textContent='Member — 12 req/hari';
           }
         }
         if(loginLi)loginLi.classList.add('hidden');
         if(logoutLi)logoutLi.classList.remove('hidden');
       }else{
         un.textContent='Guest User';
-        if(pp)pp.textContent='Free Plan (SkelzAI only)';
+        if(pp)pp.textContent='Guest — 5 req/hari';
         if(loginLi)loginLi.classList.remove('hidden');
         if(logoutLi)logoutLi.classList.add('hidden');
       }
@@ -3430,7 +3449,7 @@
         var tier=limit.tier==='guest'?'Guest':'Premium';
         var msg=tier+' limit harian tercapai ('+limit.used+'/'+limit.limit+'). ';
         if(limit.tier==='guest'){
-          msg+='Login untuk dapat 10 request/hari (Member), atau redeem code untuk 20 request/hari (Premium).'
+          msg+='Daftar/login untuk menjadi Member (12 request/hari), atau redeem code untuk Premium (25 request/hari).'
         }else{
           msg+='Reset besok UTC midnight. Terima kasih sudah premium!';
         }

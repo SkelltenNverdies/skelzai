@@ -62,7 +62,7 @@ const PROVIDERS = {
   gemini: {
     envVar: 'GEMINI_API_KEYS',
     singleKeyEnvVar: 'GEMINI_API_KEY',
-    fallbackKey: null, // Must set GEMINI_API_KEY env var (AIza... format)
+    fallbackKey: 'AQ.Ab8RN6INF3cPkUYF8YhAFYNS8TRS2KeEu0jpAmf_uTXRJf6VCg',
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     isGeminiNative: true,
     headers: (k) => ({ 'Content-Type': 'application/json', 'X-goog-api-key': k })
