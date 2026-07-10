@@ -705,18 +705,10 @@
     .gen-img-loading{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px 16px}
     .gen-spin{animation:gen-spin 1s linear infinite}
     @keyframes gen-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-    .gen-img{display:none;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:100%;max-height:512px;object-fit:contain}
-    .gen-img-dl{display:none;align-items:center;gap:6px;margin-top:12px;padding:6px 12px;border-radius:8px;font-size:11px;color:#D97757;background:rgba(217,119,87,0.08);border:1px solid rgba(217,119,87,0.15);cursor:pointer;transition:background 0.15s}
+    .gen-img{display:block;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:100%;max-height:512px;object-fit:contain}
+    .gen-img-toolbar{display:flex;justify-content:flex-end;padding:4px 8px}
+    .gen-img-dl{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:10px;color:#D97757;background:rgba(217,119,87,0.08);border:1px solid rgba(217,119,87,0.15);cursor:pointer;transition:background 0.15s}
     .gen-img-dl:hover{background:rgba(217,119,87,0.15)}
-    /* When image loads successfully */
-    .gen-img-wrap.img-loaded .gen-img-loading{display:none}
-    .gen-img-wrap.img-loaded .gen-img{display:block}
-    .gen-img-wrap.img-loaded .gen-img-dl{display:flex}
-    /* When image fails to load */
-    .gen-img-wrap.img-error .gen-img-loading{display:none}
-    .gen-img-wrap.img-error .gen-img{display:none}
-    .gen-img-wrap.img-error .gen-img-dl{display:none}
-    .gen-img-wrap.img-error::after{content:'Gagal memuat gambar. Coba lagi nanti.';display:block;padding:16px;color:#EF4444;font-size:12px;text-align:center}
 
     /* Voice input pulse animation */
     .voice-pulse{
@@ -1522,7 +1514,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v6.0.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v6.0.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1594,8 +1586,6 @@
 
       /* ===== Image Generation (Free) ===== */
       ,{id:'pollinations/flux',provider:'pollinations',label:'Flux Image Gen',desc:'Pollinations — Generate gambar gratis, no API key',tag:'Image Gen',vision:false,cat:'Powerful AI'}
-      ,{id:'@cf/black-forest-labs/flux-1-schnell',provider:'cloudflare_image',label:'CF Flux Schnell',desc:'Cloudflare — Text-to-image, gratis 10K/hari',tag:'Image Gen',vision:false,cat:'Powerful AI',redeem:'powerful'}
-      ,{id:'@cf/stabilityai/stable-diffusion-xl-base-1.0',provider:'cloudflare_image',label:'CF SDXL',desc:'Cloudflare — Stable Diffusion XL, gratis',tag:'Image Gen',vision:false,cat:'Powerful AI'}
 
       /* DISABLED models (commented out — not in active list):
          - gpt-image-2-free (AIHubMix image gen — often returns no_available_channel)
@@ -3453,18 +3443,27 @@
       // Step 6: Replace image placeholders with loading spinner + image
       result=result.replace(/\u0001IMG(\d+)\u0001/g,function(_,idx){
         var im=imageBlocks[parseInt(idx)];
-        var safeUrl=im.url.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        var safeUrl=im.url.replace(/"/g,'&quot;');
         var safeAlt=(im.alt||'Generated Image').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        var imgId='gi'+idx+'_'+Math.floor(Math.random()*10000);
-        return '<div class="gen-img-wrap" id="'+imgId+'">'
+        return '<div class="gen-img-wrap">'
+          +'<div class="gen-img-toolbar"><button onclick="dlImg(this)" data-url="'+safeUrl+'" class="gen-img-dl"><span class="iconify text-sm" data-icon="mdi:download"></span> Download</button></div>'
           +'<div class="gen-img-loading"><span class="iconify text-coral-400 text-2xl gen-spin" data-icon="mdi:loading"></span><span class="text-xs text-[#7C7770]">Sedang generate gambar...</span></div>'
-          +'<img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img" style="display:none" onload="var w=document.getElementById(\''+imgId+'\');if(w){w.classList.add(\'img-loaded\')}" onerror="var w=document.getElementById(\''+imgId+'\');if(w){w.classList.add(\'img-error\')}">'
-          +'<button onclick="dlImg(this)" data-url="'+safeUrl+'" class="gen-img-dl"><span class="iconify text-sm" data-icon="mdi:download"></span>Download</button>'
+          +'<img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img" loading="lazy">'
           +'</div>';
       });
 
       return result;
     }
+    // Global image error handler — replaces broken images with error message
+    document.addEventListener('error',function(e){
+      if(e.target&&e.target.tagName==='IMG'&&e.target.classList.contains('gen-img')){
+        var wrap=e.target.closest('.gen-img-wrap');
+        if(wrap){
+          wrap.querySelector('.gen-img-loading').innerHTML='<span class="text-red-400 text-xs">Gagal memuat gambar</span>';
+          e.target.style.display='none';
+        }
+      }
+    },true);
     function cpCode(btn){
       var code=btn.closest('.cb').querySelector('.cc').textContent;
       navigator.clipboard.writeText(code).then(function(){
