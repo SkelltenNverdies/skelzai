@@ -701,9 +701,13 @@
     }
 
     /* Generated image display */
-    .gen-img-wrap{position:relative;border-radius:12px;overflow:hidden}
-    .gen-img-wrap.loaded{background:rgba(255,255,255,0.02)}
-    .gen-img{display:block;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+    .gen-img-wrap{position:relative;border-radius:12px;overflow:hidden;margin:12px 0;padding:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)}
+    .gen-img-loading{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px}
+    .gen-spin{animation:gen-spin 1s linear infinite}
+    @keyframes gen-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .gen-img{display:block;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:100%;max-height:512px;object-fit:contain}
+    .gen-img-dl{display:none;align-items:center;gap:6px;margin-top:12px;padding:6px 12px;border-radius:8px;font-size:11px;color:#D97757;background:rgba(217,119,87,0.08);border:1px solid rgba(217,119,87,0.15);cursor:pointer;transition:background 0.15s}
+    .gen-img-dl:hover{background:rgba(217,119,87,0.15)}
 </style>
 </head>
 <body class="font-sans">
@@ -1258,7 +1262,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.9.2 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.9.3 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -3155,12 +3159,17 @@
         return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(cb.lang)+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(cb.code)+'</div></div>';
       });
 
-      // Step 6: Replace image placeholders with actual <img> + download button
+      // Step 6: Replace image placeholders with loading spinner + image
       result=result.replace(/\u0001IMG(\d+)\u0001/g,function(_,idx){
         var im=imageBlocks[parseInt(idx)];
-        var safeUrl=im.url.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-        var safeAlt=im.alt.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return '<div class="gen-img-wrap" style="margin:12px 0"><img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img rounded-xl border border-white/[0.08]" style="max-width:100%;max-height:512px;object-fit:contain" onload="this.parentElement.classList.add(\'loaded\')" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<p class=\\"text-red-400 text-xs\\">Gagal memuat gambar</p>\'"><button onclick="dlImg(\''+safeUrl+'\')" class="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-sm" data-icon="mdi:download"></span>Download Gambar</button></div>';
+        var safeUrl=im.url.replace(/"/g,'&quot;');
+        var safeAlt=(im.alt||'Generated Image').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        var imgId='gi'+Date.now()+'_'+idx;
+        return '<div class="gen-img-wrap" id="'+imgId+'">'
+          +'<div class="gen-img-loading"><span class="iconify text-coral-400 text-2xl gen-spin" data-icon="mdi:loading"></span><span class="text-xs text-[#7C7770]">Sedang generate gambar...</span></div>'
+          +'<img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img" style="display:none" onload="var w=document.getElementById(\''+imgId+'\');if(w){w.querySelector(\'.gen-img-loading\').style.display=\'none\';this.style.display=\'block\';w.querySelector(\'.gen-img-dl\').style.display=\'flex\'}" onerror="var w=document.getElementById(\''+imgId+'\');if(w){w.querySelector(\'.gen-img-loading\').innerHTML=\'<span class=\\"text-red-400 text-xs\\">Gagal memuat gambar. Coba lagi.\\</span>\'}">'
+          +'<button onclick="dlImg(\''+safeUrl.replace(/'/g,'\\\'')+'\')" class="gen-img-dl" style="display:none"><span class="iconify text-sm" data-icon="mdi:download"></span>Download</button>'
+          +'</div>';
       });
 
       return result;
@@ -3452,7 +3461,7 @@
                       // Only parse markdown on chunks containing code blocks or formatting
                       // For plain text chunks, use textContent for faster rendering
                       if(fullContent.indexOf('```')!==-1||fullContent.indexOf('*')!==-1||fullContent.indexOf('#')!==-1||fullContent.indexOf('[')!==-1){
-                        ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';
+                        var _hasImg=fullContent.indexOf('![')!==-1;if(_hasImg){ta.innerHTML='<div class="gen-img-loading"><span class="iconify text-coral-400 text-2xl gen-spin" data-icon="mdi:loading"></span><span class="text-xs text-[#7C7770]">Sedang generate gambar...</span></div>'}else{ta.innerHTML=parseMD(fullContent)+'<span class="typing-cursor"></span>';}
                       }else{
                         ta.textContent=fullContent;
                         var cursor=document.createElement('span');cursor.className='typing-cursor';ta.appendChild(cursor);
