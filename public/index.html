@@ -469,7 +469,7 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:14px;
       box-shadow:0 16px 48px -12px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.2);
-      padding:6px;z-index:60;
+      padding:6px;z-index:100;
       transform-origin:bottom left;
       opacity:0;visibility:hidden;
       transform:translateY(8px) scale(.96);
@@ -545,8 +545,11 @@
     .input-container{border-color:rgba(255,255,255,.07)}
     /* Responsive: popup narrower on small screens */
     @media(max-width:480px){
-      .fu-menu{min-width:220px}
+      .fu-menu{min-width:220px;max-width:calc(100vw - 24px)}
       .fu-d{font-size:9px}
+      .fu-item{padding:8px 10px;gap:10px}
+      .fu-ic{width:32px;height:32px}
+      .fu-t{font-size:12px}
     }
   
     /* ===== STREAMING SMOOTHNESS ===== */
@@ -790,8 +793,8 @@
   </aside>
 
   <!-- NAME MODAL -->
-  <div id="NM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('NM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi">
+  <div id="NM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('NM')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi" onclick="event.stopPropagation()">
       <h3 class="text-base font-medium text-cream-50 mb-4">Ubah Nama Tampilan</h3>
       <input id="NI" type="text" maxlength="30" placeholder="Masukkan nama..." class="w-full bg-[#262524]/85 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-ink-600 outline-none focus:border-coral-400/40 transition-colors" onkeydown="if(event.key==='Enter')saveName()">
       <div class="flex justify-end gap-2 mt-4">
@@ -802,8 +805,8 @@
   </div>
 
   <!-- ABOUT MODAL -->
-  <div id="AM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('AM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi">
+  <div id="AM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('AM')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center"><span class="iconify text-white text-sm" data-icon="mdi:robot-happy-outline"></span></div>
@@ -824,8 +827,8 @@
   </div>
 
   <!-- CONFIRM MODAL -->
-  <div id="CM" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('CM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi text-center">
+  <div id="CM" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('CM')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi text-center" onclick="event.stopPropagation()">
       <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3"><span class="iconify text-red-400 text-2xl" data-icon="mdi:alert-outline"></span></div>
       <h3 id="CM_T" class="text-base font-medium text-cream-50 mb-2"></h3>
       <p id="CM_M" class="text-sm text-[#7C7770] mb-5"></p>
@@ -837,8 +840,8 @@
   </div>
 
   <!-- SHORTCUTS HELP MODAL -->
-  <div id="SC" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('SC')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi">
+  <div id="SC" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('SC')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:keyboard-outline"></span></div>
@@ -862,8 +865,8 @@
   </div>
 
   <!-- AUTH MODAL (Login/Register) -->
-  <div id="AUTH" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('AUTH')">
-    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi">
+  <div id="AUTH" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="closeM('AUTH')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi" onclick="event.stopPropagation()">
       <div class="text-center mb-6">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3 glow-c"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:robot-happy-outline"></span></div>
         <h3 id="AUTH_TITLE" class="text-xl font-semibold text-cream-50 mb-1">Masuk ke SkelzAI</h3>
@@ -892,8 +895,8 @@
   </div>
 
   <!-- FORGOT PASSWORD MODAL -->
-  <div id="FORGOT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('FORGOT')">
-    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi">
+  <div id="FORGOT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="closeM('FORGOT')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi" onclick="event.stopPropagation()">
       <div class="text-center mb-5">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:key-reset"></span></div>
         <h3 class="text-xl font-semibold text-cream-50 mb-1">Lupa Password</h3>
@@ -952,7 +955,7 @@
 
   <!-- RECOVERY CODE MODAL (shown once after register) -->
   <div id="RECOVERY" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this){/* force user to save */}">
-    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20" onclick="event.stopPropagation()">
       <div class="text-center mb-4">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/30 flex items-center justify-center mx-auto mb-3 glow-c"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:shield-key-outline"></span></div>
         <h3 class="text-xl font-semibold text-cream-50 mb-1">Simpan Kode Recovery</h3>
@@ -974,8 +977,8 @@
   </div>
 
   <!-- RATE LIMIT MODAL (shown when user hits daily limit) -->
-  <div id="RATELIMIT" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)closeM('RATELIMIT')">
-    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20">
+  <div id="RATELIMIT" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="closeM('RATELIMIT')">
+    <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi border border-coral-400/20" onclick="event.stopPropagation()">
       <div class="text-center mb-4">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/5 border border-red-500/25 flex items-center justify-center mx-auto mb-3"><span class="iconify text-red-400 text-2xl" data-icon="mdi:counter"></span></div>
         <h3 class="text-xl font-semibold text-cream-50 mb-1">Limit Harian Tercapai</h3>
@@ -996,8 +999,8 @@
   </div>
 
   <!-- REDEEM MODAL -->
-  <div id="REDEEM" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('REDEEM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi max-h-[85vh] overflow-y-auto">
+  <div id="REDEEM" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="closeM('REDEEM')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:ticket-outline"></span></div>
@@ -1035,8 +1038,8 @@
   <!-- Lihat "Admin Panel" section di dalam SETTINGS modal -->
 
   <!-- SETTINGS MODAL -->
-  <div id="SETTINGS" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('SETTINGS')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[80vh] overflow-y-auto">
+  <div id="SETTINGS" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="closeM('SETTINGS')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-coral-400/15 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:cog-outline"></span></div>
@@ -1236,6 +1239,10 @@
                 <span class="fu-ic"><span class="iconify" data-icon="mdi:file-outline"></span></span>
                 <div class="fu-txt"><span class="fu-t">File Lainnya</span><span class="fu-d">Semua tipe file (maks 20MB)</span></div>
               </button>
+              <button type="button" onclick="setFAccept('camera')" class="fu-item">
+                <span class="fu-ic"><span class="iconify" data-icon="mdi:camera-outline"></span></span>
+                <div class="fu-txt"><span class="fu-t">Ambil Foto (Kamera)</span><span class="fu-d">Buka kamera untuk foto langsung</span></div>
+              </button>
             </div>
           </div>
           <input type="file" id="FI" accept=".txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log,.pdf,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg" class="hidden" onchange="handleFile(event)">
@@ -1246,7 +1253,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.8.0 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v5.8.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -3037,7 +3044,7 @@
       e.target.value='';
     }
 
-    function closeFileMenu(){var f=document.getElementById('FUM');if(f)f.classList.add('hidden');var b=document.getElementById('FUB');if(b){b.style.transform='rotate(0deg)'}}
+    function closeFileMenu(){var f=document.getElementById('FUM');if(f)f.classList.remove('open');var b=document.getElementById('FUB');if(b)b.classList.remove('open')}
     function showAttachment(){
       var ap=document.getElementById('AP');
       if(!curAttachment){ap.classList.add('hidden');updBtn();return}
@@ -3643,12 +3650,26 @@
 
     /* ===== GLOBAL ===== */
     document.addEventListener('click',function(e){
+      // Close profile menu on ANY outside click
       if(pmOpen){var pa=document.getElementById('profileArea');if(!pa.contains(e.target)){closePM()}}
-      // Close file upload menu on outside click
+      // Close file upload menu on ANY outside click
       var fum=document.getElementById('FUM');
       var fub=document.getElementById('FUB');
-      if(fum&&!fum.classList.contains('hidden')&&fub&&!fub.contains(e.target)&&!fum.contains(e.target)){
+      if(fum&&fum.classList.contains('open')&&fub&&!fub.contains(e.target)&&!fum.contains(e.target)){
         closeFileMenu();
+      }
+      // Close sidebar on mobile when clicking main area (not on menu button or sidebar items)
+      if(window.innerWidth<1024){
+        var sb=document.getElementById('SB');
+        if(sb&&!sb.classList.contains('-translate-x-full')){
+          // Check if click is NOT on sidebar, NOT on menu toggle button, NOT on overlay
+          var isSidebar=sb.contains(e.target);
+          var isMenuBtn=e.target.closest('[onclick*="togSB"]');
+          var isOverlay=e.target.id==='SO';
+          if(!isSidebar&&!isMenuBtn&&!isOverlay){
+            togSB();
+          }
+        }
       }
     });
     // Close menus on Escape
@@ -3843,7 +3864,8 @@
     }
     function setFAccept(type){
       var fi=document.getElementById('FI');if(!fi)return;
-      var m={image:'image/*',doc:'.pdf,.docx,.doc',text:'.txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log',all:''};
+      var m={image:'image/*',doc:'.pdf,.docx,.doc',text:'.txt,.md,.js,.py,.html,.css,.json,.csv,.xml,.yml,.yaml,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.sql,.log',camera:'image/*',all:''};
+      if(type==='camera'){fi.setAttribute('capture','environment')}else{fi.removeAttribute('capture')}
       fi.setAttribute('accept',m[type]||'');
       var menu=document.getElementById('FUM'),btn=document.getElementById('FUB');
       if(menu)menu.classList.remove('open');
