@@ -78,11 +78,15 @@ const TIER_INFO = {
 // KV HELPERS — single encoding (fixed, matches auth.js)
 // ============================================================================
 
+// KV helpers — use KV2_* (DB2: ratelimit + redeem) first, fallback to KV_* (DB1)
+const KV_URL = process.env.KV2_REST_API_URL || process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV2_REST_API_TOKEN || process.env.KV_REST_API_TOKEN;
+
 async function kvGet(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  if (!KV_URL || !KV_TOKEN) return null;
   try {
-    const r = await fetch(`${process.env.KV_REST_API_URL}/get/${key}`, {
-      headers: { 'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}` }
+    const r = await fetch(`${KV_URL}/get/${key}`, {
+      headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
     });
     const data = await r.json();
     if (!data || data.result === null || data.result === undefined) return null;
@@ -104,7 +108,7 @@ async function kvSet(key, value) {
     await fetch(`${process.env.KV_REST_API_URL}/set/${key}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}`,
+        'Authorization': `Bearer ${KV_TOKEN}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(value)
@@ -114,9 +118,9 @@ async function kvSet(key, value) {
 }
 
 async function kvDel(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return false;
+  if (!KV_URL || !KV_TOKEN) return false;
   try {
-    await fetch(`${process.env.KV_REST_API_URL}/del/${key}`, {
+    await fetch(`${KV_URL}/del/${key}`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}` }
     });
@@ -262,7 +266,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const hasKV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+  const hasKV = KV_URL && KV_TOKEN;
   if (!hasKV) {
     return res.status(503).json({
       error: 'Database belum dikonfigurasi. Setup Vercel KV atau Upstash Redis.'

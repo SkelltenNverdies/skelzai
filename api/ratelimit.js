@@ -24,12 +24,16 @@ const GUEST_LIMIT = 5;      // Not logged in
 const MEMBER_LIMIT = 10;    // Logged in (no redeem code)
 const PREMIUM_LIMIT = 20;   // Logged in + has redeem code
 
-// KV helpers (single-encoding, defensive — same as auth.js)
+// KV helpers — use KV2_* (DB2: ratelimit + redeem) first, fallback to KV_* (DB1)
+// This splits load: auth.js uses DB1, ratelimit.js + redeem.js use DB2
+const KV_URL = process.env.KV2_REST_API_URL || process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV2_REST_API_TOKEN || process.env.KV_REST_API_TOKEN;
+
 async function kvGet(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  if (!KV_URL || !KV_TOKEN) return null;
   try {
-    const r = await fetch(`${process.env.KV_REST_API_URL}/get/${key}`, {
-      headers: { 'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}` }
+    const r = await fetch(`${KV_URL}/get/${key}`, {
+      headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
     });
     const data = await r.json();
     if (!data || data.result === null || data.result === undefined) return null;
@@ -45,14 +49,14 @@ async function kvGet(key) {
 }
 
 async function kvSet(key, value, ttl) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return false;
+  if (!KV_URL || !KV_TOKEN) return false;
   try {
-    let url = `${process.env.KV_REST_API_URL}/set/${key}`;
+    let url = `${KV_URL}/set/${key}`;
     if (ttl) url += `?EX=${ttl}`;
     await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}`,
+        'Authorization': `Bearer ${KV_TOKEN}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(value)
@@ -62,11 +66,11 @@ async function kvSet(key, value, ttl) {
 }
 
 async function kvDel(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return false;
+  if (!KV_URL || !KV_TOKEN) return false;
   try {
-    await fetch(`${process.env.KV_REST_API_URL}/del/${key}`, {
+    await fetch(`${KV_URL}/del/${key}`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}` }
+      headers: { 'Authorization': `Bearer ${KV_TOKEN}` }
     });
     return true;
   } catch (e) { return false; }
@@ -96,7 +100,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const hasKV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+  const hasKV = KV_URL && KV_TOKEN;
   if (!hasKV) {
     // Soft-fail: allow all requests when KV not configured (don't block users
     // because admin forgot to set KV). Return premium-tier limits so frontend
