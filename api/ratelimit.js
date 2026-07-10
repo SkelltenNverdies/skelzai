@@ -20,8 +20,9 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-const GUEST_LIMIT = 5;
-const PREMIUM_LIMIT = 15;
+const GUEST_LIMIT = 5;      // Not logged in
+const MEMBER_LIMIT = 10;    // Logged in (no redeem code)
+const PREMIUM_LIMIT = 20;   // Logged in + has redeem code
 
 // KV helpers (single-encoding, defensive — same as auth.js)
 async function kvGet(key) {
@@ -123,17 +124,23 @@ export default async function handler(req, res) {
   const isAdmin = body.adminSecret && body.adminSecret === getAdminSecret();
 
   // Determine tier + key
-  // - Logged-in user: track by username
-  // - Guest: track by deviceId (fingerprint)
+  // - Guest (not logged in): 5 req/day per device
+  // - Member (logged in, no redeem): 10 req/day per user
+  // - Premium (logged in + has redeem code): 20 req/day per user
+  // - Admin: unlimited
   let tier, limit, counterKey;
+  const hasRedeem = body.hasRedeem === true;
   if (user) {
-    tier = 'premium';
-    limit = PREMIUM_LIMIT;
-    counterKey = null; // set below after dayStr
+    if (hasRedeem) {
+      tier = 'premium';
+      limit = PREMIUM_LIMIT;
+    } else {
+      tier = 'member';
+      limit = MEMBER_LIMIT;
+    }
   } else if (deviceId) {
     tier = 'guest';
     limit = GUEST_LIMIT;
-    counterKey = null;
   } else {
     return res.status(400).json({ error: 'Either user or deviceId required' });
   }

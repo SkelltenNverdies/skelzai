@@ -187,7 +187,7 @@ const PROVIDERS = {
           'Authorization': `Bearer ${apiKey}`,
           'X-DashScope-WorkSpace': workspaceId || this.fallbackWorkspaceId
         },
-        body: JSON.stringify({ model, messages, stream: true, max_tokens: 16384, temperature: 0.7, top_p: 0.9 })
+        body: JSON.stringify({ model, messages, stream: true, max_tokens: 8192, temperature: 0.7, top_p: 0.9 })
       };
     }
   },

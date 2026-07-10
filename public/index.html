@@ -584,7 +584,7 @@
       <div class="text-center mb-6">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3 glow-c"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:robot-happy-outline"></span></div>
         <h3 id="AUTH_TITLE" class="text-xl font-semibold text-cream-50 mb-1">Masuk ke SkelzAI</h3>
-        <p id="AUTH_SUB" class="text-xs text-[#7C7770]">Akses semua 28 model AI gratis</p>
+        <p id="AUTH_SUB" class="text-xs text-[#7C7770]">Akses semua model AI gratis</p>
       </div>
       <div class="space-y-3">
         <div>
@@ -705,7 +705,7 @@
       </div>
       <div id="RATELIMIT_UPGRADE" class="hidden bg-coral-400/5 border border-coral-400/20 rounded-lg p-3 mb-4">
         <p class="text-[11px] text-coral-300 mb-2 font-medium">Upgrade ke Premium</p>
-        <p class="text-[10px] text-[#7C7770] mb-3 leading-relaxed">Daftar gratis untuk dapat <strong class="text-coral-400">15 request/hari</strong> (3x lipat guest), akses 28+ model AI, dan chat sync antar device.</p>
+        <p class="text-[10px] text-[#7C7770] mb-3 leading-relaxed">Daftar gratis untuk dapat <strong class="text-coral-400">10 request/hari</strong> (2x lipat guest), akses 28+ model AI, dan chat sync antar device.</p>
         <button onclick="closeM('RATELIMIT');openAuth('register')" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-white bg-coral-400 hover:bg-coral-500 transition-colors">Daftar Gratis</button>
       </div>
       <button onclick="closeM('RATELIMIT')" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-[#C2BFB8] bg-white/[0.03] hover:bg-white/[0.05] transition-colors">Tutup</button>
@@ -943,7 +943,7 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.8.4 — by Gabriel Arjun Pangestu</span></p>
+        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v4.9.0 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -1049,14 +1049,29 @@
 
     var _rateLimitState={used:0,limit:15,remaining:15,tier:'guest'};
     function getRateLimitKey(){return currentUser?currentUser.username:_deviceId}
-    function getRateLimitTier(){return currentUser?'premium':'guest'}
-    function getRateLimitMax(){return currentUser?15:5}
+    function getRateLimitTier(){
+      if(!currentUser)return 'guest';
+      // Check if user has any redeemed codes
+      var hasRedeem=(window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0);
+      return hasRedeem?'premium':'member';
+    }
+    function getRateLimitMax(){
+      if(!currentUser)return 5;
+      var hasRedeem=(window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0);
+      return hasRedeem?20:10;
+    }
 
     async function checkRateLimit(){
       // Call /api/ratelimit to get current usage
       try{
         var body={action:'check',deviceId:_deviceId};
-        if(currentUser)body.user=currentUser.username;
+        if(currentUser){
+          body.user=currentUser.username;
+          // Tell backend if user has redeem codes (Premium=20, Member=10)
+          var hasRedeem=(window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0);
+          body.hasRedeem=!!hasRedeem;
+        }
+        if(adminSecret)body.adminSecret=adminSecret;
         var r=await fetch('/api/ratelimit',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -1077,7 +1092,11 @@
       // Increment counter after a successful send
       try{
         var body={action:'increment',deviceId:_deviceId};
-        if(currentUser)body.user=currentUser.username;
+        if(currentUser){
+          body.user=currentUser.username;
+          var hasRedeem=(window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0);
+          body.hasRedeem=!!hasRedeem;
+        }
         if(adminSecret)body.adminSecret=adminSecret;
         var r=await fetch('/api/ratelimit',{
           method:'POST',
@@ -1132,10 +1151,10 @@
       },60*1000); // every 60s
     }
     function showRateLimitModal(s){
-      var tier=s.tier==='guest'?'Guest Plan':'Premium Plan';
+      var tier=s.tier==='guest'?'Guest Plan':s.tier==='member'?'Member Plan':'Premium Plan';
       var text=s.tier==='guest'
-        ?'Anda sudah menggunakan semua 5 request gratis hari ini. Daftar gratis untuk dapat 15 request/hari.'
-        :'Terima kasih sudah premium! Anda sudah menggunakan 15 request hari ini. Reset besok UTC midnight.';
+        ?'Anda sudah menggunakan semua 5 request gratis hari ini. Daftar gratis untuk dapat 10 request/hari (Member) atau 20 request/hari (Premium).'
+        :'Anda sudah menggunakan semua request hari ini. Reset besok UTC midnight (07:00 WIB).';
       document.getElementById('RATELIMIT_COUNT').textContent=s.used+'/'+s.limit;
       document.getElementById('RATELIMIT_TIER').textContent=tier;
       document.getElementById('RATELIMIT_TEXT').textContent=text;
@@ -2292,6 +2311,7 @@
     }
     function isGuest(){return !currentUser}
     function isPremium(){return !!currentUser}
+      function isRedeemed(){return (window._unlockedCategories&&window._unlockedCategories.length>0)||(redeemedCodes&&redeemedCodes.length>0)}
     function updateAuthUI(){
       var un=document.getElementById('UN');
       var pp=document.getElementById('UN_PLAN');
@@ -2299,7 +2319,13 @@
       var logoutLi=document.getElementById('AUTH_LOGOUT_LI');
       if(currentUser){
         un.textContent=currentUser.username;
-        if(pp)pp.textContent='Premium — All Models';
+        if(pp){
+          if(isRedeemed()){
+            pp.textContent='Premium — All Models Unlocked';
+          }else{
+            pp.textContent='Member — 10 req/hari';
+          }
+        }
         if(loginLi)loginLi.classList.add('hidden');
         if(logoutLi)logoutLi.classList.remove('hidden');
       }else{
@@ -2319,7 +2345,7 @@
       err.classList.add('hidden');
       if(authMode==='login'){
         title.textContent='Masuk ke SkelzAI';
-        sub.textContent='Akses semua 27 model AI di device mana saja';
+        sub.textContent='Akses semua model AI di device mana saja';
         btn.textContent='Masuk';
         toggle.textContent='Belum punya akun? Daftar';
       }else{
@@ -3171,7 +3197,7 @@
         var tier=limit.tier==='guest'?'Guest':'Premium';
         var msg=tier+' limit harian tercapai ('+limit.used+'/'+limit.limit+'). ';
         if(limit.tier==='guest'){
-          msg+='Login untuk dapat 15 request/hari, atau tunggu reset (UTC midnight).';
+          msg+='Login untuk dapat 10 request/hari (Member), atau redeem code untuk 20 request/hari (Premium).'
         }else{
           msg+='Reset besok UTC midnight. Terima kasih sudah premium!';
         }
