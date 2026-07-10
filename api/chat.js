@@ -284,7 +284,7 @@ const PROVIDERS = {
     // Geo-restriction: free tier works from US/EU/Asia Vercel regions.
     envVar: 'GEMINI_API_KEYS', // Multi-key (comma-separated)
     singleKeyEnvVar: 'GEMINI_API_KEY', // Backward compat
-    fallbackKey: 'AQ.Ab8RN6INF3cPkUYF8YhAFYNS8TRS2KeEu0jpAmf_uTXRJf6VCg',
+    fallbackKey: 'AQ.Ab8RN6IAoCqOngFQrPpfEoehZXNvIjJeJ2HIJ27hS8I-TY7DSg',
     url: 'https://generativelanguage.googleapis.com/v1beta/models',
     timeout: 55000,
     isNonStreaming: true,
