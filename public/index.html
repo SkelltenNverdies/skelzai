@@ -703,9 +703,18 @@
     /* Generated image display */
     .gen-img-wrap{position:relative;border-radius:12px;overflow:hidden;margin:12px 0;padding:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)}
     .gen-img-loading{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px 16px}
+    .gen-img-wrap.loaded .gen-img-loading{display:none}
+    .gen-img-wrap.loaded .gen-img{display:block}
+    .gen-img-wrap:not(.loaded) .gen-img{display:none}
+    .gen-img-wrap:not(.loaded) .gen-img-toolbar{display:none}
+    .gen-img-wrap.error .gen-img-loading{display:none}
+    .gen-img-wrap.error .gen-img{display:none}
+    .gen-img-wrap.error .gen-img-toolbar{display:none}
+    .gen-img-wrap.error::after{content:'Gagal memuat gambar';display:block;padding:16px;color:#EF4444;font-size:12px;text-align:center}
     .gen-spin{animation:gen-spin 1s linear infinite}
     @keyframes gen-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-    .gen-img{display:block;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:100%;max-height:512px;object-fit:contain}
+    .gen-img{display:block;margin:0 auto;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:100%;max-height:512px;object-fit:contain;animation:img-fade-in 0.3s ease-out}
+    @keyframes img-fade-in{from{opacity:0}to{opacity:1}}
     .gen-img-toolbar{display:flex;justify-content:flex-end;padding:4px 8px}
     .gen-img-dl{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:10px;color:#D97757;background:rgba(217,119,87,0.08);border:1px solid rgba(217,119,87,0.15);cursor:pointer;transition:background 0.15s}
     .gen-img-dl:hover{background:rgba(217,119,87,0.15)}
@@ -960,6 +969,31 @@
         transition-duration:0.01ms!important;
       }
     }
+
+    /* ===== FINAL PERFORMANCE OPTIMIZATIONS ===== */
+    /* Reduce reflow on dynamic content */
+    #MC .mc{contain:layout style}
+    /* Optimize scrollbar on all scroll containers */
+    #CA,#CH,#MOP .mp,#PM,#SETTINGS div{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}
+    /* Prevent FOUC on modals */
+    [id="AM"],[id="NM"],[id="CM"],[id="SC"],[id="AUTH"],[id="FORGOT"],[id="RECOVERY"],[id="RATELIMIT"],[id="REDEEM"],[id="SETTINGS"],[id="ADMIN"],[id="MOL"]{visibility:visible}
+    /* Smooth input resize */
+    #CI{resize:none;transition:height 0.1s ease}
+    /* Debounce hover on desktop */
+    @media(hover:hover){
+      .mo,.ci,.fu-item{transition:background 0.12s ease,transform 0.08s ease,border-color 0.12s ease,box-shadow 0.12s ease}
+    }
+    /* Mobile: disable all hover effects */
+    @media(hover:none){
+      *:hover{transition:none!important}
+    }
+    /* Optimize backdrop-filter */
+    .glass-s{backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px) saturate(140%)}
+    .glass-i{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    /* Prevent text selection on drag from buttons */
+    button,.mo,.ci,.cat-h,.ms-btn,#STATUS_BTN,.fu-item,.fu-btn{-webkit-user-select:none;user-select:none}
+    /* Smooth font loading */
+    @font-face{font-family:'Inter';src:local('Inter');font-display:swap}
 </style>
 </head>
 <body class="font-sans">
@@ -1070,17 +1104,17 @@
     <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center"><span class="iconify text-white text-sm" data-icon="mdi:robot-happy-outline"></span></div>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center glow-c"><span class="iconify text-white text-sm" data-icon="mdi:robot-happy-outline"></span></div>
           <span class="font-serif text-lg font-medium tg-anim glow-anim">SkelzAI</span>
         </div>
         <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
       </div>
       <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p><strong class="text-cream-50">Versi:</strong> 4.4.2</p>
+        <p class="text-center py-2"><span class="footer-brand font-medium text-sm">SkelzAI v6.1.0 — by Gabriel Arjun Pangestu</span></p>
         <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> 46 AI model dikategorikan — 14 Skelz (4 vision), 5 Fast Chat, 8 Premium AI, 14 Powerful AI (1 image gen), 5 Vision AI — semua gratis, terverifikasi</p>
-        <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Redeem code system, global login (cross-device), performance mode, foto profil, tema warna, font size, guest mode, streaming 60fps, voice input, TTS, search, pin, export MD, Caveman Mode, PWA, analisis foto</p>
+        <p><strong class="text-cream-50">Model:</strong> 50+ AI model — Skelz, Fast Chat, Premium AI, Vision AI, Powerful AI, Image Gen — semua gratis</p>
+        <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks, kamera (maks 20MB)</p>
+        <p><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit (Guest 5/Member 12/Premium 25), performance mode, foto profil sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto</p>
         <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
         <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
       </div>
@@ -1514,7 +1548,6 @@
             <span id="STico" class="iconify text-base hidden" data-icon="mdi:stop"></span>
           </button>
         </div>
-        <p class="text-[10px] text-center mt-2"><span class="footer-brand font-medium">SkelzAI v6.0.2 — by Gabriel Arjun Pangestu</span></p>
       </div>
     </div>
   </main>
@@ -3445,25 +3478,15 @@
         var im=imageBlocks[parseInt(idx)];
         var safeUrl=im.url.replace(/"/g,'&quot;');
         var safeAlt=(im.alt||'Generated Image').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return '<div class="gen-img-wrap">'
+        return '<div class="gen-img-wrap" data-img-loaded="0">'
           +'<div class="gen-img-toolbar"><button onclick="dlImg(this)" data-url="'+safeUrl+'" class="gen-img-dl"><span class="iconify text-sm" data-icon="mdi:download"></span> Download</button></div>'
           +'<div class="gen-img-loading"><span class="iconify text-coral-400 text-2xl gen-spin" data-icon="mdi:loading"></span><span class="text-xs text-[#7C7770]">Sedang generate gambar...</span></div>'
-          +'<img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img" loading="lazy">'
+          +'<img src="'+safeUrl+'" alt="'+safeAlt+'" class="gen-img" onload="this.parentElement.classList.add(\'loaded\')" onerror="this.parentElement.classList.add(\'error\')">'
           +'</div>';
       });
 
       return result;
     }
-    // Global image error handler — replaces broken images with error message
-    document.addEventListener('error',function(e){
-      if(e.target&&e.target.tagName==='IMG'&&e.target.classList.contains('gen-img')){
-        var wrap=e.target.closest('.gen-img-wrap');
-        if(wrap){
-          wrap.querySelector('.gen-img-loading').innerHTML='<span class="text-red-400 text-xs">Gagal memuat gambar</span>';
-          e.target.style.display='none';
-        }
-      }
-    },true);
     function cpCode(btn){
       var code=btn.closest('.cb').querySelector('.cc').textContent;
       navigator.clipboard.writeText(code).then(function(){
