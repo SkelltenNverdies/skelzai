@@ -219,12 +219,17 @@ const PROVIDERS = {
     // even on first request. Lower = safer.
     getTpmLimit(model) {
       if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 30000;
-      return 6000; // 70b, oss-120, oss-20, scout all share 6000 TPM
+      // compound-beta is Groq's flagship — high TPM limit
+      if (model.indexOf('compound') !== -1) return 30000;
+      // qwen3-32b, qwen2.5-coder-32b, kimi-k2-instruct — all 32B-class, 6000 TPM on free
+      return 6000;
     },
     getMaxTokens(model) {
       // Conservative caps so input + output stays under TPM even for medium-length chats.
       // 8b has tons of headroom (30k TPM) so we can be generous.
       if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 6000;
+      // compound-beta has 30k TPM — can be generous
+      if (model.indexOf('compound') !== -1) return 6000;
       // 70b / oss-120 / oss-20 all have 6000 TPM — leave ~2500 for input
       if (model.indexOf('oss-120') !== -1) return 3000; // largest model, slowest — keep tight
       if (model.indexOf('oss-20') !== -1) return 3000;
@@ -233,6 +238,8 @@ const PROVIDERS = {
     },
     getMaxHistory(model) {
       if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 10;
+      // compound-beta can handle more history (30k TPM)
+      if (model.indexOf('compound') !== -1) return 10;
       return 6; // tight-history models
     },
     // Dynamic max_tokens: scales down if input is large, so we never exceed TPM.

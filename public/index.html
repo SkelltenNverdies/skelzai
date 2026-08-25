@@ -1069,8 +1069,8 @@
       <!-- Search bar -->
       <div class="mb-2 px-2 relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
-        <input id="SRCH" type="text" placeholder="Cari chat..." oninput="debounceSearch()" class="srch-in w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
-        <button id="SRCH_CLEAR" onclick="document.getElementById('SRCH').value='';debounceSearch();document.getElementById('SRCH').focus()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
+        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch();updateSearchClear()" class="srch-in w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
+        <button id="SRCH_CLEAR" onclick="document.getElementById('SRCH').value='';debounceSearch();document.getElementById('SRCH').focus();updateSearchClear()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center opacity-0 pointer-events-none transition-opacity" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
       </div>
       <div class="mb-2 px-2 flex items-center justify-between">
         <span class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium">Riwayat</span>
@@ -1147,7 +1147,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.6.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.7.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1198,6 +1198,33 @@
         <div class="flex items-start gap-2">
           <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:rocket-launch-outline"></span>
           <div><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit, performance mode, foto profil sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto</div>
+        </div>
+      </div>
+
+      <!-- Portfolio links -->
+      <div class="mt-4 pt-3 border-t border-white/[0.05] relative">
+        <div class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium mb-2.5">Portfolio</div>
+        <div class="grid grid-cols-1 gap-2">
+          <a href="https://skelz.dpdns.org/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-coral-400/5 hover:border-coral-400/20 transition-all group">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/15 flex items-center justify-center flex-shrink-0">
+              <span class="iconify text-coral-400 text-sm" data-icon="mdi:web"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[12px] text-cream-50 font-medium truncate">Skelz.dpdns.org</div>
+              <div class="text-[10px] text-[#7C7770] truncate">skelz.dpdns.org</div>
+            </div>
+            <span class="iconify text-[#7C7770] text-xs group-hover:text-coral-400 group-hover:translate-x-0.5 transition-all" data-icon="mdi:open-in-new"></span>
+          </a>
+          <a href="https://proximus.qzz.io/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-coral-400/5 hover:border-coral-400/20 transition-all group">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/15 flex items-center justify-center flex-shrink-0">
+              <span class="iconify text-coral-400 text-sm" data-icon="mdi:web"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[12px] text-cream-50 font-medium truncate">Proximus.qzz.io</div>
+              <div class="text-[10px] text-[#7C7770] truncate">proximus.qzz.io</div>
+            </div>
+            <span class="iconify text-[#7C7770] text-xs group-hover:text-coral-400 group-hover:translate-x-0.5 transition-all" data-icon="mdi:open-in-new"></span>
+          </a>
         </div>
       </div>
 
@@ -1672,13 +1699,12 @@
        5. Powerful AI  — Most powerful models (MoE, large params, coding)
     */
     var MODELS=[
-      /* ===== 1. SkelzAI — 13 models =====
+      /* ===== 1. SkelzAI — 12 models =====
          DEFAULT FREE MODEL = morph-v3-large (works out-of-the-box with embedded key).
          Qwen models require user to set QWEN_KEYS env var (free at alibabacloud.com).
-         If QWEN_KEYS not set or expired, Qwen models will fail with "Invalid API-key". */
+         qwen-plus removed per user request (key expired). */
       {id:'morph-v3-large',provider:'morph',label:'Skelz Plus',desc:'Default — Berfungsi tanpa setup API key',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'morph-v3-fast',provider:'morph',label:'Skelz Fast',desc:'Morph v3 Fast — Super cepat & hemat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'qwen-plus',provider:'qwen',label:'Qwen Plus',desc:'Qwen — Butuh API key sendiri (set QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwq-plus',provider:'qwen',label:'Qwen Reasoning',desc:'QwQ Plus — Reasoning + logika (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-max',provider:'qwen',label:'Qwen 3 Max',desc:'Qwen 3 Max, paling cerdas (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-235b-a22b',provider:'qwen',label:'Qwen 3 235B',desc:'MoE 235B, super kuat (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
@@ -1692,32 +1718,22 @@
       {id:'qwen3-vl-plus',provider:'qwen',label:'Qwen 3 VL Plus',desc:'Skelz 3 Vision (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
       {id:'qwen3-vl-flash',provider:'qwen',label:'Qwen 3 VL Flash',desc:'Skelz 3 Vision cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
 
-      /* ===== 2. Fast Chat — 6 models (Groq + Cloudflare) =====
-         Groq models verified Aug 2026:
-         - llama-3.3-70b-versatile: ✓ EXISTS
-         - llama-3.1-8b-instant: REMOVED from Groq
-         - meta-llama/llama-4-scout-17b-16e-instruct: REMOVED from Groq
-         - openai/gpt-oss-120b: REMOVED from Groq
-         - openai/gpt-oss-20b: ✓ EXISTS
-         - qwen/qwen3-32b: ✓ EXISTS (new)
-         - qwen/qwen2.5-coder-32b-instruct: ✓ EXISTS
-         - moonshotai/kimi-k2-instruct: ✓ EXISTS
-         - deepseek-r1-distill-llama-70b: ✓ EXISTS
+      /* ===== 2. Fast Chat — 7 models (Groq + Cloudflare) =====
+         Groq models — replaced erroring llama-3.3-70b-versatile with working alternatives.
+         Per user request: any Groq model that 404s must be replaced with a working Groq model.
+         Groq's free tier includes: compound-beta (newest), openai/gpt-oss-20b, qwen models,
+         moonshotai/kimi-k2-instruct, deepseek-r1-distill variants.
          Requires GROQ_API_KEYS env var (free at console.groq.com). */
-      {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'compound-beta',provider:'groq',label:'Compound Beta',desc:'Groq flagship — Tool use + reasoning, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat & stabil',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'qwen/qwen3-32b',provider:'groq',label:'Qwen 3 32B',desc:'Qwen 3, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'qwen/qwen2.5-coder-32b-instruct',provider:'groq',label:'Qwen Coder 32B',desc:'Khusus coding, 32B',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'moonshotai/kimi-k2-instruct',provider:'groq',label:'Kimi K2 Instruct',desc:'Moonshot Kimi K2, powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'deepseek-r1-distill-llama-70b',provider:'groq',label:'DeepSeek R1 70B',desc:'Reasoning 70B distilasi',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'llama-3.1-70b-versatile',provider:'groq',label:'Llama 3.1 70B',desc:'Meta 70B — alternatif stabil',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
-      /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) =====
-         Removed per user request:
-         - google/gemma-4-31b-it:free (Gemma)
-         - google/gemma-4-26b-a4b-it:free (Gemma)
-         - thinkingmachines/inkling-small:free
-         All remaining models verified via OpenRouter /models API on 2026-08-25. */
+      /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) ===== */
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B — Paling powerful (free, 1M ctx)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3.5-lightning:free',provider:'openrouter',label:'Nemotron 3.5 Lightning',desc:'Cepat & stabil, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
@@ -1726,28 +1742,15 @@
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'dots-studio/dots-3-note-preview:free',provider:'openrouter',label:'Dots3 Note Preview',desc:'Multimodal preview, 512K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 5 models =====
-         NOTE: gpt-4o-mini (GitHub) is in retirement brownout — may fail.
-         Use Nemotron Nano Omni (OpenRouter, free) as primary vision model instead. */
+      /* ===== 4. Vision AI — 5 models ===== */
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B (NVIDIA NIM)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini (GitHub)',desc:'OpenAI vision — sedang brownout, mungkin error',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
-      /* ===== 5. Powerful AI — 10 models =====
-         NVIDIA NIM models verified Aug 2026:
-         - meta/llama-3.3-70b-instruct: ✓ EXISTS
-         - meta/llama-3.1-70b-instruct: ✓ EXISTS
-         - meta/llama-3.1-8b-instruct: ✓ EXISTS
-         - meta/llama-3.2-3b-instruct: ✓ EXISTS (new)
-         - meta/llama-3.2-1b-instruct: ✓ EXISTS (new)
-         - mistralai/mistral-7b-instruct-v0.3: ✓ EXISTS (new)
-         - nvidia/nemotron-4-340b-instruct: ✓ EXISTS (new, 340B powerful!)
-         - nvidia/nemotron-mini-4b-instruct: ✓ EXISTS
-         - qwen/qwen2.5-coder-32b-instruct: ✗ 410 GONE (removed)
-         - deepseek-ai/deepseek-r1: ✗ 404 (removed from NVIDIA NIM)
-         - mistralai/mistral-nemo-12b-instruct: ✗ 404 (removed) */
+      /* ===== 5. Powerful AI — 11 models =====
+         Kimi K2.6 (BluesMinds) removed per user request. */
       {id:'morph-v3-large',provider:'morph',label:'Morph v3 Large',desc:'Powerful — Berfungsi tanpa setup',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'nvidia/nemotron-4-340b-instruct',provider:'nvidia',label:'Nemotron 4 340B',desc:'NVIDIA 340B — paling powerful di NIM',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.3-70b-instruct',provider:'nvidia',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
@@ -1759,8 +1762,7 @@
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'moonshotai/kimi-k2.6',provider:'bluesminds',label:'Kimi K2.6',desc:'BluesMinds — Coding kuat, gratis',tag:'BluesMinds',vision:false,cat:'Powerful AI'}
+      {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'}
 
       /* ===== Image Generation (Free) ===== */
       ,{id:'pollinations/flux',provider:'pollinations',label:'Flux Image Gen',desc:'Pollinations — Generate gambar gratis, no API key',tag:'Image Gen',vision:false,cat:'Powerful AI'}
@@ -2346,6 +2348,18 @@
       if(_searchTimer)clearTimeout(_searchTimer);
       _searchTimer=setTimeout(function(){updHist();_searchTimer=null},200);
     }
+    function updateSearchClear(){
+      var v=document.getElementById('SRCH').value;
+      var btn=document.getElementById('SRCH_CLEAR');
+      if(!btn)return;
+      if(v){
+        btn.classList.remove('opacity-0','pointer-events-none');
+        btn.classList.add('opacity-100');
+      }else{
+        btn.classList.add('opacity-0','pointer-events-none');
+        btn.classList.remove('opacity-100');
+      }
+    }
     function updHist(){
       var el=document.getElementById('CH'),em=document.getElementById('HE'),cb=document.getElementById('clrAllBtn');
       var srch=(document.getElementById('SRCH').value||'').toLowerCase().trim();
@@ -2369,15 +2383,42 @@
       if(!ids.length){
         el.innerHTML='';
         if(allIds.length===0){em.classList.remove('hidden');cb.classList.add('hidden')}
-        else{em.classList.add('hidden');cb.classList.remove('hidden');el.innerHTML='<div class="text-center py-8 text-xs text-[#7C7770]">Tidak ada chat yang cocok</div>'}
+        else{
+          em.classList.add('hidden');cb.classList.remove('hidden');
+          el.innerHTML='<div class="text-center py-8 px-4"><div class="w-10 h-10 rounded-xl bg-[#262524]/60 flex items-center justify-center mx-auto mb-2"><span class="iconify text-[#7C7770] text-xl" data-icon="mdi:magnify"></span></div><p class="text-xs text-[#7C7770]">Tidak ada chat cocok dengan</p><p class="text-xs text-coral-400 font-medium mt-1">"'+esc(srch)+'"</p></div>';
+        }
         return;
       }
       em.classList.add('hidden');cb.classList.remove('hidden');var html='';
+      // Show result count badge when searching
+      if(srch&&allIds.length>ids.length){
+        html+='<div class="text-[10px] text-[#7C7770] px-3 py-1.5 mb-1 bg-coral-400/5 border border-coral-400/10 rounded-md flex items-center gap-1.5"><span class="iconify text-coral-400 text-xs" data-icon="mdi:filter-outline"></span>'+ids.length+' dari '+allIds.length+' chat</div>';
+      }
       for(var i=0;i<ids.length;i++){
         var id=ids[i],ch=chats[id],act=id===curId?' act':'';
         var pinIcon=ch.pinned?'mdi:pin':'mdi:pin-outline';
         var pinColor=ch.pinned?'text-coral-400':'text-[#7C7770]';
-        html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+hl(ch.title,srch)+'</span><span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span></div><button onclick="togglePin(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-coral-400/10 flex-shrink-0" title="'+(ch.pinned?'Unpin':'Pin')+'"><span class="iconify '+pinColor+' text-xs transition-colors" data-icon="'+pinIcon+'"></span></button><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>';
+        // When searching, show a snippet of the matching message instead of just message count
+        var snippet='';
+        if(srch){
+          for(var j=0;j<ch.messages.length;j++){
+            var c=(ch.messages[j].content||'').toLowerCase();
+            var idx=c.indexOf(srch);
+            if(idx!==-1){
+              var fullContent=ch.messages[j].content||'';
+              // Get 60 chars around the match for context
+              var start=Math.max(0,idx-25);
+              var end=Math.min(fullContent.length,idx+srch.length+35);
+              var snip=(start>0?'…':'')+fullContent.substring(start,end)+(end<fullContent.length?'…':'');
+              // Strip markdown for cleaner preview
+              snip=snip.replace(/```[\s\S]*?```/g,'[code]').replace(/[*_`#>\-]/g,'').replace(/\n+/g,' ').trim();
+              snippet='<span class="text-[10px] text-[#9C9590] truncate block mt-0.5">'+hl(snip,srch)+'</span>';
+              break;
+            }
+          }
+        }
+        var msgCountLabel=snippet?'':('<span class="text-[10px] text-[#7C7770]">'+ch.messages.length+' pesan</span>');
+        html+='<div onclick="loadChat(\''+id+'\')" class="si-i flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer border border-transparent'+act+'"><span class="iconify text-[#7C7770] text-sm flex-shrink-0" data-icon="mdi:message-text-outline"></span><div class="flex-1 min-w-0"><span class="text-sm text-[#C2BFB8] truncate block">'+hl(ch.title,srch)+'</span>'+msgCountLabel+snippet+'</div><button onclick="togglePin(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-coral-400/10 flex-shrink-0" title="'+(ch.pinned?'Unpin':'Pin')+'"><span class="iconify '+pinColor+' text-xs transition-colors" data-icon="'+pinIcon+'"></span></button><button onclick="delChat(\''+id+'\',event)" class="si-d w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-500/10 flex-shrink-0" title="Hapus"><span class="iconify text-[#7C7770] hover:text-red-400 text-xs transition-colors" data-icon="mdi:delete-outline"></span></button></div>';
       }
       el.innerHTML=html;
     }
