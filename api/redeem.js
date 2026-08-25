@@ -58,7 +58,7 @@ const TIER_INFO = {
   },
   vision: {
     description: 'Unlock semua Vision AI models (analisis foto)',
-    models: ['gpt-4o-mini', 'meta/llama-3.2-90b-vision-instruct', 'qwen-vl-max']
+    models: ['gpt-4o-mini', 'meta/llama-3.2-90b-vision-instruct']
   },
   powerful: {
     description: 'Unlock semua Powerful AI models',

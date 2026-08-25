@@ -1141,7 +1141,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.4.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.5.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1666,69 +1666,62 @@
        5. Powerful AI  — Most powerful models (MoE, large params, coding)
     */
     var MODELS=[
-      /* ===== 1. SkelzAI — 13 models ===== */
-      /* Default free model: qwen-plus — confirmed working on DashScope.
-         Other working Qwen models: qwen3-max, qwen3-235b-a22b, qwen3-coder-plus,
-         qwq-plus, qwen-vl-*. Avoid qwen3-32b-instruct & qwq-32b (404 not exist). */
-      {id:'qwen-plus',provider:'qwen',label:'Skelz Plus',desc:'Default — Seimbang kuat & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'qwq-plus',provider:'qwen',label:'Skelz Reasoning',desc:'QwQ Plus — Reasoning + logika tingkat lanjut',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Skelz 3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Skelz Next 80B',desc:'MoE 80B, seimbang',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.5-plus',provider:'qwen',label:'Skelz 3.5 Plus',desc:'Generasi terbaru, cepat & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Skelz 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Skelz 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Analisis foto, paling akurat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen-vl-plus',provider:'qwen',label:'Skelz Vision Plus',desc:'Analisis foto, seimbang',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Skelz 3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      /* ===== 1. SkelzAI — 13 models =====
+         DEFAULT FREE MODEL = morph-v3-large (works out-of-the-box with embedded key).
+         Qwen models require user to set QWEN_KEYS env var (free at alibabacloud.com).
+         If QWEN_KEYS not set or expired, Qwen models will fail with "Invalid API-key". */
+      {id:'morph-v3-large',provider:'morph',label:'Skelz Plus',desc:'Default — Berfungsi tanpa setup API key',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'morph-v3-fast',provider:'morph',label:'Skelz Fast',desc:'Morph v3 Fast — Super cepat & hemat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen-plus',provider:'qwen',label:'Qwen Plus',desc:'Qwen — Butuh API key sendiri (set QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwq-plus',provider:'qwen',label:'Qwen Reasoning',desc:'QwQ Plus — Reasoning + logika (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-max',provider:'qwen',label:'Qwen 3 Max',desc:'Qwen 3 Max, paling cerdas (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-235b-a22b',provider:'qwen',label:'Qwen 3 235B',desc:'MoE 235B, super kuat (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-coder-plus',provider:'qwen',label:'Qwen Coder+',desc:'Khusus coding (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Qwen Next 80B',desc:'MoE 80B (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.5-plus',provider:'qwen',label:'Qwen 3.5 Plus',desc:'Generasi terbaru (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.6-plus',provider:'qwen',label:'Qwen 3.6 Plus',desc:'Stabil & cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.7-plus',provider:'qwen',label:'Qwen 3.7 Plus',desc:'Terbaru (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-max',provider:'qwen',label:'Qwen Vision Max',desc:'Analisis foto (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-plus',provider:'qwen',label:'Qwen Vision Plus',desc:'Analisis foto (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-plus',provider:'qwen',label:'Qwen 3 VL Plus',desc:'Skelz 3 Vision (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-flash',provider:'qwen',label:'Qwen 3 VL Flash',desc:'Skelz 3 Vision cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
 
-      /* ===== 2. Fast Chat — 7 models ===== */
+      /* ===== 2. Fast Chat — 5 models =====
+         NOTE: Requires user to set GROQ_API_KEYS env var (free at console.groq.com).
+         Cerebras removed — Cloudflare blocks API access from serverless.
+         Nara Router removed — most models return "not available" or timeout. */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
-      /* ===== 3. Premium AI — 8 models (OpenRouter free tier — VERIFIED via live API) =====
-         All model IDs below are confirmed to exist on OpenRouter's /models
-         endpoint as of 2026-08-25. Free models rotate frequently — if one
-         stops working, check https://openrouter.ai/api/v1/models for current list. */
+      /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) =====
+         Removed per user request:
+         - google/gemma-4-31b-it:free (Gemma)
+         - google/gemma-4-26b-a4b-it:free (Gemma)
+         - thinkingmachines/inkling-small:free
+         All remaining models verified via OpenRouter /models API on 2026-08-25. */
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B — Paling powerful (free, 1M ctx)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3.5-lightning:free',provider:'openrouter',label:'Nemotron 3.5 Lightning',desc:'Cepat & stabil, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'google/gemma-4-31b-it:free',provider:'openrouter',label:'Gemma 4 31B',desc:'Google 31B — Terbaru & cerdas (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'google/gemma-4-26b-a4b-it:free',provider:'openrouter',label:'Gemma 4 26B MoE',desc:'Google MoE 26B, hemat token (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'thinkingmachines/inkling-small:free',provider:'openrouter',label:'Inkling Small',desc:'Thinking Machines, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context (free)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'poolside/laguna-s-2.1:free',provider:'openrouter',label:'Laguna S 2.1',desc:'Coding specialist (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'},
+      {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'dots-studio/dots-3-note-preview:free',provider:'openrouter',label:'Dots3 Note Preview',desc:'Multimodal preview, 512K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 6 models ===== */
-      /* OpenRouter free vision models verified available:
-         - nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free (vision + reasoning, 256K)
-         - google/gemma-4-26b-a4b-it:free (vision capable, 262K)
-         - google/gemma-4-31b-it:free (vision capable, 262K)
-         - dots-studio/dots-3-note-preview:free (vision, 512K)
-         - thinkingmachines/inkling-small:free (vision, 1M ctx) */
+      /* ===== 4. Vision AI — 5 models ===== */
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Qwen VL — Analisis foto, paling akurat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'skelz_premium'},
 
-      /* ===== 5. Powerful AI — 11 models ===== */
-      /* REMOVED (EOL/broken):
-         - z-ai/glm-5.2 (NVIDIA) → EOL 2026-08-21
-         - mistralai/ministral-14b-instruct-2512 (NVIDIA) → unreliable
-         - stockmark/stockmark-2-100b-instruct (NVIDIA) → frequently offline
-         - upstage/solar-10.7b-instruct (NVIDIA) → frequently offline
-         - coding-glm-4.7-free (AIHubMix) → no_available_channel
-         REPLACED with stable NVIDIA NIM + Cloudflare models. */
+      /* ===== 5. Powerful AI — 10 models =====
+         Removed Cerebras (Cloudflare blocks), AIHubMix (no_available_channel).
+         Uses Morph (embedded key, works out-of-box) + NVIDIA NIM + Cloudflare. */
+      {id:'morph-v3-large',provider:'morph',label:'Morph v3 Large',desc:'Powerful — Berfungsi tanpa setup',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'meta/llama-3.3-70b-instruct',provider:'nvidia',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.1-70b-instruct',provider:'nvidia',label:'Llama 3.1 70B',desc:'Meta 70B, versi stabil',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'meta/llama-3.1-8b-instruct',provider:'nvidia',label:'Llama 3.1 8B',desc:'Meta 8B — Cepat & ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
@@ -1736,12 +1729,10 @@
       {id:'deepseek-ai/deepseek-r1',provider:'nvidia',label:'DeepSeek R1',desc:'Reasoning, super cerdas',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'mistralai/mistral-nemo-12b-instruct',provider:'nvidia',label:'Mistral Nemo 12B',desc:'Mistral 12B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'google/gemma-2-9b-it',provider:'nvidia',label:'Gemma 2 9B',desc:'Google 9B, cepat & cerdas',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'moonshotai/kimi-k2.6',provider:'bluesminds',label:'Kimi K2.6',desc:'BluesMinds — Coding kuat, gratis',tag:'BluesMinds',vision:false,cat:'Powerful AI'},
-      {id:'mistral-large',provider:'nara',label:'Nara Mistral Large',desc:'NaraRouter — Mistral Large, gratis & powerful',tag:'Nara',vision:false,cat:'Powerful AI'}
+      {id:'moonshotai/kimi-k2.6',provider:'bluesminds',label:'Kimi K2.6',desc:'BluesMinds — Coding kuat, gratis',tag:'BluesMinds',vision:false,cat:'Powerful AI'}
 
       /* ===== Image Generation (Free) ===== */
       ,{id:'pollinations/flux',provider:'pollinations',label:'Flux Image Gen',desc:'Pollinations — Generate gambar gratis, no API key',tag:'Image Gen',vision:false,cat:'Powerful AI'}

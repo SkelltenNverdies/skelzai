@@ -2,6 +2,8 @@
 // Compatible with Vercel Node.js runtime (>=18, has global fetch)
 // Required env vars (set in Vercel project settings):
 //   QWEN_API_KEY         — for qwen-plus / qwq-plus / qwen3-max / qwen3-coder-plus / qwen-vl-* etc.
+//                          NOTE: requires user to set QWEN_KEYS env var (free at alibabacloud.com)
+//                          Default model is morph-v3-large (no setup needed) — see MODELS in index.html.
 //   GROQ_API_KEY         — for Llama models on Groq
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 //   GEMINI_API_KEY       — optional, for Google Gemini models (free tier)
@@ -1602,6 +1604,22 @@ export default async function handler(req, res) {
   if (provider === 'github' && response.status === 401) {
     return res.status(401).json({
       error: 'GITHUB_TOKEN tidak valid atau sudah expired. PAT yang di-embed di kode akan otomatis di-revoke oleh GitHub Secret Scanning. Setup: 1) Buka https://github.com/settings/tokens/new 2) Centang scope "repo" 3) Generate PAT 4) Di Vercel Project Settings → Environment Variables → tambah Key=GITHUB_TOKEN Value=ghp_xxx 5) Redeploy. Detail: ' + errDetail
+    });
+  }
+
+  // Qwen 401/403 — DashScope API key invalid or expired.
+  // Common cause: free trial keys from Alibaba Cloud expire after 1 month.
+  // Tell user to get fresh key + set QWEN_KEYS env var.
+  if (provider === 'qwen' && (response.status === 401 || response.status === 403)) {
+    return res.status(401).json({
+      error: 'QWEN API key tidak valid atau expired. Skelz Plus (morph-v3-large) tidak butuh API key — pakai model itu. Untuk pakai Qwen: 1) Dapat API key baru di https://bailian.console.aliyun.com (Alibaba Cloud DashScope) 2) Set env var QWEN_KEYS=key|workspace_id di Vercel 3) Redeploy. Detail: ' + errDetail
+    });
+  }
+
+  // Morph 401 — embedded key expired (rare). Tell user to set MORPH_API_KEY.
+  if (provider === 'morph' && (response.status === 401 || response.status === 403)) {
+    return res.status(401).json({
+      error: 'Morph API key expired. Dapat key baru gratis di https://morphllm.com → set env var MORPH_API_KEY di Vercel. Detail: ' + errDetail
     });
   }
 
