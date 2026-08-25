@@ -154,31 +154,43 @@ function generateRecoveryCode() {
 }
 
 // ============================================================================
-// EMAIL SENDING (Resend.com API — free 100 emails/day)
+// EMAIL SENDING — supports Gmail SMTP (primary), Brevo (fallback), Resend (last resort)
 // ============================================================================
-// Setup:
-//   1. Daftar di https://resend.com (free, 100 emails/day)
-//   2. Verify your domain (e.g. skelzai.com) OR use the default onboarding domain
-//      (onboarding@resend.dev — works for testing but limited)
-//   3. Get API key from https://resend.com/api-keys
-//   4. Set env vars in Vercel:
-//        RESEND_API_KEY=re_xxxxxxxxxxxx
-//        RESEND_FROM_EMAIL=SkelzAI <noreply@your-verified-domain.com>
-//   5. Redeploy
+// GMAIL SMTP (RECOMMENDED — easiest, no phone verification needed):
+//   Free 500 emails/day. Pakai akun Gmail yang sudah ada. Bisa kirim ke siapapun.
+//   Setup (5 menit, TANPA verifikasi nomor telepon):
+//     1. Pastikan Gmail kamu aktifkan 2-Factor Authentication
+//        (https://myaccount.google.com/security → "2-Step Verification" → ON)
+//     2. Generate App Password:
+//        - Buka https://myaccount.google.com/apppasswords
+//        - Pilih "Mail" sebagai app
+//        - Klik "Create" → copy 16-char password (format: xxxx xxxx xxxx xxxx)
+//     3. Set env vars di Vercel:
+//          GMAIL_USER=skelltenxz@gmail.com  (email Gmail kamu)
+//          GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  (App Password dari step 2)
+//     4. Redeploy
+//   Kelebihan: gratis, no phone verification, pakai email Gmail yang sudah ada,
+//             reliable (Google SMTP), bisa kirim ke siapapun.
 //
-// If RESEND_API_KEY not set, returns { success: false, error: '...' } so
-// caller can show a helpful error to the user.
+// BREVO (FALLBACK — 300 email/hari, butuh verify sender email):
+//   Setup:
+//     1. Daftar di https://www.brevo.com (free 300 emails/day)
+//     2. Verify sender email di https://app.brevo.com/settings/senders
+//     3. Generate API key di https://app.brevo.com/settings/keys/api
+//     4. Set env vars di Vercel:
+//          BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxxxxxx
+//          BREVO_SENDER_EMAIL=email@kamu.com (yang sudah di-verify)
+//
+// RESEND (LAST RESORT — butuh domain verification):
+//   Free 100 emails/day. Default onboarding@resend.dev HANYA bisa kirim ke email
+//   akun Resend sendiri. Untuk kirim ke user lain, WAJIB verify domain di
+//   https://resend.com/domains (butuh akses DNS).
+//
+// AUTO-DETECT priority: Gmail > Brevo > Resend.
+// Kalau tidak ada yang diset, return error dengan instruksi setup Gmail (paling mudah).
 // ============================================================================
-async function sendResetEmail(toEmail, username, code) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      error: 'Email belum dikonfigurasi di server. Admin: set RESEND_API_KEY + RESEND_FROM_EMAIL env var di Vercel. Daftar gratis di resend.com.'
-    };
-  }
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'SkelzAI <onboarding@resend.dev>';
 
+function buildEmailContent(username, code) {
   const html = `<!DOCTYPE html>
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;padding:24px;margin:0">
   <div style="max-width:480px;margin:0 auto;background:#262524;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)">
@@ -202,6 +214,109 @@ async function sendResetEmail(toEmail, username, code) {
 
   const text = `SkelzAI — Reset Password\n\nHai ${username},\n\nKamu meminta reset password untuk akun SkelzAI.\n\nKode verifikasi: ${code}\n\nKode ini berlaku 10 menit. Jangan bagikan ke siapapun.\n\nKalau kamu tidak meminta reset, abaikan email ini.\n\nSkelzAI — by Gabriel Arjun Pangestu`;
 
+  return { html, text };
+}
+
+// Gmail SMTP via Nodemailer — RECOMMENDED (gratis, no phone verification)
+async function sendViaGmail(toEmail, username, code) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) return null; // Gmail not configured
+
+  const { html, text } = buildEmailContent(username, code);
+
+  try {
+    // Dynamic import — nodemailer is ESM-compatible
+    const nodemailer = await import('nodemailer');
+
+    const transporter = nodemailer.default.createTransport({
+      service: 'gmail',
+      auth: {
+        user: gmailUser,
+        pass: gmailPass
+      }
+    });
+
+    const info = await transporter.sendMail({
+      from: `"SkelzAI" <${gmailUser}>`,
+      to: toEmail,
+      subject: 'SkelzAI — Kode Reset Password',
+      html: html,
+      text: text
+    });
+
+    console.log('Gmail sent:', info.messageId);
+    return { success: true };
+  } catch (e) {
+    console.error('Gmail send error:', e);
+    let errMsg = e.message || 'Unknown error';
+    // Specific error: invalid app password
+    if (errMsg.indexOf('Invalid login') !== -1 || errMsg.indexOf('Username and Password not accepted') !== -1) {
+      errMsg = 'Gmail App Password tidak valid. Pastikan: (1) 2FA aktif di Gmail, (2) App Password benar (16 char, format: xxxx xxxx xxxx xxxx), (3) GMAIL_USER=email Gmail kamu. Generate di https://myaccount.google.com/apppasswords';
+    }
+    // Specific error: 2FA not enabled
+    if (errMsg.indexOf('534') !== -1 || errMsg.indexOf('535') !== -1) {
+      errMsg = 'Gmail butuh 2-Factor Authentication. Aktifkan di https://myaccount.google.com/security → "2-Step Verification" → ON, lalu generate App Password di https://myaccount.google.com/apppasswords';
+    }
+    return { success: false, error: 'Email gagal terkirim (Gmail): ' + errMsg };
+  }
+}
+
+// Brevo (Sendinblue) — fallback (300 email/hari, butuh verify sender email)
+async function sendViaBrevo(toEmail, username, code) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return null; // Brevo not configured
+
+  const senderEmail = process.env.BREVO_SENDER_EMAIL;
+  if (!senderEmail) {
+    return {
+      success: false,
+      error: 'BREVO_API_KEY sudah diset tapi BREVO_SENDER_EMAIL belum. Set env var BREVO_SENDER_EMAIL=email@kamu.com (yang sudah di-verify di Brevo).'
+    };
+  }
+  const senderName = process.env.BREVO_SENDER_NAME || 'SkelzAI';
+  const { html, text } = buildEmailContent(username, code);
+
+  try {
+    const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { email: senderEmail, name: senderName },
+        to: [{ email: toEmail }],
+        subject: 'SkelzAI — Kode Reset Password',
+        htmlContent: html,
+        textContent: text
+      })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      console.error('Brevo error:', data);
+      let errMsg = data.message || data.code || JSON.stringify(data).substring(0, 200);
+      if (errMsg.indexOf('sender') !== -1 || errMsg.indexOf('unverified') !== -1) {
+        errMsg = 'Sender email belum di-verify di Brevo. Buka https://app.brevo.com/settings/senders → klik link verifikasi di email kamu → set BREVO_SENDER_EMAIL=email yang sama.';
+      }
+      return { success: false, error: 'Email gagal terkirim (Brevo): ' + errMsg };
+    }
+    return { success: true };
+  } catch (e) {
+    console.error('Brevo send error:', e);
+    return { success: false, error: 'Koneksi ke Brevo gagal: ' + e.message };
+  }
+}
+
+// Resend — last resort (needs domain verification to send to other recipients)
+async function sendViaResend(toEmail, username, code) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'SkelzAI <onboarding@resend.dev>';
+  const { html, text } = buildEmailContent(username, code);
+
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -220,16 +335,54 @@ async function sendResetEmail(toEmail, username, code) {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) {
       console.error('Resend error:', data);
-      return {
-        success: false,
-        error: 'Email gagal terkirim: ' + (data.message || data.error || r.status)
-      };
+      let errMsg = data.message || data.error || r.status;
+      if (errMsg.indexOf('testing emails to your own') !== -1 ||
+          errMsg.indexOf('verify a domain') !== -1) {
+        errMsg = 'Resend free tier hanya bisa kirim ke email akun Resend sendiri. Pakai Gmail SMTP (lebih mudah — set GMAIL_USER + GMAIL_APP_PASSWORD di Vercel). Detail: ' + errMsg;
+      }
+      return { success: false, error: 'Email gagal terkirim (Resend): ' + errMsg };
     }
     return { success: true };
   } catch (e) {
-    console.error('sendResetEmail error:', e);
-    return { success: false, error: 'Koneksi ke email service gagal: ' + e.message };
+    console.error('Resend send error:', e);
+    return { success: false, error: 'Koneksi ke Resend gagal: ' + e.message };
   }
+}
+
+// Main email sender — auto-detect provider (Gmail > Brevo > Resend)
+async function sendResetEmail(toEmail, username, code) {
+  // Try Gmail first (easiest, recommended, no phone verification)
+  const gmailResult = await sendViaGmail(toEmail, username, code);
+  if (gmailResult !== null) return gmailResult;
+
+  // Try Brevo as fallback
+  const brevoResult = await sendViaBrevo(toEmail, username, code);
+  if (brevoResult !== null) return brevoResult;
+
+  // Try Resend as last resort
+  const resendResult = await sendViaResend(toEmail, username, code);
+  if (resendResult !== null) return resendResult;
+
+  // No provider configured — show setup instructions (Gmail first = easiest)
+  return {
+    success: false,
+    error: 'Email belum dikonfigurasi di server. PILIH SALAH SATU:\n\n' +
+      'OPSI 1 (RECOMMENDED — Gmail SMTP, paling mudah, NO phone verification):\n' +
+      '1. Aktifkan 2-Factor Auth di Gmail: https://myaccount.google.com/security\n' +
+      '2. Generate App Password: https://myaccount.google.com/apppasswords\n' +
+      '3. Set env var di Vercel:\n' +
+      '   GMAIL_USER=email@gmail.com\n' +
+      '   GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx\n' +
+      '4. Redeploy\n' +
+      'Gratis 500 email/hari, bisa kirim ke siapapun.\n\n' +
+      'OPSI 2 (Brevo — 300 email/hari, butuh verify sender email):\n' +
+      '1. Daftar di https://www.brevo.com\n' +
+      '2. Verify sender di https://app.brevo.com/settings/senders\n' +
+      '3. Set BREVO_API_KEY + BREVO_SENDER_EMAIL\n\n' +
+      'OPSI 3 (Resend — butuh domain sendiri):\n' +
+      '1. Verify domain di https://resend.com/domains\n' +
+      '2. Set RESEND_API_KEY + RESEND_FROM_EMAIL'
+  };
 }
 
 // ============================================================================
