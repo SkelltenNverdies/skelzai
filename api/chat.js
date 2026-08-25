@@ -1,7 +1,7 @@
 // SkelzAI Chat API — Vercel Serverless Function
 // Compatible with Vercel Node.js runtime (>=18, has global fetch)
 // Required env vars (set in Vercel project settings):
-//   QWEN_API_KEY         — for qwen-turbo / qwen-plus / qwen-max
+//   QWEN_API_KEY         — for qwen3-32b-instruct / qwen-plus / qwq-32b / qwen3-max / etc.
 //   GROQ_API_KEY         — for Llama models on Groq
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 //   GEMINI_API_KEY       — optional, for Google Gemini models (free tier)

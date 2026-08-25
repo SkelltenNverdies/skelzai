@@ -66,7 +66,7 @@ const TIER_INFO = {
   },
   skelz_premium: {
     description: 'Unlock semua Skelz premium models',
-    models: ['qwen-max', 'qwen3-max', 'qwen3-235b-a22b', 'qwen3-coder-plus', 'qwen3-next-80b-a3b-instruct', 'qwen3.5-plus', 'qwen3.6-plus', 'qwen3.7-plus', 'qwen-vl-max', 'qwen-vl-plus', 'qwen3-vl-plus', 'qwen3-vl-flash']
+    models: ['qwen3-max', 'qwen3-235b-a22b', 'qwq-32b', 'qwen3-coder-plus', 'qwen3-next-80b-a3b-instruct', 'qwen3.5-plus', 'qwen3.6-plus', 'qwen3.7-plus', 'qwen-vl-max', 'qwen-vl-plus', 'qwen3-vl-plus', 'qwen3-vl-flash']
   },
   all: {
     description: 'Unlock SEMUA model AI premium!',

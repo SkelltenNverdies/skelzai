@@ -55,8 +55,13 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{height:100%}
+    html{scroll-behavior:smooth}
     body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:#1F1E1D;color:#FAF9F5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.015em}
     ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:rgba(217,119,87,.35)}
+    /* Better focus visibility for accessibility */
+    :focus-visible{outline:2px solid rgba(217,119,87,.5);outline-offset:2px;border-radius:6px}
+    /* Modal entrance — smoother fade+scale */
+    .modal-anim{animation:msi .22s cubic-bezier(.34,1.56,.64,1) forwards}
     /* Glass surfaces — subtle, warm dark */
     .glass-s{background:rgba(38,37,36,.92);backdrop-filter:blur(24px) saturate(140%);border:1px solid rgba(255,255,255,.07);box-shadow:0 12px 40px -12px rgba(0,0,0,.5)}
     .glass-i{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06)}
@@ -1101,22 +1106,90 @@
 
   <!-- ABOUT MODAL -->
   <div id="AM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('AM')">
-    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center glow-c"><span class="iconify text-white text-sm" data-icon="mdi:robot-happy-outline"></span></div>
-          <span class="font-serif text-lg font-medium tg-anim glow-anim">SkelzAI</span>
+    <div class="glass-s rounded-3xl p-7 w-full max-w-md mx-4 amsi relative overflow-hidden" onclick="event.stopPropagation()">
+      <!-- Decorative gradient orb (top-right) -->
+      <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-coral-400/30 to-coral-600/0 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -left-12 w-44 h-44 rounded-full bg-gradient-to-tr from-coral-500/20 to-transparent blur-3xl pointer-events-none"></div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-5 relative">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center glow-c afl">
+            <span class="iconify text-white text-lg" data-icon="mdi:robot-happy-outline"></span>
+          </div>
+          <div>
+            <div class="font-serif text-xl font-semibold tg-anim glow-anim leading-none">SkelzAI</div>
+            <div class="text-[10px] text-[#7C7770] mt-1 tracking-wider uppercase">Intelligent Chat Assistant</div>
+          </div>
         </div>
-        <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8]" data-icon="mdi:close"></span></button>
+        <button onclick="closeM('AM')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors text-[#9C9590] hover:text-cream-50">
+          <span class="iconify" data-icon="mdi:close"></span>
+        </button>
       </div>
-      <div class="space-y-3 text-sm text-[#C2BFB8] leading-relaxed">
-        <p class="text-center py-2"><span class="footer-brand font-medium text-sm">SkelzAI v6.1.0 — by Gabriel Arjun Pangestu</span></p>
-        <p><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</p>
-        <p><strong class="text-cream-50">Model:</strong> 50+ AI model — Skelz, Fast Chat, Premium AI, Vision AI, Powerful AI, Image Gen — semua gratis</p>
-        <p><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks, kamera (maks 20MB)</p>
-        <p><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit (Guest 5/Member 12/Premium 25), performance mode, foto profil sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto</p>
-        <p><strong class="text-cream-50">Deskripsi:</strong> Asisten AI multi-model dengan backend Vercel Serverless.</p>
-        <p class="text-[#7C7770] text-xs pt-2">HTML + CSS + JavaScript + Vercel Functions + PWA.</p>
+
+      <!-- Version badge — animated shimmer -->
+      <div class="text-center mb-5 relative">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.1.0</span>
+          <span class="text-[#7C7770] text-xs">·</span>
+          <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
+        </div>
+      </div>
+
+      <!-- Feature grid -->
+      <div class="grid grid-cols-2 gap-2.5 mb-5 relative">
+        <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 hover:bg-white/[0.04] transition-colors">
+          <div class="flex items-center gap-1.5 text-coral-400 mb-1">
+            <span class="iconify text-base" data-icon="mdi:brain"></span>
+            <span class="text-[11px] font-semibold tracking-wide">50+ AI MODELS</span>
+          </div>
+          <div class="text-[10px] text-[#7C7770] leading-relaxed">Skelz, Fast Chat, Premium, Vision, Powerful, Image Gen</div>
+        </div>
+        <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 hover:bg-white/[0.04] transition-colors">
+          <div class="flex items-center gap-1.5 text-coral-400 mb-1">
+            <span class="iconify text-base" data-icon="mdi:cloud-sync-outline"></span>
+            <span class="text-[11px] font-semibold tracking-wide">CROSS-DEVICE</span>
+          </div>
+          <div class="text-[10px] text-[#7C7770] leading-relaxed">Global login, sync chat + foto + settings</div>
+        </div>
+        <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 hover:bg-white/[0.04] transition-colors">
+          <div class="flex items-center gap-1.5 text-coral-400 mb-1">
+            <span class="iconify text-base" data-icon="mdi:ticket-confirmation-outline"></span>
+            <span class="text-[11px] font-semibold tracking-wide">REDEEM CODE</span>
+          </div>
+          <div class="text-[10px] text-[#7C7770] leading-relaxed">Unlock premium models via kode</div>
+        </div>
+        <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 hover:bg-white/[0.04] transition-colors">
+          <div class="flex items-center gap-1.5 text-coral-400 mb-1">
+            <span class="iconify text-base" data-icon="mdi:shield-account-outline"></span>
+            <span class="text-[11px] font-semibold tracking-wide">RANK SYSTEM</span>
+          </div>
+          <div class="text-[10px] text-[#7C7770] leading-relaxed">Guest 5 · Member 12 · Premium 25 /day</div>
+        </div>
+      </div>
+
+      <!-- Info list -->
+      <div class="space-y-2 text-[12px] text-[#C2BFB8] leading-relaxed relative">
+        <div class="flex items-start gap-2">
+          <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:account-star-outline"></span>
+          <div><strong class="text-cream-50">Pencipta:</strong> Gabriel Arjun Pangestu</div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:file-upload-outline"></span>
+          <div><strong class="text-cream-50">Upload:</strong> Foto, PDF, DOCX, file teks, kamera (maks 20MB)</div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:rocket-launch-outline"></span>
+          <div><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit, performance mode, foto profil sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-5 pt-4 border-t border-white/[0.05] relative">
+        <div class="text-center text-[10px] text-[#7C7770] tracking-wide">
+          HTML + CSS + JavaScript + Vercel Functions + PWA
+        </div>
       </div>
     </div>
   </div>
@@ -1469,7 +1542,7 @@
         <button onclick="togSB()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors flex-shrink-0"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:menu"></span></button>
         <div class="flex items-center gap-2 min-w-0">
           <div class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" style="box-shadow:0 0 8px rgba(16,185,129,.5)"></div>
-          <span id="topModel" class="text-sm text-[#C2BFB8] truncate">SkelzAI Turbo</span>
+          <span id="topModel" class="text-sm text-[#C2BFB8] truncate">Skelz Flash</span>
         </div>
         <!-- Rate limit counter — always visible, auto-updates every 60s -->
         <div id="RATE_COUNTER" class="flex items-center gap-1 text-[11px] text-[#7C7770] px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.06] flex-shrink-0 cursor-help" title="Loading..."></div>
@@ -1501,7 +1574,7 @@
         <div class="mb-2">
           <button type="button" id="MSB" onclick="openMP()" class="ms-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm transition-all active:scale-[0.97] group" title="Ganti model AI">
             <span class="iconify text-base text-coral-400 flex-shrink-0" data-icon="mdi:chip"></span>
-            <span class="text-cream-50 font-medium truncate max-w-[180px] sm:max-w-[260px]" id="MSL">SkelzAI Turbo</span>
+            <span class="text-cream-50 font-medium truncate max-w-[180px] sm:max-w-[260px]" id="MSL">Skelz Flash</span>
             <span class="iconify text-xs text-[#7C7770] group-hover:text-coral-400 transition-colors flex-shrink-0" data-icon="mdi:chevron-up"></span>
             <span class="ms-tag text-[10px] px-1.5 py-0.5 rounded-md bg-coral-400/15 text-coral-400 border border-coral-400/20 hidden sm:inline-flex flex-shrink-0">TAP TO CHANGE</span>
           </button>
@@ -1563,9 +1636,9 @@
     */
     var MODELS=[
       /* ===== 1. SkelzAI — 14 models ===== */
-      {id:'qwen-turbo',provider:'qwen',label:'Skelz Turbo',desc:'Cepat & efisien',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen3-32b-instruct',provider:'qwen',label:'Skelz Flash',desc:'32B — Cepat, stabil & hemat token',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwen-plus',provider:'qwen',label:'Skelz Plus',desc:'Seimbang kuat & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'qwen-max',provider:'qwen',label:'Skelz Max',desc:'Paling kuat & akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwq-32b',provider:'qwen',label:'Skelz Reasoning',desc:'QwQ 32B — Reasoning + logika tingkat lanjut',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Skelz 3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
@@ -2933,15 +3006,31 @@
               localStorage.setItem('sk_caveman_level',cavemanLevel);
               updateCavemanUI();
             }
-            // Load profile photo from server (sync across devices)
+            // Profile photo sync logic — IMPORTANT FIX:
+            // - If server has photo → download it (cross-device sync)
+            // - If server has NO photo but local has → UPLOAD local to server (preserve user's photo)
+            // - If neither has photo → do nothing (no photo)
+            var localPhoto=localStorage.getItem('sk_photo');
             if(d.settings.profilePhoto){
               localStorage.setItem('sk_photo',d.settings.profilePhoto);
               updateProfilePhoto();
+            }else if(localPhoto){
+              // Local has photo, server doesn't → push local to server
+              // (don't clear local; user may have set it on this device)
+              setTimeout(function(){syncUserData();},300);
             }else{
-              // No photo on server — clear local photo
-              localStorage.removeItem('sk_photo');
+              // Neither has photo — leave empty (no change needed)
               updateProfilePhoto();
             }
+            // Mark settings as loaded so we know server state is authoritative
+            window._settingsLoaded=true;
+          }else{
+            // New user (no settings yet on server) — preserve local state, sync it up
+            window._settingsLoaded=false;
+            if(localStorage.getItem('sk_photo')){
+              setTimeout(function(){syncUserData();},300);
+            }
+            updateProfilePhoto();
           }
           // CRITICAL: After loading user data, reload redeem status from server.
           // Redeem codes are stored in DB2 (separate from auth DB1), so we MUST
@@ -3119,7 +3208,7 @@
         redeemedCodes=[];
         updateProfilePhoto();
         updateAuthUI();
-        // Reset to first model (SkelzAI Turbo)
+        // Reset to first model (Skelz Flash)
         selModel=MODELS[0];
         setModelLabel();
         save();
@@ -3543,7 +3632,7 @@
         d.innerHTML='<div class="flex justify-end"><div class="max-w-[85%] md:max-w-[75%]"><div class="bg-white/[0.04] rounded-2xl px-4 py-3 msg-pad">'+attHTML+'<p class="text-sm text-cream-50 leading-relaxed whitespace-pre-wrap break-words">'+esc(content)+'</p></div><div class="ma flex justify-end mt-1.5 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button></div></div></div>';
       } else {
         // AI message: no bubble, just text with subtle avatar (Claude.ai style)
-        var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke SkelzAI Turbo</div>':'';
+        var fbNote=isFb?'<div class="fb-note"><span class="iconify text-[10px]" data-icon="mdi:swap-horizontal"></span>Auto-fallback ke Skelz Flash</div>':'';
         d.innerHTML='<div class="flex gap-3">'+fbNote+'<div class="msg-av w-7 h-7 rounded-lg bg-gradient-to-br from-coral-400/15 to-coral-500/8 border border-coral-400/15 flex items-center justify-center flex-shrink-0 mt-0.5"><span class="iconify text-coral-400 text-sm" data-icon="mdi:robot-happy-outline"></span></div><div class="flex-1 min-w-0"><div class="md text-[15px] text-[#E5E3DA] leading-relaxed">'+parseMD(content)+'</div><div class="ma flex mt-2 gap-0.5"><button onclick="cpMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Salin"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:content-copy"></span></button><button onclick="speakMsg('+idx+',this)" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Dengarkan (TTS)"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:volume-high"></span></button><button onclick="toast(\'Terima kasih!\',\'success\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Bagus"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-up-outline"></span></button><button onclick="toast(\'Feedback dicatat\')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Kurang"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:thumb-down-outline"></span></button><button onclick="regenMsg('+idx+')" class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/[0.03] transition-colors" title="Regenerasi"><span class="iconify text-[#7C7770] text-xs" data-icon="mdi:refresh"></span></button></div></div></div>';
       }
       c.appendChild(d);
@@ -3853,7 +3942,7 @@
       });
     }
 
-    /* ===== SMART FALLBACK — Groq/Gemini error -> SkelzAI Turbo =====
+    /* ===== SMART FALLBACK — Groq/Gemini error -> Skelz Flash =====
        Only auto-fallback AFTER multiple consecutive failures from the SAME model.
        First failure: just show the error (user might be testing the model).
        This prevents the "always auto-switch on first try" complaint where
@@ -3879,12 +3968,12 @@
             // First failure — show error, don't switch. User might just be testing.
             throw err;
           }
-          // 2nd consecutive failure → auto-fallback to SkelzAI Turbo
+          // 2nd consecutive failure → auto-fallback to Skelz Flash
           var savedModel=selModel;
           selModel=MODELS[0];
           setModelLabel();
           var reason=msg.indexOf('413')!==-1||msg.indexOf('token limit')!==-1?'Token limit':msg.indexOf('quota')!==-1?'Quota exceeded':'Rate limit';
-          toast(reason+' (2x) — auto-switch ke SkelzAI Turbo','warning');
+          toast(reason+' (2x) — auto-switch ke Skelz Flash','warning');
           return callAPIStream(userMsg, null, true).then(function(result){
             selModel=savedModel;setModelLabel();
             return result;
@@ -3906,9 +3995,9 @@
       if(isAuth){
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:key-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">API Key Tidak Valid</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Untuk Gemini, dapatkan API key gratis di aistudio.google.com/app/apikey (format: AIza...).</p></div></div></div>';
       }else if(isTPM){
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:clock-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">Token Limit Tercapai</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Free tier Groq punya batas token per menit. Tunggu 1 menit atau pilih model lain (SkelzAI Turbo).</p></div></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:clock-alert-outline"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">Token Limit Tercapai</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Free tier Groq punya batas token per menit. Tunggu 1 menit atau pilih model lain (Skelz Flash).</p></div></div></div>';
       }else if(isRL||isTO){
-        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Sistem otomatis beralih ke SkelzAI Turbo.</p></div></div></div>';
+        d.innerHTML='<div class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-yellow-400 text-xs" data-icon="mdi:swap-horizontal"></span></div><div class="flex-1 min-w-0"><div class="wb"><p class="text-sm text-yellow-300 mb-1 font-medium">'+(isRL?'Batas Penggunaan Tercapai':'Server Timeout')+'</p><p class="text-xs text-yellow-400/60 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Sistem otomatis beralih ke Skelz Flash.</p></div></div></div>';
       }else{
         d.innerHTML='<div class="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-1"><span class="iconify text-red-400 text-xs" data-icon="mdi:alert-circle-outline"></span></div><div class="flex-1 min-w-0"><div class="eb"><p class="text-sm text-red-300 mb-1 font-medium">Terjadi Kesalahan</p><p class="text-xs text-red-400/70 break-words">'+esc(msg)+'</p><p class="text-[10px] text-[#7C7770] mt-2">Tip: Coba ganti model lain.</p></div></div></div>';
       }
