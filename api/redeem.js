@@ -54,19 +54,19 @@ const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 30 chars
 const TIER_INFO = {
   premium: {
     description: 'Unlock semua Premium AI models',
-    models: ['nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-nano-30b-a3b:free', 'nvidia/nemotron-nano-9b-v2:free', 'tencent/hy3:free', 'cohere/north-mini-code:free', 'poolside/laguna-m.1:free', 'poolside/laguna-xs-2.1:free']
+    models: ['meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-coder-32b-instruct:free']
   },
   vision: {
     description: 'Unlock semua Vision AI models (analisis foto)',
-    models: ['nvidia/nemotron-nano-12b-v2-vl:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'gpt-4o-mini', 'meta/llama-3.2-11b-vision-instruct', 'meta/llama-3.2-90b-vision-instruct', 'nvidia/llama-3.1-nemotron-nano-vl-8b-v1']
+    models: ['gpt-4o-mini', 'meta/llama-3.2-90b-vision-instruct', 'qwen-vl-max']
   },
   powerful: {
     description: 'Unlock semua Powerful AI models',
-    models: ['minimaxai/minimax-m3', 'z-ai/glm-5.2', 'mistralai/ministral-14b-instruct-2512', 'stockmark/stockmark-2-100b-instruct', 'nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct', 'coding-glm-4.7-free', 'coding-minimax-m3-free']
+    models: ['meta/llama-3.3-70b-instruct', 'qwen/qwen2.5-coder-32b-instruct', 'deepseek-ai/deepseek-r1']
   },
   skelz_premium: {
     description: 'Unlock semua Skelz premium models',
-    models: ['qwen3-max', 'qwen3-235b-a22b', 'qwq-32b', 'qwen3-coder-plus', 'qwen3-next-80b-a3b-instruct', 'qwen3.5-plus', 'qwen3.6-plus', 'qwen3.7-plus', 'qwen-vl-max', 'qwen-vl-plus', 'qwen3-vl-plus', 'qwen3-vl-flash']
+    models: ['qwen3-max', 'qwen3-235b-a22b', 'qwq-plus', 'qwen3-coder-plus', 'qwen3-next-80b-a3b-instruct', 'qwen3.5-plus', 'qwen3.6-plus', 'qwen3.7-plus', 'qwen-vl-max', 'qwen-vl-plus', 'qwen3-vl-plus', 'qwen3-vl-flash']
   },
   all: {
     description: 'Unlock SEMUA model AI premium!',

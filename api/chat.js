@@ -1,7 +1,7 @@
 // SkelzAI Chat API — Vercel Serverless Function
 // Compatible with Vercel Node.js runtime (>=18, has global fetch)
 // Required env vars (set in Vercel project settings):
-//   QWEN_API_KEY         — for qwen3-32b-instruct / qwen-plus / qwq-32b / qwen3-max / etc.
+//   QWEN_API_KEY         — for qwen-plus / qwq-plus / qwen3-max / qwen3-coder-plus / qwen-vl-* etc.
 //   GROQ_API_KEY         — for Llama models on Groq
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 //   GEMINI_API_KEY       — optional, for Google Gemini models (free tier)
@@ -418,7 +418,7 @@ const PROVIDERS = {
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
     // System prompt alone is ~400 tokens, so max_tokens must be well under 4096 - input
-    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'upstage/solar-10.7b-instruct'],
+    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'meta/llama-3.1-8b-instruct', 'google/gemma-2-9b-it', 'mistralai/mistral-nemo-12b-instruct'],
     // Smallest max_tokens for 4096 context models (4096 - 2000 input - 96 buffer = ~2000)
     smallContextMaxTokens: 2000,
     buildRequest(apiKey, model, messages) {
