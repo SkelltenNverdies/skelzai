@@ -1147,7 +1147,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.7.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.9.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1699,38 +1699,38 @@
        5. Powerful AI  — Most powerful models (MoE, large params, coding)
     */
     var MODELS=[
-      /* ===== 1. SkelzAI — 12 models =====
-         DEFAULT FREE MODEL = morph-v3-large (works out-of-the-box with embedded key).
-         Qwen models require user to set QWEN_KEYS env var (free at alibabacloud.com).
-         qwen-plus removed per user request (key expired). */
-      {id:'morph-v3-large',provider:'morph',label:'Skelz Plus',desc:'Default — Berfungsi tanpa setup API key',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'morph-v3-fast',provider:'morph',label:'Skelz Fast',desc:'Morph v3 Fast — Super cepat & hemat',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'qwq-plus',provider:'qwen',label:'Qwen Reasoning',desc:'QwQ Plus — Reasoning + logika (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-max',provider:'qwen',label:'Qwen 3 Max',desc:'Qwen 3 Max, paling cerdas (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-235b-a22b',provider:'qwen',label:'Qwen 3 235B',desc:'MoE 235B, super kuat (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-coder-plus',provider:'qwen',label:'Qwen Coder+',desc:'Khusus coding (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Qwen Next 80B',desc:'MoE 80B (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.5-plus',provider:'qwen',label:'Qwen 3.5 Plus',desc:'Generasi terbaru (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.6-plus',provider:'qwen',label:'Qwen 3.6 Plus',desc:'Stabil & cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.7-plus',provider:'qwen',label:'Qwen 3.7 Plus',desc:'Terbaru (butuh QWEN_KEYS)',tag:'Qwen',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen-vl-max',provider:'qwen',label:'Qwen Vision Max',desc:'Analisis foto (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen-vl-plus',provider:'qwen',label:'Qwen Vision Plus',desc:'Analisis foto (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-plus',provider:'qwen',label:'Qwen 3 VL Plus',desc:'Skelz 3 Vision (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
-      {id:'qwen3-vl-flash',provider:'qwen',label:'Qwen 3 VL Flash',desc:'Skelz 3 Vision cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      /* ===== 1. SkelzAI — 14 models =====
+         All SkelzAI models use Qwen (DashScope) provider under the hood, but
+         labeled as "Skelz" in UI for branding. User must set QWEN_KEYS env var.
+         Get free API key at https://bailian.console.aliyun.com (Alibaba Cloud DashScope).
 
-      /* ===== 2. Fast Chat — 7 models (Groq + Cloudflare) =====
-         Groq models — replaced erroring llama-3.3-70b-versatile with working alternatives.
-         Per user request: any Groq model that 404s must be replaced with a working Groq model.
-         Groq's free tier includes: compound-beta (newest), openai/gpt-oss-20b, qwen models,
-         moonshotai/kimi-k2-instruct, deepseek-r1-distill variants.
-         Requires GROQ_API_KEYS env var (free at console.groq.com). */
+         DEFAULT FREE MODELS (paling reliable, long-term stable):
+         - Skelz Plus  → qwen-max           (flagship Qwen, stabil sejak 2024)
+         - Skelz Fast  → qwen2.5-7b-instruct (cepat, ringan, 128K context, stabil)
+         Hindari qwen-plus & qwen-turbo (sering bermasalah). */
+      {id:'qwen-max',provider:'qwen',label:'Skelz Plus',desc:'Skelz — Flagship, paling stabil & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen2.5-7b-instruct',provider:'qwen',label:'Skelz Fast',desc:'Skelz — Super cepat, ringan, 128K context',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwq-plus',provider:'qwen',label:'Skelz Reasoning',desc:'Skelz — Reasoning + logika tingkat lanjut',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Skelz 3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'Skelz MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Skelz — Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen2.5-72b-instruct',provider:'qwen',label:'Skelz 2.5 72B',desc:'Skelz — 72B powerful, 128K context',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen2.5-coder-32b-instruct',provider:'qwen',label:'Skelz Coder 32B',desc:'Skelz — Coding 32B, stabil',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Skelz Next 80B',desc:'Skelz MoE 80B, seimbang',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.5-plus',provider:'qwen',label:'Skelz 3.5 Plus',desc:'Skelz — Generasi terbaru, cepat & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Skelz 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Skelz 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Skelz Vision — Analisis foto, paling akurat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen-vl-plus',provider:'qwen',label:'Skelz Vision Plus',desc:'Skelz Vision — Analisis foto, seimbang',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-plus',provider:'qwen',label:'Skelz 3 VL Plus',desc:'Skelz 3 Vision, generasi baru',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+      {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
+
+      /* ===== 2. Fast Chat — 4 models (Groq + Cloudflare) =====
+         Per user request: Groq Fast Chat hanya Compound Beta + GPT-OSS series.
+         Semua Groq model lain dihapus (qwen, kimi, deepseek, llama). */
       {id:'compound-beta',provider:'groq',label:'Compound Beta',desc:'Groq flagship — Tool use + reasoning, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat & stabil',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'qwen/qwen3-32b',provider:'groq',label:'Qwen 3 32B',desc:'Qwen 3, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'qwen/qwen2.5-coder-32b-instruct',provider:'groq',label:'Qwen Coder 32B',desc:'Khusus coding, 32B',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'moonshotai/kimi-k2-instruct',provider:'groq',label:'Kimi K2 Instruct',desc:'Moonshot Kimi K2, powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'deepseek-r1-distill-llama-70b',provider:'groq',label:'DeepSeek R1 70B',desc:'Reasoning 70B distilasi',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'llama-3.1-70b-versatile',provider:'groq',label:'Llama 3.1 70B',desc:'Meta 70B — alternatif stabil',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source 120B — paling powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source 20B — cepat & ringan',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
       /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) ===== */
@@ -1749,9 +1749,7 @@
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini (GitHub)',desc:'OpenAI vision — sedang brownout, mungkin error',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
-      /* ===== 5. Powerful AI — 11 models =====
-         Kimi K2.6 (BluesMinds) removed per user request. */
-      {id:'morph-v3-large',provider:'morph',label:'Morph v3 Large',desc:'Powerful — Berfungsi tanpa setup',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      /* ===== 5. Powerful AI — 11 models ===== */
       {id:'nvidia/nemotron-4-340b-instruct',provider:'nvidia',label:'Nemotron 4 340B',desc:'NVIDIA 340B — paling powerful di NIM',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.3-70b-instruct',provider:'nvidia',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.1-70b-instruct',provider:'nvidia',label:'Llama 3.1 70B',desc:'Meta 70B, versi stabil',tag:'Powerful',vision:false,cat:'Powerful AI'},

@@ -1,9 +1,9 @@
 // SkelzAI Chat API — Vercel Serverless Function
 // Compatible with Vercel Node.js runtime (>=18, has global fetch)
 // Required env vars (set in Vercel project settings):
-//   QWEN_API_KEY         — for qwen-plus / qwq-plus / qwen3-max / qwen3-coder-plus / qwen-vl-* etc.
+//   QWEN_API_KEY         — for qwen-max / qwen2.5-7b-instruct / qwq-plus / qwen3-max etc.
 //                          NOTE: requires user to set QWEN_KEYS env var (free at alibabacloud.com)
-//                          Default model is morph-v3-large (no setup needed) — see MODELS in index.html.
+//                          Default model is qwen-max (Skelz Plus) — most reliable Qwen flagship.
 //   GROQ_API_KEY         — for Llama models on Groq
 //   OPENROUTER_API_KEY   — optional, for NVIDIA Nemotron 3 free models via OpenRouter
 //   GEMINI_API_KEY       — optional, for Google Gemini models (free tier)
@@ -240,6 +240,8 @@ const PROVIDERS = {
       if (model.indexOf('8b') !== -1 && model.indexOf('oss') === -1) return 10;
       // compound-beta can handle more history (30k TPM)
       if (model.indexOf('compound') !== -1) return 10;
+      // GPT-OSS models have 6k TPM — keep history tight
+      if (model.indexOf('oss') !== -1) return 4;
       return 6; // tight-history models
     },
     // Dynamic max_tokens: scales down if input is large, so we never exceed TPM.
