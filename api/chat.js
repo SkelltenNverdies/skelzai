@@ -423,7 +423,7 @@ const PROVIDERS = {
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
     // System prompt alone is ~400 tokens, so max_tokens must be well under 4096 - input
-    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'meta/llama-3.1-8b-instruct', 'google/gemma-2-9b-it', 'mistralai/mistral-nemo-12b-instruct'],
+    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'meta/llama-3.1-8b-instruct', 'meta/llama-3.2-3b-instruct', 'meta/llama-3.2-1b-instruct', 'mistralai/mistral-7b-instruct-v0.3'],
     // Smallest max_tokens for 4096 context models (4096 - 2000 input - 96 buffer = ~2000)
     smallContextMaxTokens: 2000,
     buildRequest(apiKey, model, messages) {
@@ -1581,6 +1581,14 @@ export default async function handler(req, res) {
   if (!response) {
     const errMsg = (lastError && lastError.message) || 'Network error';
     const isTimeout = errMsg.toLowerCase().indexOf('abort') !== -1 || errMsg.toLowerCase().indexOf('timeout') !== -1;
+    // GitHub Models is in retirement brownout (Aug 2026) — endpoint frequently
+    // returns "fetch failed" because the host no longer resolves.
+    // Give a specific actionable error instead of generic "unreachable".
+    if (provider === 'github') {
+      return res.status(503).json({
+        error: 'GitHub Models sedang dalam masa retirement brownout — endpoint tidak stabil. Pakai Nemotron Nano Omni (OpenRouter, free) untuk analisis foto sebagai gantinya. Detail: ' + errMsg
+      });
+    }
     return res.status(504).json({
       error: isTimeout
         ? `${provider} timeout. Coba lagi atau gunakan model lain.`

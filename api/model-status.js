@@ -209,11 +209,13 @@ async function pingModel(providerName, providerConfig, modelId) {
   if (providerConfig.isQwenNative && providerConfig.getKeyPairs) {
     const pairs = providerConfig.getKeyPairs();
     if (pairs.length === 0) {
-      return { status: 'offline', reason: 'No QWEN_KEYS set', code: 'no_key' };
+      // No API key — mark as "no_key" so UI shows "Setup needed" instead of "Offline"
+      return { status: 'no_key', reason: 'QWEN_KEYS belum diset', code: 'no_key' };
     }
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    // Increased to 8s — Qwen's first ping often takes 4-6s
+    const timer = setTimeout(() => controller.abort(), 8000);
     try {
       const requestUrl = `https://${pair.workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions`;
       const body = JSON.stringify({
@@ -257,7 +259,8 @@ async function pingModel(providerName, providerConfig, modelId) {
     } catch (err) {
       clearTimeout(timer);
       const msg = err.message || '';
-      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'offline', reason: 'Timeout (5s)', code: 'timeout' };
+      // Timeout = mark as slow (might still be online), not offline
+      if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) return { status: 'slow', reason: 'Timeout (8s) — coba lagi', code: 'timeout' };
       return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
     }
   }
@@ -270,19 +273,21 @@ async function pingModel(providerName, providerConfig, modelId) {
     if (pairs.length > 0) {
       return { status: 'online', code: 'ok', reason: 'CF token configured' };
     }
-    return { status: 'offline', reason: 'No CF token', code: 'no_key' };
+    return { status: 'no_key', reason: 'CLOUDFLARE_API_TOKENS belum diset', code: 'no_key' };
   }
 
   // Cloudflare multi-key: get key pairs, use first available for ping
   if (providerConfig.isCloudflareNative && providerConfig.getKeyPairs) {
     const pairs = providerConfig.getKeyPairs();
     if (pairs.length === 0) {
-      return { status: 'offline', reason: 'No CLOUDFLARE_API_TOKENS set', code: 'no_key' };
+      // No CF token — mark as "no_key" instead of "offline"
+      return { status: 'no_key', reason: 'CLOUDFLARE_API_TOKENS belum diset', code: 'no_key' };
     }
     // Ping with first key pair
     const pair = pairs[0];
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    // Increased from 5s → 8s for accuracy
+    const timer = setTimeout(() => controller.abort(), 8000);
     try {
       const requestUrl = `${providerConfig.url}/${pair.accountId}/ai/run/${modelId}`;
       const body = JSON.stringify({
@@ -352,13 +357,18 @@ async function pingModel(providerName, providerConfig, modelId) {
   // Standard multi-key path for all other providers
   const keys = getProviderKeys(providerConfig);
   if (keys.length === 0) {
-    return { status: 'offline', reason: 'No API key set', code: 'no_key' };
+    // No API key configured — but model might be working.
+    // Mark as "no_key" so UI can show "Setup needed" instead of misleading "Offline".
+    return { status: 'no_key', reason: 'API key belum diset', code: 'no_key' };
   }
   // Use first key for ping (round-robin would pick random, but ping just needs 1)
   let apiKey = keys[0];
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
+  // Increased timeout from 5s → 8s — many models take 4-7s for first ping
+  // (especially reasoning models like DeepSeek R1, large 70B models, vision models)
+  // 5s caused false "offline" status on actually-working models.
+  const timer = setTimeout(() => controller.abort(), 8000);
   const pingStart = Date.now();
 
   try {
@@ -391,7 +401,8 @@ async function pingModel(providerName, providerConfig, modelId) {
     const pingDuration = Date.now() - pingStart;
 
     if (r.ok) {
-      if (pingDuration > 3000) {
+      if (pingDuration > 5000) {
+        // Slower than 5s — mark as slow but still online (was 3s, too aggressive)
         return { status: 'slow', reason: 'Slow (' + Math.round(pingDuration/1000) + 's)', code: 'slow', duration: pingDuration };
       }
       return { status: 'online', code: 'ok', duration: pingDuration };
@@ -437,7 +448,9 @@ async function pingModel(providerName, providerConfig, modelId) {
     clearTimeout(timer);
     const msg = err.message || '';
     if (msg.indexOf('abort') !== -1 || msg.indexOf('timeout') !== -1) {
-      return { status: 'offline', reason: 'Timeout (5s)', code: 'timeout' };
+      // Timeout doesn't mean model is offline — could be cold start or network.
+      // Mark as "slow" instead of "offline" so user knows to retry.
+      return { status: 'slow', reason: 'Timeout (8s) — coba lagi', code: 'timeout' };
     }
     return { status: 'offline', reason: msg.substring(0, 80), code: 'network' };
   }

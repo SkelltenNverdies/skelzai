@@ -381,6 +381,11 @@
       background:#EF4444;
       box-shadow:0 0 0 2px rgba(239,68,68,0.15);
     }
+    /* no_key status — gray dot, indicates API key not configured (not broken) */
+    .ms-no-key .status-dot{
+      background:#7C7770;
+      box-shadow:0 0 0 2px rgba(124,119,112,0.15);
+    }
     /* Status text label next to dot — elegant, small, muted */
     .mo-status .status-text{
       font-size:9px;
@@ -395,6 +400,7 @@
     .ms-slow .status-text{color:#FCD34D}
     .ms-rate-limited .status-text{color:#FCD34D}
     .ms-offline .status-text{color:#EF4444}
+    .ms-no-key .status-text{color:#7C7770}
     .ms-unknown .status-text{color:#7C7770}
     .ms-checking .status-text{color:#FCD34D}
     /* Slow/rate-limited row tint */
@@ -1141,7 +1147,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.5.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.6.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1686,15 +1692,24 @@
       {id:'qwen3-vl-plus',provider:'qwen',label:'Qwen 3 VL Plus',desc:'Skelz 3 Vision (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
       {id:'qwen3-vl-flash',provider:'qwen',label:'Qwen 3 VL Flash',desc:'Skelz 3 Vision cepat (butuh QWEN_KEYS)',tag:'Qwen',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
 
-      /* ===== 2. Fast Chat — 5 models =====
-         NOTE: Requires user to set GROQ_API_KEYS env var (free at console.groq.com).
-         Cerebras removed — Cloudflare blocks API access from serverless.
-         Nara Router removed — most models return "not available" or timeout. */
+      /* ===== 2. Fast Chat — 6 models (Groq + Cloudflare) =====
+         Groq models verified Aug 2026:
+         - llama-3.3-70b-versatile: ✓ EXISTS
+         - llama-3.1-8b-instant: REMOVED from Groq
+         - meta-llama/llama-4-scout-17b-16e-instruct: REMOVED from Groq
+         - openai/gpt-oss-120b: REMOVED from Groq
+         - openai/gpt-oss-20b: ✓ EXISTS
+         - qwen/qwen3-32b: ✓ EXISTS (new)
+         - qwen/qwen2.5-coder-32b-instruct: ✓ EXISTS
+         - moonshotai/kimi-k2-instruct: ✓ EXISTS
+         - deepseek-r1-distill-llama-70b: ✓ EXISTS
+         Requires GROQ_API_KEYS env var (free at console.groq.com). */
       {id:'llama-3.3-70b-versatile',provider:'groq',label:'Llama 3.3 70B',desc:'Cepat & kuat, untuk semua tugas',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'llama-3.1-8b-instant',provider:'groq',label:'Llama 3.1 8B',desc:'Super instan, hemat token',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'meta-llama/llama-4-scout-17b-16e-instruct',provider:'groq',label:'Llama 4 Scout 17B',desc:'MoE 17B, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
-      {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source, paling kuat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'qwen/qwen3-32b',provider:'groq',label:'Qwen 3 32B',desc:'Qwen 3, cepat & cerdas',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'qwen/qwen2.5-coder-32b-instruct',provider:'groq',label:'Qwen Coder 32B',desc:'Khusus coding, 32B',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'moonshotai/kimi-k2-instruct',provider:'groq',label:'Kimi K2 Instruct',desc:'Moonshot Kimi K2, powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
+      {id:'deepseek-r1-distill-llama-70b',provider:'groq',label:'DeepSeek R1 70B',desc:'Reasoning 70B distilasi',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
       /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) =====
@@ -1711,23 +1726,36 @@
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'dots-studio/dots-3-note-preview:free',provider:'openrouter',label:'Dots3 Note Preview',desc:'Multimodal preview, 512K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 5 models ===== */
+      /* ===== 4. Vision AI — 5 models =====
+         NOTE: gpt-4o-mini (GitHub) is in retirement brownout — may fail.
+         Use Nemotron Nano Omni (OpenRouter, free) as primary vision model instead. */
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
-      {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B (NVIDIA NIM)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini (GitHub)',desc:'OpenAI vision — sedang brownout, mungkin error',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
       /* ===== 5. Powerful AI — 10 models =====
-         Removed Cerebras (Cloudflare blocks), AIHubMix (no_available_channel).
-         Uses Morph (embedded key, works out-of-box) + NVIDIA NIM + Cloudflare. */
+         NVIDIA NIM models verified Aug 2026:
+         - meta/llama-3.3-70b-instruct: ✓ EXISTS
+         - meta/llama-3.1-70b-instruct: ✓ EXISTS
+         - meta/llama-3.1-8b-instruct: ✓ EXISTS
+         - meta/llama-3.2-3b-instruct: ✓ EXISTS (new)
+         - meta/llama-3.2-1b-instruct: ✓ EXISTS (new)
+         - mistralai/mistral-7b-instruct-v0.3: ✓ EXISTS (new)
+         - nvidia/nemotron-4-340b-instruct: ✓ EXISTS (new, 340B powerful!)
+         - nvidia/nemotron-mini-4b-instruct: ✓ EXISTS
+         - qwen/qwen2.5-coder-32b-instruct: ✗ 410 GONE (removed)
+         - deepseek-ai/deepseek-r1: ✗ 404 (removed from NVIDIA NIM)
+         - mistralai/mistral-nemo-12b-instruct: ✗ 404 (removed) */
       {id:'morph-v3-large',provider:'morph',label:'Morph v3 Large',desc:'Powerful — Berfungsi tanpa setup',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'nvidia/nemotron-4-340b-instruct',provider:'nvidia',label:'Nemotron 4 340B',desc:'NVIDIA 340B — paling powerful di NIM',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.3-70b-instruct',provider:'nvidia',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'meta/llama-3.1-70b-instruct',provider:'nvidia',label:'Llama 3.1 70B',desc:'Meta 70B, versi stabil',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'meta/llama-3.1-8b-instruct',provider:'nvidia',label:'Llama 3.1 8B',desc:'Meta 8B — Cepat & ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'qwen/qwen2.5-coder-32b-instruct',provider:'nvidia',label:'Qwen Coder 32B',desc:'Khusus coding, 32B powerful',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'deepseek-ai/deepseek-r1',provider:'nvidia',label:'DeepSeek R1',desc:'Reasoning, super cerdas',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'mistralai/mistral-nemo-12b-instruct',provider:'nvidia',label:'Mistral Nemo 12B',desc:'Mistral 12B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'meta/llama-3.2-3b-instruct',provider:'nvidia',label:'Llama 3.2 3B',desc:'Meta 3B — Super ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'meta/llama-3.2-1b-instruct',provider:'nvidia',label:'Llama 3.2 1B',desc:'Meta 1B — Instan, hemat token',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'mistralai/mistral-7b-instruct-v0.3',provider:'nvidia',label:'Mistral 7B v0.3',desc:'Mistral 7B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
@@ -2121,17 +2149,19 @@
         _modelStatusCache=d.results||{};
         _modelStatusCacheTime=Date.now();
         applyModelStatus(_modelStatusCache);
-        var online=0,offline=0,rateLimited=0,slow=0;
+        var online=0,offline=0,rateLimited=0,slow=0,noKey=0;
         for(var k in _modelStatusCache){
           var st=_modelStatusCache[k].status;
           if(st==='online')online++;
           else if(st==='offline')offline++;
           else if(st==='rate_limited')rateLimited++;
           else if(st==='slow')slow++;
+          else if(st==='no_key')noKey++;
         }
         var msg=online+' online';
         if(slow>0)msg+=', '+slow+' slow';
         if(rateLimited>0)msg+=', '+rateLimited+' limited';
+        if(noKey>0)msg+=', '+noKey+' butuh setup';
         if(offline>0)msg+=', '+offline+' offline';
         toast('Status: '+msg,(slow>0||rateLimited>0)?'warning':'success');
       }catch(e){
@@ -2166,6 +2196,12 @@
           badge.title='Rate limited — '+(s.reason||s.code||'tunggu sebentar')+'. Model jalan, coba lagi nanti.';
           if(txt)txt.textContent='Limited';
           if(row)row.classList.add('ms-row-rate-limited');
+        }else if(s.status==='no_key'){
+          // API key not configured — model MIGHT work but admin hasn't set up key.
+          // Show as "Setup" (gray) instead of "Offline" (red) so users know it's not broken.
+          badge.className='mo-status ms-no-key flex-shrink-0';
+          badge.title='Setup needed — '+(s.reason||'API key belum diset')+'. Set env var di Vercel.';
+          if(txt)txt.textContent='Setup';
         }else if(s.status==='offline'){
           badge.className='mo-status ms-offline flex-shrink-0';
           badge.title='Offline — '+(s.reason||s.code||'tidak respon');
