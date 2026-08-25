@@ -263,6 +263,9 @@ const PROVIDERS = {
     fallbackKey: null,
     url: 'https://openrouter.ai/api/v1/chat/completions',
     timeout: 55000,
+    // Some free models on OpenRouter have low max_tokens caps. Use a safer
+    // default to avoid 400 "max_tokens too high" errors. The auto-continue
+    // loop will keep generating if the response is truncated.
     buildRequest(apiKey, model, messages) {
       return {
         method: 'POST',
@@ -276,7 +279,7 @@ const PROVIDERS = {
           model,
           messages,
           stream: true,
-          max_tokens: 16384,
+          max_tokens: 8192, // Lowered from 16384 — safer for free tier
           temperature: 0.7,
           top_p: 0.9
         })
@@ -1627,11 +1630,28 @@ export default async function handler(req, res) {
     });
   }
 
-  // OpenRouter 404 "Provider returned error" — the upstream model was removed
-  // or is temporarily unavailable. Suggest trying another model.
+  // OpenRouter 404 — model was removed from OpenRouter's catalog.
+  // Common cause: free models rotate frequently. Tell user to pick another.
   if (provider === 'openrouter' && response.status === 404) {
     return res.status(404).json({
-      error: 'Model ini sedang tidak tersedia di provider (NVIDIA/openrouter). Coba model lain di kategori yang sama, atau klik "Cek Status" di model selector untuk lihat model mana yang online. Detail: ' + errDetail
+      error: 'Model ini sudah tidak tersedia di OpenRouter (free model rotate sering). Pilih model lain — cek daftar model terbaru di https://openrouter.ai/models. Detail: ' + errDetail
+    });
+  }
+
+  // OpenRouter 401/403 — API key missing, invalid, or no credits.
+  // Free models on OpenRouter require an active API key (free signup OK),
+  // but some require purchased credits. Give clear actionable error.
+  if (provider === 'openrouter' && (response.status === 401 || response.status === 403)) {
+    return res.status(response.status).json({
+      error: 'OpenRouter API key tidak valid atau belum diset. Setup: 1) Daftar gratis di https://openrouter.ai 2) Generate API key di https://openrouter.ai/keys 3) Set env var OPENROUTER_API_KEY=sk-or-... di Vercel 4) Redeploy. Beberapa free model butuh min $1 credit di akun. Detail: ' + errDetail
+    });
+  }
+
+  // OpenRouter 429 — rate limited (free tier has tight RPM limits)
+  if (provider === 'openrouter' && response.status === 429) {
+    return res.status(429).json({
+      error: 'OpenRouter rate limit tercapai (free tier). Tunggu 1 menit atau coba model lain. Detail: ' + errDetail,
+      fallback: true
     });
   }
 

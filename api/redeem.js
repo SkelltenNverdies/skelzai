@@ -54,7 +54,7 @@ const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 30 chars
 const TIER_INFO = {
   premium: {
     description: 'Unlock semua Premium AI models',
-    models: ['meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-coder-32b-instruct:free']
+    models: ['nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free']
   },
   vision: {
     description: 'Unlock semua Vision AI models (analisis foto)',

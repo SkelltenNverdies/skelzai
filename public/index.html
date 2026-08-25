@@ -1141,7 +1141,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.3.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.4.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1693,26 +1693,28 @@
       {id:'mistral-medium-3-5',provider:'nara',label:'Nara Mistral Medium',desc:'NaraRouter — Hemat token, cepat',tag:'Nara',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
-      /* ===== 3. Premium AI — 7 models (OpenRouter free tier — stable models only) ===== */
-      /* REMOVED (broken/EOL):
-         - nvidia/nemotron-nano-9b-v2:free → "No endpoints found"
-         - nvidia/nemotron-3-super-120b-a12b:free → frequently offline
-         - nvidia/nemotron-3-nano-30b-a3b:free → frequently offline
-         - nvidia/nemotron-nano-12b-v2-vl:free → moved to Vision AI replacement
-         - tencent/hy3:free → unreliable
-         - cohere/north-mini-code:free → removed by OpenRouter
-         - poolside/laguna-m.1:free, laguna-xs-2.1:free → removed by OpenRouter
-         REPLACED with stable, long-term free OpenRouter models. */
-      {id:'meta-llama/llama-3.3-70b-instruct:free',provider:'openrouter',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil (free)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
-      {id:'qwen/qwen-2.5-72b-instruct:free',provider:'openrouter',label:'Qwen 2.5 72B',desc:'Qwen 72B — Cerdas, multibahasa (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'deepseek/deepseek-r1:free',provider:'openrouter',label:'DeepSeek R1',desc:'Reasoning model, super cerdas (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'deepseek/deepseek-r1-distill-llama-70b:free',provider:'openrouter',label:'DeepSeek R1 70B',desc:'Reasoning 70B, distilasi Llama (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'google/gemma-2-9b-it:free',provider:'openrouter',label:'Gemma 2 9B',desc:'Google 9B — Cepat & ringan (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'qwen/qwen-2.5-coder-32b-instruct:free',provider:'openrouter',label:'Qwen Coder 32B',desc:'Khusus coding, 32B (free)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      /* ===== 3. Premium AI — 8 models (OpenRouter free tier — VERIFIED via live API) =====
+         All model IDs below are confirmed to exist on OpenRouter's /models
+         endpoint as of 2026-08-25. Free models rotate frequently — if one
+         stops working, check https://openrouter.ai/api/v1/models for current list. */
+      {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B — Paling powerful (free, 1M ctx)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      {id:'nvidia/nemotron-3.5-lightning:free',provider:'openrouter',label:'Nemotron 3.5 Lightning',desc:'Cepat & stabil, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'google/gemma-4-31b-it:free',provider:'openrouter',label:'Gemma 4 31B',desc:'Google 31B — Terbaru & cerdas (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'google/gemma-4-26b-a4b-it:free',provider:'openrouter',label:'Gemma 4 26B MoE',desc:'Google MoE 26B, hemat token (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'thinkingmachines/inkling-small:free',provider:'openrouter',label:'Inkling Small',desc:'Thinking Machines, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context (free)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
+      {id:'poolside/laguna-s-2.1:free',provider:'openrouter',label:'Laguna S 2.1',desc:'Coding specialist (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'tencent-hy3',provider:'nara',label:'Nara Hy3',desc:'NaraRouter — Multibahasa, 262K context',tag:'Nara',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 5 models ===== */
-      /* REMOVED: nvidia/nemotron-nano-12b-v2-vl:free (OpenRouter — no endpoints) */
+      /* ===== 4. Vision AI — 6 models ===== */
+      /* OpenRouter free vision models verified available:
+         - nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free (vision + reasoning, 256K)
+         - google/gemma-4-26b-a4b-it:free (vision capable, 262K)
+         - google/gemma-4-31b-it:free (vision capable, 262K)
+         - dots-studio/dots-3-note-preview:free (vision, 512K)
+         - thinkingmachines/inkling-small:free (vision, 1M ctx) */
+      {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini',desc:'OpenAI, cepat & vision',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
