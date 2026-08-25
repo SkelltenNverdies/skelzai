@@ -740,6 +740,100 @@ export default async function handler(req, res) {
       });
     }
 
+    // === CHANGE EMAIL (logged-in user) ===
+    // User provides: token, newEmail, password (for verification)
+    // Server verifies session + password, then updates email
+    if (action === 'change_email') {
+      if (!token) return res.status(401).json({ error: 'Token required' });
+      const newEmail = (body.newEmail || '').trim().toLowerCase();
+      const password = body.password || '';
+      if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        return res.status(400).json({ error: 'Format email baru tidak valid' });
+      }
+      if (!password || password.length < 4) {
+        return res.status(400).json({ error: 'Password wajib diisi untuk verifikasi' });
+      }
+
+      const sessionData = await kvGet(`session:${token}`);
+      if (!sessionData || typeof sessionData !== 'object' || sessionData.expires < Date.now()) {
+        return res.status(401).json({ error: 'Session expired. Login ulang.' });
+      }
+      const userKey = `user:${sessionData.username.toLowerCase()}`;
+      const userData = await kvGet(userKey);
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      // Verify password
+      if (userData.passwordHash !== hashPassword(password)) {
+        return res.status(401).json({ error: 'Password salah. Untuk keamanan, masukkan password kamu.' });
+      }
+      // Update email
+      userData.email = newEmail;
+      await kvSet(userKey, userData);
+      return res.status(200).json({
+        success: true,
+        email: newEmail,
+        message: 'Email berhasil diubah ke ' + newEmail
+      });
+    }
+
+    // === CHANGE PASSWORD (logged-in user) ===
+    // User provides: token, oldPassword, newPassword
+    if (action === 'change_password') {
+      if (!token) return res.status(401).json({ error: 'Token required' });
+      const oldPassword = body.oldPassword || '';
+      const newPassword = body.newPassword || '';
+      if (!oldPassword || oldPassword.length < 4) {
+        return res.status(400).json({ error: 'Password lama wajib diisi' });
+      }
+      if (!newPassword || newPassword.length < 4) {
+        return res.status(400).json({ error: 'Password baru minimal 4 karakter' });
+      }
+
+      const sessionData = await kvGet(`session:${token}`);
+      if (!sessionData || typeof sessionData !== 'object' || sessionData.expires < Date.now()) {
+        return res.status(401).json({ error: 'Session expired. Login ulang.' });
+      }
+      const userKey = `user:${sessionData.username.toLowerCase()}`;
+      const userData = await kvGet(userKey);
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      // Verify old password
+      if (userData.passwordHash !== hashPassword(oldPassword)) {
+        return res.status(401).json({ error: 'Password lama salah' });
+      }
+      // Set new password
+      userData.passwordHash = hashPassword(newPassword);
+      await kvSet(userKey, userData);
+      // Note: we DON'T invalidate sessions here — user stays logged in
+      return res.status(200).json({
+        success: true,
+        message: 'Password berhasil diubah'
+      });
+    }
+
+    // === GET ACCOUNT INFO (logged-in user) ===
+    // Returns: username, email, created, plan
+    if (action === 'account_info') {
+      if (!token) return res.status(401).json({ error: 'Token required' });
+      const sessionData = await kvGet(`session:${token}`);
+      if (!sessionData || typeof sessionData !== 'object' || sessionData.expires < Date.now()) {
+        return res.status(401).json({ error: 'Session expired' });
+      }
+      const userKey = `user:${sessionData.username.toLowerCase()}`;
+      const userData = await kvGet(userKey);
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      return res.status(200).json({
+        success: true,
+        username: userData.username,
+        email: userData.email || '',
+        created: userData.created || 0
+      });
+    }
+
     // === LEGACY: FORGOT PASSWORD via recovery code ===
     // Kept for backward compat — old clients still call this action.
     // New clients use send_reset_code + reset_password instead.

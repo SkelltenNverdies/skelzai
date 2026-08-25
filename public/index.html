@@ -1092,8 +1092,7 @@
         <span class="iconify text-[#7C7770] text-base" id="PC" data-icon="mdi:chevron-up"></span>
       </div>
       <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto">
-        <button id="PM_CHANGE_NAME" onclick="openNM()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-edit-outline"></span>Ubah Nama</button>
-        <button id="PM_CHANGE_PHOTO" onclick="handleGuestPhotoAttempt()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:camera-outline"></span>Ubah Foto Profil</button>
+        <button id="PM_ACCT_SETTINGS" onclick="openAcct()" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-cog-outline"></span>Pengaturan Akun</button>
         <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
         <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
         <button onclick="openRedeem()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-coral-400 hover:bg-coral-400/10 transition-colors"><span class="iconify text-base" data-icon="mdi:ticket-outline"></span>Redeem Code</button>
@@ -1147,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.12.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.13.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1237,6 +1236,77 @@
     </div>
   </div>
 
+  <!-- ACCOUNT SETTINGS MODAL -->
+  <div id="ACCT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('ACCT')">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-md mx-4 amsi max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/15 flex items-center justify-center"><span class="iconify text-coral-400 text-sm" data-icon="mdi:account-cog-outline"></span></div>
+          <h3 class="text-lg font-semibold text-cream-50">Pengaturan Akun</h3>
+        </div>
+        <button onclick="closeM('ACCT')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors"><span class="iconify text-[#9C9590]" data-icon="mdi:close"></span></button>
+      </div>
+
+      <!-- Account info card -->
+      <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="ACCT_AVATAR"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:account"></span></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-cream-50 truncate" id="ACCT_USERNAME">-</div>
+            <div class="text-[11px] text-[#7C7770] truncate" id="ACCT_EMAIL">-</div>
+            <div class="text-[10px] text-coral-400 mt-0.5" id="ACCT_PLAN">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Photo -->
+      <div class="mb-4">
+        <label class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium mb-2 block">Foto Profil</label>
+        <button onclick="document.getElementById('PROFILE_PHOTO_INPUT').click()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-coral-400/5 hover:border-coral-400/20 transition-all text-sm text-[#C2BFB8]">
+          <span class="iconify text-base text-coral-400" data-icon="mdi:camera-outline"></span>
+          <span>Ganti Foto Profil</span>
+        </button>
+      </div>
+
+      <!-- Section: Display Name -->
+      <div class="mb-4">
+        <label class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium mb-2 block">Nama Tampilan</label>
+        <div class="flex gap-2">
+          <input id="ACCT_NAME" type="text" maxlength="30" placeholder="Nama tampilan..." class="flex-1 bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+          <button onclick="saveAcctName()" class="px-4 py-2.5 rounded-xl text-sm bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors flex-shrink-0">Simpan</button>
+        </div>
+      </div>
+
+      <!-- Section: Change Email -->
+      <div class="mb-4 pt-3 border-t border-white/[0.05]">
+        <label class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium mb-2 block">Ganti Email</label>
+        <input id="ACCT_NEW_EMAIL" type="email" maxlength="100" placeholder="Email baru..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
+        <input id="ACCT_EMAIL_PASS" type="password" maxlength="50" placeholder="Password kamu (untuk verifikasi)..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
+        <div id="ACCT_EMAIL_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mb-2"></div>
+        <button onclick="saveAcctEmail()" class="w-full px-4 py-2.5 rounded-xl text-sm bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors">Ganti Email</button>
+      </div>
+
+      <!-- Section: Change Password -->
+      <div class="mb-4 pt-3 border-t border-white/[0.05]">
+        <label class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium mb-2 block">Ganti Password</label>
+        <input id="ACCT_OLD_PASS" type="password" maxlength="50" placeholder="Password lama..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
+        <input id="ACCT_NEW_PASS" type="password" maxlength="50" placeholder="Password baru (min 4 karakter)..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
+        <div id="ACCT_PASS_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mb-2"></div>
+        <button onclick="saveAcctPassword()" class="w-full px-4 py-2.5 rounded-xl text-sm bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors">Ganti Password</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="pt-3 border-t border-white/[0.05]">
+        <label class="text-[10px] uppercase tracking-[0.15em] text-red-400/60 font-medium mb-2 block">Danger Zone</label>
+        <button onclick="closeM('ACCT');openForgot();setTimeout(function(){setForgotMode('delete')},300)" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-all text-sm text-red-400/80 hover:text-red-400">
+          <span class="iconify text-base" data-icon="mdi:trash-can-outline"></span>
+          <span>Hapus Akun Permanen</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- CONFIRM MODAL -->
   <div id="CM" class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('CM')">
     <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi text-center" onclick="event.stopPropagation()">
@@ -1310,7 +1380,7 @@
   </div>
 
   <!-- FORGOT PASSWORD MODAL — Email-based reset -->
-  <div id="FORGOT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="closeM('FORGOT')">
+  <div id="FORGOT" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeM('FORGOT')">
     <div class="glass-s rounded-2xl p-7 w-full max-w-sm mx-4 amsi" onclick="event.stopPropagation()">
       <div class="text-center mb-5">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:email-lock-outline"></span></div>
@@ -1971,7 +2041,105 @@
       else{m.classList.add('hidden');c.setAttribute('data-icon','mdi:chevron-up')}
     }
     function closePM(){if(!pmOpen)return;pmOpen=false;document.getElementById('PM').classList.add('hidden');document.getElementById('PC').setAttribute('data-icon','mdi:chevron-up')}
-    // Guest restriction: name change requires login
+    // Open Account Settings — replaces old openNM (name) + handleGuestPhotoAttempt (photo)
+    function openAcct(){
+      if(!currentUser){
+        closePM();
+        toast('Login dulu untuk akses pengaturan akun','warning');
+        setTimeout(function(){openAuth('login')},400);
+        return;
+      }
+      closePM();
+      // Populate account info
+      document.getElementById('ACCT_USERNAME').textContent=currentUser.username;
+      document.getElementById('ACCT_NAME').value=document.getElementById('UN').textContent;
+      // Fetch email from server
+      fetchAcctInfo();
+      // Show/hide plan badge
+      var planEl=document.getElementById('ACCT_PLAN');
+      if(isRedeemed()){planEl.textContent='Premium Member — 25 req/hari'}
+      else{planEl.textContent='Member — 12 req/hari'}
+      // Copy profile photo to account settings avatar
+      var photo=localStorage.getItem('sk_photo');
+      var avEl=document.getElementById('ACCT_AVATAR');
+      if(photo){avEl.innerHTML='<img src="'+photo+'" class="w-full h-full object-cover" alt="Profile">'}
+      else{avEl.innerHTML='<span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:account"></span>'}
+      // Clear errors
+      document.getElementById('ACCT_EMAIL_ERR').classList.add('hidden');
+      document.getElementById('ACCT_PASS_ERR').classList.add('hidden');
+      // Clear password fields
+      document.getElementById('ACCT_NEW_EMAIL').value='';
+      document.getElementById('ACCT_EMAIL_PASS').value='';
+      document.getElementById('ACCT_OLD_PASS').value='';
+      document.getElementById('ACCT_NEW_PASS').value='';
+      openM('ACCT');
+    }
+    async function fetchAcctInfo(){
+      if(!authToken)return;
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'account_info',token:authToken})
+        });
+        var d=await r.json();
+        if(d.success){
+          document.getElementById('ACCT_EMAIL').textContent=d.email||'Belum ada email';
+        }
+      }catch(e){}
+    }
+    function saveAcctName(){
+      if(!currentUser){toast('Login dulu','warning');return}
+      var n=document.getElementById('ACCT_NAME').value.trim();
+      if(!n){toast('Nama tidak boleh kosong','warning');return}
+      document.getElementById('UN').textContent=n;
+      save();
+      toast('Nama berhasil diubah!','success');
+    }
+    async function saveAcctEmail(){
+      if(!authToken||!currentUser)return;
+      var newEmail=document.getElementById('ACCT_NEW_EMAIL').value.trim().toLowerCase();
+      var pass=document.getElementById('ACCT_EMAIL_PASS').value;
+      var errEl=document.getElementById('ACCT_EMAIL_ERR');
+      errEl.classList.add('hidden');
+      if(!newEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){errEl.textContent='Format email tidak valid';errEl.classList.remove('hidden');return}
+      if(!pass){errEl.textContent='Password wajib diisi untuk verifikasi';errEl.classList.remove('hidden');return}
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'change_email',token:authToken,newEmail:newEmail,password:pass})
+        });
+        var d=await r.json();
+        if(!r.ok){errEl.textContent=d.error||'Terjadi kesalahan';errEl.classList.remove('hidden');return}
+        document.getElementById('ACCT_EMAIL').textContent=newEmail;
+        document.getElementById('ACCT_NEW_EMAIL').value='';
+        document.getElementById('ACCT_EMAIL_PASS').value='';
+        toast(d.message||'Email berhasil diubah','success');
+      }catch(e){errEl.textContent='Koneksi gagal';errEl.classList.remove('hidden')}
+    }
+    async function saveAcctPassword(){
+      if(!authToken||!currentUser)return;
+      var oldPass=document.getElementById('ACCT_OLD_PASS').value;
+      var newPass=document.getElementById('ACCT_NEW_PASS').value;
+      var errEl=document.getElementById('ACCT_PASS_ERR');
+      errEl.classList.add('hidden');
+      if(!oldPass){errEl.textContent='Password lama wajib diisi';errEl.classList.remove('hidden');return}
+      if(!newPass||newPass.length<4){errEl.textContent='Password baru minimal 4 karakter';errEl.classList.remove('hidden');return}
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'change_password',token:authToken,oldPassword:oldPass,newPassword:newPass})
+        });
+        var d=await r.json();
+        if(!r.ok){errEl.textContent=d.error||'Terjadi kesalahan';errEl.classList.remove('hidden');return}
+        document.getElementById('ACCT_OLD_PASS').value='';
+        document.getElementById('ACCT_NEW_PASS').value='';
+        toast(d.message||'Password berhasil diubah','success');
+      }catch(e){errEl.textContent='Koneksi gagal';errEl.classList.remove('hidden')}
+    }
+    // Keep old function names for backward compat (called from NM modal)
     function openNM(){
       if(!currentUser){
         closePM();
@@ -3246,8 +3414,7 @@
       var pp=document.getElementById('UN_PLAN');
       var loginLi=document.getElementById('AUTH_LOGIN_LI');
       var logoutLi=document.getElementById('AUTH_LOGOUT_LI');
-      var changeNameBtn=document.getElementById('PM_CHANGE_NAME');
-      var changePhotoBtn=document.getElementById('PM_CHANGE_PHOTO');
+      var acctSettingsBtn=document.getElementById('PM_ACCT_SETTINGS');
       if(currentUser){
         un.textContent=currentUser.username;
         if(pp){
@@ -3259,17 +3426,15 @@
         }
         if(loginLi)loginLi.classList.add('hidden');
         if(logoutLi)logoutLi.classList.remove('hidden');
-        // Logged-in users CAN change name + photo
-        if(changeNameBtn)changeNameBtn.classList.remove('hidden');
-        if(changePhotoBtn)changePhotoBtn.classList.remove('hidden');
+        // Logged-in users CAN access Account Settings
+        if(acctSettingsBtn)acctSettingsBtn.classList.remove('hidden');
       }else{
-        // GUEST: force "Guest User" name, hide name-change + photo-change buttons
+        // GUEST: force "Guest User" name, hide Account Settings
         un.textContent='Guest User';
         if(pp)pp.textContent='Guest — 5 req/hari';
         if(loginLi)loginLi.classList.remove('hidden');
         if(logoutLi)logoutLi.classList.add('hidden');
-        if(changeNameBtn)changeNameBtn.classList.add('hidden');
-        if(changePhotoBtn)changePhotoBtn.classList.add('hidden');
+        if(acctSettingsBtn)acctSettingsBtn.classList.add('hidden');
         // Also clear any stale custom name + photo from a previous logged-in session
         localStorage.removeItem('sk_n');
         localStorage.removeItem('sk_photo');
