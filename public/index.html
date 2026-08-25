@@ -1147,7 +1147,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.9.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.10.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1699,25 +1699,22 @@
        5. Powerful AI  — Most powerful models (MoE, large params, coding)
     */
     var MODELS=[
-      /* ===== 1. SkelzAI — 14 models =====
+      /* ===== 1. SkelzAI — 12 models =====
          All SkelzAI models use Qwen (DashScope) provider under the hood, but
          labeled as "Skelz" in UI for branding. User must set QWEN_KEYS env var.
          Get free API key at https://bailian.console.aliyun.com (Alibaba Cloud DashScope).
 
-         DEFAULT FREE MODELS (paling reliable, long-term stable):
-         - Skelz Plus  → qwen-max           (flagship Qwen, stabil sejak 2024)
-         - Skelz Fast  → qwen2.5-7b-instruct (cepat, ringan, 128K context, stabil)
-         Hindari qwen-plus & qwen-turbo (sering bermasalah). */
+         DEFAULT FREE MODELS (confirmed working & reliable):
+         - Skelz Plus  → qwen-max         (flagship, stabil sejak 2024)
+         - Skelz Fast  → qwen3.5-plus     (cepat & cerdas, confirmed working)
+         Hindari qwen-plus, qwen-turbo, qwen2.5-7b-instruct (return 401 pada beberapa plan). */
       {id:'qwen-max',provider:'qwen',label:'Skelz Plus',desc:'Skelz — Flagship, paling stabil & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
-      {id:'qwen2.5-7b-instruct',provider:'qwen',label:'Skelz Fast',desc:'Skelz — Super cepat, ringan, 128K context',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
+      {id:'qwen3.5-plus',provider:'qwen',label:'Skelz Fast',desc:'Skelz — Cepat & cerdas, generasi terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:true},
       {id:'qwq-plus',provider:'qwen',label:'Skelz Reasoning',desc:'Skelz — Reasoning + logika tingkat lanjut',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-max',provider:'qwen',label:'Skelz 3 Max',desc:'Skelz 3 Max, paling cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-235b-a22b',provider:'qwen',label:'Skelz 3 235B',desc:'Skelz MoE 235B, super kuat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-coder-plus',provider:'qwen',label:'Skelz Coder+',desc:'Skelz — Khusus coding, paling akurat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen2.5-72b-instruct',provider:'qwen',label:'Skelz 2.5 72B',desc:'Skelz — 72B powerful, 128K context',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen2.5-coder-32b-instruct',provider:'qwen',label:'Skelz Coder 32B',desc:'Skelz — Coding 32B, stabil',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3-next-80b-a3b-instruct',provider:'qwen',label:'Skelz Next 80B',desc:'Skelz MoE 80B, seimbang',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
-      {id:'qwen3.5-plus',provider:'qwen',label:'Skelz 3.5 Plus',desc:'Skelz — Generasi terbaru, cepat & cerdas',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3.6-plus',provider:'qwen',label:'Skelz 3.6 Plus',desc:'Skelz 3.6, stabil & cepat',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen3.7-plus',provider:'qwen',label:'Skelz 3.7 Plus',desc:'Skelz 3.7, terbaru',tag:'Skelz',vision:false,cat:'SkelzAI',free:false,redeem:'skelz_premium'},
       {id:'qwen-vl-max',provider:'qwen',label:'Skelz Vision Max',desc:'Skelz Vision — Analisis foto, paling akurat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
