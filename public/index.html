@@ -542,13 +542,8 @@
     .new-chat-btn.nc-pulse{animation:ncPulse 1.6s ease-out 1s 3}
     /* ===== SEARCH — clear button + highlight ===== */
     .srch-in:focus{border-color:rgba(217,119,87,.35)!important;background:rgba(38,37,36,.8)!important;box-shadow:0 0 0 3px rgba(217,119,87,.06)}
-    #SRCH:placeholder-shown~#SRCH_CLEAR{display:none!important}
+    /* Search clear button — always visible, not opacity-controlled */
     .srch-clear{color:#7C7770;transition:all .15s ease}
-    /* Bug fix: search input must NEVER show account name.
-       Ensure input has solid background and proper z-index. */
-    #SRCH{position:relative;z-index:2;background:rgba(38,37,36,.95)!important}
-    /* Profile area must be fully opaque and below search in stacking order */
-    #profileArea{position:relative;z-index:1}
     .srch-clear:hover{color:#D97757;background:rgba(217,119,87,.1)}
     .srch-hl{background:rgba(217,119,87,.28);color:#FAF9F5;border-radius:2px;padding:0 1px;font-weight:500}
     /* ===== MESSAGE AVATAR — slightly larger, better gradient ===== */
@@ -1074,8 +1069,8 @@
       <!-- Search bar -->
       <div class="mb-2 px-2 relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
-        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch();updateSearchClear()" class="srch-in w-full bg-[#262524]/60 border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
-        <button id="SRCH_CLEAR" onclick="document.getElementById('SRCH').value='';debounceSearch();document.getElementById('SRCH').focus();updateSearchClear()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center opacity-0 pointer-events-none transition-opacity" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
+        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch()" class="srch-in w-full bg-[#262524] border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
+        <button id="SRCH_CLEAR" onclick="clearSearch()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
       </div>
       <div class="mb-2 px-2 flex items-center justify-between">
         <span class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium">Riwayat</span>
@@ -1087,7 +1082,7 @@
         <p class="text-xs text-[#7C7770]">Belum ada percakapan</p>
       </div>
     </div>
-    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918] relative" id="profileArea">
+    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918]" id="profileArea">
       <div onclick="togPM(event)" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer select-none">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
@@ -1096,7 +1091,7 @@
         </div>
         <span class="iconify text-[#7C7770] text-base" id="PC" data-icon="mdi:chevron-up"></span>
       </div>
-      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto absolute bottom-full left-3 right-3 z-50">
+      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[50vh] overflow-y-auto">
         <button id="PM_ACCT_SETTINGS" onclick="openAcct()" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-cog-outline"></span>Pengaturan Akun</button>
         <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
         <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
@@ -1151,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.16.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.17.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -2539,17 +2534,9 @@
       if(_searchTimer)clearTimeout(_searchTimer);
       _searchTimer=setTimeout(function(){updHist();_searchTimer=null},200);
     }
-    function updateSearchClear(){
-      var v=document.getElementById('SRCH').value;
-      var btn=document.getElementById('SRCH_CLEAR');
-      if(!btn)return;
-      if(v){
-        btn.classList.remove('opacity-0','pointer-events-none');
-        btn.classList.add('opacity-100');
-      }else{
-        btn.classList.add('opacity-0','pointer-events-none');
-        btn.classList.remove('opacity-100');
-      }
+    function clearSearch(){
+      var s=document.getElementById('SRCH');
+      if(s){s.value='';debounceSearch();s.focus()}
     }
     function updHist(){
       var el=document.getElementById('CH'),em=document.getElementById('HE'),cb=document.getElementById('clrAllBtn');
@@ -4664,9 +4651,9 @@
     document.addEventListener('DOMContentLoaded',function(){
       authInit();
       load();setModelLabel();updHist();updTop();
-      // Bug fix: clear search input on load (prevent stale account name leak)
+      // Clear search input on load
       var srchInput=document.getElementById('SRCH');
-      if(srchInput){srchInput.value='';updateSearchClear()}
+      if(srchInput){srchInput.value=''}
       // If guest, force free Skelz model only
       if(isGuest()&&(selModel.cat!=='SkelzAI'||selModel.free===false)){selModel=MODELS[0];setModelLabel()}
       if(curId&&chats[curId])loadChat(curId);
