@@ -1691,6 +1691,22 @@ export default async function handler(req, res) {
     });
   }
 
+  // NVIDIA NIM 404 — model was deprecated/removed OR API key account doesn't have access
+  // Common errors: "Function '...': Not found for account '...'" or "404 page not found"
+  // This happens when: (1) model was deprecated, OR (2) API key expired, OR (3) free trial credits exhausted
+  if (provider === 'nvidia' && response.status === 404) {
+    return res.status(404).json({
+      error: 'NVIDIA NIM model tidak tersedia. Penyebab umum: (1) Model sudah deprecated — pakai Nemotron 4 340B / Gemma 3 12B / Mistral 7B, (2) NVIDIA_API_KEYS expired — generate baru di https://build.nvidia.com, (3) Free trial credits habis. Detail: ' + errDetail
+    });
+  }
+
+  // NVIDIA NIM 401/403 — API key invalid or expired
+  if (provider === 'nvidia' && (response.status === 401 || response.status === 403)) {
+    return res.status(401).json({
+      error: 'NVIDIA_API_KEYS tidak valid atau expired. Generate key baru di https://build.nvidia.com → set env var NVIDIA_API_KEYS=key1,key2 di Vercel. Detail: ' + errDetail
+    });
+  }
+
   return res.status(response.status || 502).json({
     error: `${provider} error ${response.status}: ${errDetail}`
   });

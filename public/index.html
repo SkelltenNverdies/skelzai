@@ -1082,8 +1082,8 @@
         <p class="text-xs text-[#7C7770]">Belum ada percakapan</p>
       </div>
     </div>
-    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918]" id="profileArea">
-      <div onclick="togPM()" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer">
+    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918] relative" id="profileArea">
+      <div onclick="togPM(event)" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer select-none">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
           <p class="text-sm text-[#E5E3DA] truncate" id="UN">Guest User</p>
@@ -1091,7 +1091,7 @@
         </div>
         <span class="iconify text-[#7C7770] text-base" id="PC" data-icon="mdi:chevron-up"></span>
       </div>
-      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto">
+      <div id="PM" class="hidden mt-1 glass-s rounded-xl overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto absolute bottom-full left-3 right-3 z-50">
         <button id="PM_ACCT_SETTINGS" onclick="openAcct()" class="hidden w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:account-cog-outline"></span>Pengaturan Akun</button>
         <input type="file" id="PROFILE_PHOTO_INPUT" accept="image/*" class="hidden" onchange="handleProfilePhoto(event)">
         <button onclick="openSettings()" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#C2BFB8] hover:bg-white/[0.03] hover:text-cream-50 transition-colors"><span class="iconify text-base" data-icon="mdi:cog-outline"></span>Pengaturan</button>
@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.14.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.15.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -2052,7 +2052,17 @@
       else{sb.classList.remove('-translate-x-full');ov.classList.remove('opacity-0','pointer-events-none');ov.classList.add('opacity-100','pointer-events-auto')}
     }
 
-    function togPM(){
+    function togPM(e){
+      // Bug fix: skip toggle if user is selecting text (mousedown→mouseup drag selection
+      // was triggering click event on profile area, opening menu unexpectedly)
+      if(e&&window.getSelection){
+        var sel=window.getSelection();
+        if(sel&&sel.toString().trim().length>0){
+          // User is selecting text — don't toggle menu, just clear selection
+          sel.removeAllRanges();
+          return;
+        }
+      }
       pmOpen=!pmOpen;var m=document.getElementById('PM'),c=document.getElementById('PC');
       if(pmOpen){m.classList.remove('hidden');c.setAttribute('data-icon','mdi:chevron-down')}
       else{m.classList.add('hidden');c.setAttribute('data-icon','mdi:chevron-up')}
@@ -2110,8 +2120,11 @@
       var n=document.getElementById('ACCT_NAME').value.trim();
       if(!n){toast('Nama tidak boleh kosong','warning');return}
       document.getElementById('UN').textContent=n;
+      localStorage.setItem('sk_n',n);
       save();
-      toast('Nama berhasil diubah!','success');
+      // Force immediate sync to server (don't wait for debounce)
+      if(authToken){syncUserData()}
+      toast('Nama berhasil diubah & disinkron!','success');
     }
     async function saveAcctEmail(){
       if(!authToken||!currentUser)return;
@@ -3440,7 +3453,18 @@
       var logoutLi=document.getElementById('AUTH_LOGOUT_LI');
       var acctSettingsBtn=document.getElementById('PM_ACCT_SETTINGS');
       if(currentUser){
-        un.textContent=currentUser.username;
+        // Bug fix: don't overwrite display name if it was already loaded from server/local
+        // (currentUser.username is the username, but user may have set a custom display name)
+        // Only set to username if UN is empty or still "Guest User"
+        if(un.textContent==='Guest User'||!un.textContent){
+          // Try to restore from localStorage first (preserves cross-session display name)
+          var savedName=localStorage.getItem('sk_n');
+          if(savedName&&savedName!=='Guest User'){
+            un.textContent=savedName;
+          }else{
+            un.textContent=currentUser.username;
+          }
+        }
         if(pp){
           if(isRedeemed()){
             pp.textContent='Premium — 25 req/hari';
