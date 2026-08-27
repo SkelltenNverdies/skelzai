@@ -1052,20 +1052,20 @@
 
   <!-- SIDEBAR -->
   <aside id="SB" class="so fixed top-0 left-0 h-full w-[280px] z-50 bg-[#1A1918]/95 backdrop-blur-xl border-r border-white/[0.06] flex flex-col -translate-x-full lg:translate-x-0">
-    <div class="p-4 flex items-center justify-between border-b border-white/[0.06]">
+    <div class="p-4 flex items-center justify-between border-b border-white/[0.06] flex-shrink-0">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400 to-coral-500 flex items-center justify-center glow-c"><span class="iconify text-white text-sm" data-icon="mdi:robot-happy-outline"></span></div>
         <span class="font-serif text-lg font-medium tg-anim glow-anim">SkelzAI</span>
       </div>
       <button onclick="togSB()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/[0.03] transition-colors"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:close"></span></button>
     </div>
-    <div class="p-3">
+    <div class="p-3 flex-shrink-0">
       <button onclick="newChat()" class="new-chat-btn nc-pulse w-full flex items-center justify-center gap-2.5 px-3 py-3 rounded-xl">
         <span class="iconify text-base" data-icon="mdi:plus"></span>
         <span class="text-sm font-medium">Chat Baru</span>
       </button>
     </div>
-    <div class="flex-1 overflow-y-auto px-3 pb-3">
+    <div class="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
       <!-- Search bar -->
       <div class="mb-2 px-2 relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
@@ -1082,7 +1082,7 @@
         <p class="text-xs text-[#7C7770]">Belum ada percakapan</p>
       </div>
     </div>
-    <div class="p-3 border-t border-white/[0.06]" id="profileArea">
+    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918]" id="profileArea">
       <div onclick="togPM()" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
@@ -1120,8 +1120,8 @@
   </div>
 
   <!-- ABOUT MODAL -->
-  <div id="AM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="closeM('AM')">
-    <div class="glass-s rounded-3xl p-7 w-full max-w-md mx-4 amsi relative overflow-hidden" onclick="event.stopPropagation()">
+  <div id="AM" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/65 backdrop-blur-sm" onclick="if(event.target===this)closeM('AM')">
+    <div class="glass-s rounded-3xl p-6 w-full max-w-md mx-4 amsi relative overflow-hidden max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
       <!-- Decorative gradient orb (top-right) -->
       <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br from-coral-400/30 to-coral-600/0 blur-3xl pointer-events-none"></div>
       <div class="absolute -bottom-20 -left-12 w-44 h-44 rounded-full bg-gradient-to-tr from-coral-500/20 to-transparent blur-3xl pointer-events-none"></div>
@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.13.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.14.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1196,7 +1196,15 @@
         </div>
         <div class="flex items-start gap-2">
           <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:rocket-launch-outline"></span>
-          <div><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit, performance mode, foto profil sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto</div>
+          <div><strong class="text-cream-50">Fitur:</strong> Multi-key API, redeem code, global login (unlimited device), rate limit, performance mode, foto profil + nama + email + password sync, tema warna, voice input, TTS, search, pin, export, Caveman Mode, PWA, image generation, analisis foto, Gmail SMTP email reset</div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:account-cog-outline"></span>
+          <div><strong class="text-cream-50">Akun:</strong> Ganti nama, foto, email, password di Pengaturan Akun — semua sync cross-device</div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="iconify text-coral-400/80 text-sm mt-0.5 flex-shrink-0" data-icon="mdi:email-lock-outline"></span>
+          <div><strong class="text-cream-50">Reset Password:</strong> via email 6-digit kode (Gmail SMTP / Brevo / Resend)</div>
         </div>
       </div>
 
@@ -1809,22 +1817,31 @@
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'dots-studio/dots-3-note-preview:free',provider:'openrouter',label:'Dots3 Note Preview',desc:'Multimodal preview, 512K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 5 models ===== */
+      /* ===== 4. Vision AI — 4 models =====
+         REMOVED: nvidia/llama-3.1-nemotron-nano-vl-8b-v1 (DEPRECATED Aug 2026) */
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B (NVIDIA NIM)',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
-      {id:'nvidia/llama-3.1-nemotron-nano-vl-8b-v1',provider:'nvidia',label:'Nemotron Nano VL 8B',desc:'Analisis foto, 8B ringan',tag:'Vision',vision:true,cat:'Vision AI'},
       {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini (GitHub)',desc:'OpenAI vision — sedang brownout, mungkin error',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
-      /* ===== 5. Powerful AI — 11 models ===== */
+      /* ===== 5. Powerful AI — 8 models (NVIDIA NIM verified Aug 2026 + Cloudflare) =====
+         NVIDIA NIM models tested via live API (401=exists, 410=deprecated, 404=not found).
+         REMOVED (DEPRECATED as of Aug 2026):
+         - meta/llama-3.3-70b-instruct, meta/llama-3.1-70b-instruct, meta/llama-3.1-8b-instruct
+         - meta/llama-3.2-3b-instruct, meta/llama-3.2-1b-instruct
+         - nvidia/nemotron-mini-4b-instruct, nvidia/llama-3.1-nemotron-nano-vl-8b-v1
+         - qwen/qwen2.5-coder-32b-instruct
+         VERIFIED WORKING:
+         - nvidia/nemotron-4-340b-instruct ✓ (flagship, 340B)
+         - mistralai/mistral-7b-instruct-v0.3 ✓
+         - google/gemma-3-12b-it ✓ (NEW)
+         - google/gemma-3-4b-it ✓ (NEW)
+         - meta/llama-3.2-11b-vision-instruct ✓ (vision)
+         - meta/llama-3.2-90b-vision-instruct ✓ (vision) */
       {id:'nvidia/nemotron-4-340b-instruct',provider:'nvidia',label:'Nemotron 4 340B',desc:'NVIDIA 340B — paling powerful di NIM',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'meta/llama-3.3-70b-instruct',provider:'nvidia',label:'Llama 3.3 70B',desc:'Meta 70B — Powerful & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'meta/llama-3.1-70b-instruct',provider:'nvidia',label:'Llama 3.1 70B',desc:'Meta 70B, versi stabil',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'meta/llama-3.1-8b-instruct',provider:'nvidia',label:'Llama 3.1 8B',desc:'Meta 8B — Cepat & ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'meta/llama-3.2-3b-instruct',provider:'nvidia',label:'Llama 3.2 3B',desc:'Meta 3B — Super ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'meta/llama-3.2-1b-instruct',provider:'nvidia',label:'Llama 3.2 1B',desc:'Meta 1B — Instan, hemat token',tag:'Powerful',vision:false,cat:'Powerful AI'},
+      {id:'google/gemma-3-12b-it',provider:'nvidia',label:'Gemma 3 12B',desc:'Google 12B — Cerdas & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
+      {id:'google/gemma-3-4b-it',provider:'nvidia',label:'Gemma 3 4B',desc:'Google 4B — Cepat & ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'mistralai/mistral-7b-instruct-v0.3',provider:'nvidia',label:'Mistral 7B v0.3',desc:'Mistral 7B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'nvidia/nemotron-mini-4b-instruct',provider:'nvidia',label:'Nemotron Mini 4B',desc:'Super ringan, instan',tag:'Powerful',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
       {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'}
@@ -3344,6 +3361,11 @@
               // Neither has photo — leave empty (no change needed)
               updateProfilePhoto();
             }
+            // Display name sync — restore from server if set
+            if(d.settings.displayName){
+              document.getElementById('UN').textContent=d.settings.displayName;
+              localStorage.setItem('sk_n',d.settings.displayName);
+            }
             // Mark settings as loaded so we know server state is authoritative
             window._settingsLoaded=true;
           }else{
@@ -3375,6 +3397,7 @@
       if(_loadingFromServer)return; // skip sync while initial server load is in progress
       try{
         // Sync chats + settings to server (debounced, non-blocking)
+        // Include displayName so it syncs across devices
         await fetch('/api/auth',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -3386,7 +3409,8 @@
               themeColor:JSON.parse(localStorage.getItem('sk_theme_color')||'null'),
               fontSize:localStorage.getItem('sk_font_size')||'15px',
               cavemanLevel:cavemanLevel,
-              profilePhoto:localStorage.getItem('sk_photo')||null
+              profilePhoto:localStorage.getItem('sk_photo')||null,
+              displayName:document.getElementById('UN').textContent||currentUser.username
             }
           })
         });

@@ -433,7 +433,7 @@ const PROVIDERS = {
     timeout: 55000,
     // Models with small context (4096 tokens total) — need conservative max_tokens
     // System prompt alone is ~400 tokens, so max_tokens must be well under 4096 - input
-    smallContext: ['nvidia/nemotron-mini-4b-instruct', 'meta/llama-3.1-8b-instruct', 'meta/llama-3.2-3b-instruct', 'meta/llama-3.2-1b-instruct', 'mistralai/mistral-7b-instruct-v0.3'],
+    smallContext: ['google/gemma-3-4b-it', 'mistralai/mistral-7b-instruct-v0.3'],
     // Smallest max_tokens for 4096 context models (4096 - 2000 input - 96 buffer = ~2000)
     smallContextMaxTokens: 2000,
     buildRequest(apiKey, model, messages) {

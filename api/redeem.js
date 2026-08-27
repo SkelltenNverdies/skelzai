@@ -62,7 +62,7 @@ const TIER_INFO = {
   },
   powerful: {
     description: 'Unlock semua Powerful AI models',
-    models: ['nvidia/nemotron-4-340b-instruct', 'meta/llama-3.3-70b-instruct']
+    models: ['nvidia/nemotron-4-340b-instruct', 'google/gemma-3-12b-it']
   },
   skelz_premium: {
     description: 'Unlock semua Skelz premium models',
