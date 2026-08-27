@@ -148,6 +148,13 @@ const PROVIDERS = {
     url: 'https://api.bluesminds.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
+  siliconflow: {
+    envVar: 'SILICONFLOW_API_KEYS',
+    singleKeyEnvVar: 'SILICONFLOW_API_KEY',
+    fallbackKey: null,
+    url: 'https://api.siliconflow.cn/v1/chat/completions',
+    headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
+  },
   pollinations: {
     envVar: 'POLLINATIONS_API_KEY',
     fallbackKey: 'none',

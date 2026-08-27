@@ -699,6 +699,35 @@ const PROVIDERS = {
       };
     }
   },
+  siliconflow: {
+    // SiliconFlow — OpenAI-compatible API aggregator (api.siliconflow.cn)
+    // Free 14.4M tokens/day (gratis permanen!). 200+ open-source models.
+    // Supports multi-key: SILICONFLOW_API_KEYS=key1,key2 (2x limit)
+    // Get key: https://cloud.siliconflow.cn → API Keys
+    // Free models include: DeepSeek R1, DeepSeek V3, Qwen 2.5 72B, Llama 3.3 70B, etc.
+    envVar: 'SILICONFLOW_API_KEYS',
+    singleKeyEnvVar: 'SILICONFLOW_API_KEY',
+    fallbackKey: null,
+    url: 'https://api.siliconflow.cn/v1/chat/completions',
+    timeout: 55000,
+    buildRequest(apiKey, model, messages) {
+      return {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: true,
+          max_tokens: 8192,
+          temperature: 0.7,
+          top_p: 0.9
+        })
+      };
+    }
+  },
   pollinations: {
     // Pollinations.ai — FREE image generation, NO API KEY needed.
     // URL format: https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true

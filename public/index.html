@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.17.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.18.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1807,6 +1807,24 @@
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source 120B — paling powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source 20B — cepat & ringan',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
+
+      /* ===== 2.5. SiliconFlow AI — 8 models (FREE 14.4M tokens/day!) =====
+         SiliconFlow: https://cloud.siliconflow.cn — free 14.4M tokens/day permanen.
+         Set env var: SILICONFLOW_API_KEY atau SILICONFLOW_API_KEYS=key1,key2
+         All models below are FREE (no charge). */
+      {id:'deepseek-ai/DeepSeek-V3',provider:'siliconflow',label:'DeepSeek V3',desc:'SiliconFlow — Powerful & cepat, gratis',tag:'SF',vision:false,cat:'Fast Chat'},
+      {id:'Qwen/Qwen2.5-72B-Instruct',provider:'siliconflow',label:'Qwen 2.5 72B',desc:'SiliconFlow — 72B powerful, multibahasa',tag:'SF',vision:false,cat:'Fast Chat'},
+      {id:'meta-llama/Llama-3.3-70B-Instruct',provider:'siliconflow',label:'Llama 3.3 70B',desc:'SiliconFlow — Meta 70B, stabil',tag:'SF',vision:false,cat:'Fast Chat'},
+      {id:'Qwen/Qwen2.5-7B-Instruct',provider:'siliconflow',label:'Qwen 2.5 7B',desc:'SiliconFlow — Cepat & ringan',tag:'SF',vision:false,cat:'Fast Chat'},
+      {id:'google/gemma-2-9b-it',provider:'siliconflow',label:'Gemma 2 9B',desc:'SiliconFlow — Google 9B, cepat',tag:'SF',vision:false,cat:'Fast Chat'},
+      {id:'deepseek-ai/DeepSeek-R1',provider:'siliconflow',label:'DeepSeek R1',desc:'SiliconFlow — Reasoning, super cerdas',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
+      {id:'Qwen/Qwen2.5-Coder-32B-Instruct',provider:'siliconflow',label:'Qwen Coder 32B',desc:'SiliconFlow — Khusus coding, 32B',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
+      {id:'Qwen/QwQ-32B-Preview',provider:'siliconflow',label:'QwQ 32B',desc:'SiliconFlow — Reasoning + logika',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
+
+      /* ===== 2.6. SiliconFlow Vision — 3 models (FREE vision) ===== */
+      {id:'Qwen/Qwen2.5-VL-7B-Instruct',provider:'siliconflow',label:'SF Qwen VL 7B',desc:'SiliconFlow — Vision, analisis foto',tag:'SF Vision',vision:true,cat:'Vision AI'},
+      {id:'Qwen/Qwen2.5-VL-32B-Instruct',provider:'siliconflow',label:'SF Qwen VL 32B',desc:'SiliconFlow — Vision 32B, powerful',tag:'SF Vision',vision:true,cat:'Vision AI',redeem:'vision'},
+      {id:'Qwen/Qwen2-VL-72B-Instruct',provider:'siliconflow',label:'SF Qwen VL 72B',desc:'SiliconFlow — Vision 72B, paling akurat',tag:'SF Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
       /* ===== 3. Premium AI — 9 models (OpenRouter free — VERIFIED Aug 27 2026) =====
          NVIDIA NIM REMOVED per user request (too many 404 errors).
