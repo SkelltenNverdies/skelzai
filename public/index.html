@@ -544,6 +544,11 @@
     .srch-in:focus{border-color:rgba(217,119,87,.35)!important;background:rgba(38,37,36,.8)!important;box-shadow:0 0 0 3px rgba(217,119,87,.06)}
     #SRCH:placeholder-shown~#SRCH_CLEAR{display:none!important}
     .srch-clear{color:#7C7770;transition:all .15s ease}
+    /* Bug fix: search input must NEVER show account name.
+       Ensure input has solid background and proper z-index. */
+    #SRCH{position:relative;z-index:2;background:rgba(38,37,36,.95)!important}
+    /* Profile area must be fully opaque and below search in stacking order */
+    #profileArea{position:relative;z-index:1}
     .srch-clear:hover{color:#D97757;background:rgba(217,119,87,.1)}
     .srch-hl{background:rgba(217,119,87,.28);color:#FAF9F5;border-radius:2px;padding:0 1px;font-weight:500}
     /* ===== MESSAGE AVATAR — slightly larger, better gradient ===== */
@@ -1146,7 +1151,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.15.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.16.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1801,50 +1806,43 @@
       {id:'qwen3-vl-flash',provider:'qwen',label:'Skelz 3 VL Flash',desc:'Skelz 3 Vision, super cepat',tag:'Skelz',vision:true,cat:'Skelz Vision',free:false,redeem:'skelz_premium'},
 
       /* ===== 2. Fast Chat — 4 models (Groq + Cloudflare) =====
-         Per user request: Groq Fast Chat hanya Compound Beta + GPT-OSS series.
-         Semua Groq model lain dihapus (qwen, kimi, deepseek, llama). */
+         Groq: Compound Beta + GPT-OSS series only (per user request).
+         Cloudflare: free 10K neurons/day, edge global. */
       {id:'compound-beta',provider:'groq',label:'Compound Beta',desc:'Groq flagship — Tool use + reasoning, cepat',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source 120B — paling powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source 20B — cepat & ringan',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
 
-      /* ===== 3. Premium AI — 7 models (OpenRouter free — VERIFIED) ===== */
+      /* ===== 3. Premium AI — 9 models (OpenRouter free — VERIFIED Aug 27 2026) =====
+         NVIDIA NIM REMOVED per user request (too many 404 errors).
+         GitHub Models REMOVED (full retirement brownout — endpoint dead).
+         All models below verified via OpenRouter /models API. */
       {id:'nvidia/nemotron-3-ultra-550b-a55b:free',provider:'openrouter',label:'Nemotron 3 Ultra 550B',desc:'MoE 550B — Paling powerful (free, 1M ctx)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'nvidia/nemotron-3.5-lightning:free',provider:'openrouter',label:'Nemotron 3.5 Lightning',desc:'Cepat & stabil, 1M context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'nvidia/nemotron-3-super-120b-a12b:free',provider:'openrouter',label:'Nemotron 3 Super 120B',desc:'MoE 120B, super cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'minimax/minimax-m3:free',provider:'openrouter',label:'MiniMax M3',desc:'1M context, vision capable (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'minimax/minimax-m2.7:free',provider:'openrouter',label:'MiniMax M2.7',desc:'Cerdas & cepat, 196K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
+      {id:'z-ai/glm-5.2:free',provider:'openrouter',label:'GLM 5.2',desc:'Zhipu AI, 256K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'cohere/north-mini-code:free',provider:'openrouter',label:'North Mini Code',desc:'Coding helper, 256K context (free)',tag:'Premium',vision:false,cat:'Premium AI',redeem:'premium'},
       {id:'poolside/laguna-s-2.1:free',provider:'openrouter',label:'Laguna S 2.1',desc:'Coding specialist (free)',tag:'Premium',vision:false,cat:'Premium AI'},
       {id:'poolside/laguna-xs-2.1:free',provider:'openrouter',label:'Laguna XS 2.1',desc:'Coding cepat (free)',tag:'Premium',vision:false,cat:'Premium AI'},
-      {id:'dots-studio/dots-3-note-preview:free',provider:'openrouter',label:'Dots3 Note Preview',desc:'Multimodal preview, 512K context (free)',tag:'Premium',vision:false,cat:'Premium AI'},
 
-      /* ===== 4. Vision AI — 4 models =====
-         REMOVED: nvidia/llama-3.1-nemotron-nano-vl-8b-v1 (DEPRECATED Aug 2026) */
+      /* ===== 4. Vision AI — 5 models (OpenRouter free vision + Skelz Vision) =====
+         NVIDIA NIM vision REMOVED. GitHub gpt-4o-mini REMOVED (retirement).
+         OpenRouter free vision models verified working. */
       {id:'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',provider:'openrouter',label:'Nemotron Nano Omni 30B',desc:'Vision + reasoning, 256K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'meta/llama-3.2-11b-vision-instruct',provider:'nvidia',label:'Llama 3.2 11B Vision',desc:'Analisis foto, 11B (NVIDIA NIM)',tag:'Vision',vision:true,cat:'Vision AI'},
-      {id:'meta/llama-3.2-90b-vision-instruct',provider:'nvidia',label:'Llama 3.2 90B Vision',desc:'Analisis foto, 90B paling kuat',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
-      {id:'gpt-4o-mini',provider:'github',label:'GPT-4o mini (GitHub)',desc:'OpenAI vision — sedang brownout, mungkin error',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
+      {id:'google/gemma-4-31b-it:free',provider:'openrouter',label:'Gemma 4 31B Vision',desc:'Google 31B vision, 262K (free)',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'google/gemma-4-26b-a4b-it:free',provider:'openrouter',label:'Gemma 4 26B Vision',desc:'Google MoE 26B vision (free)',tag:'Vision',vision:true,cat:'Vision AI'},
+      {id:'minimax/minimax-m3:free',provider:'openrouter',label:'MiniMax M3 Vision',desc:'1M ctx, vision capable (free)',tag:'Vision',vision:true,cat:'Vision AI',redeem:'vision'},
+      {id:'thinkingmachines/inkling-small:free',provider:'openrouter',label:'Inkling Small Vision',desc:'1M context, vision (free)',tag:'Vision',vision:true,cat:'Vision AI'},
 
-      /* ===== 5. Powerful AI — 8 models (NVIDIA NIM verified Aug 2026 + Cloudflare) =====
-         NVIDIA NIM models tested via live API (401=exists, 410=deprecated, 404=not found).
-         REMOVED (DEPRECATED as of Aug 2026):
-         - meta/llama-3.3-70b-instruct, meta/llama-3.1-70b-instruct, meta/llama-3.1-8b-instruct
-         - meta/llama-3.2-3b-instruct, meta/llama-3.2-1b-instruct
-         - nvidia/nemotron-mini-4b-instruct, nvidia/llama-3.1-nemotron-nano-vl-8b-v1
-         - qwen/qwen2.5-coder-32b-instruct
-         VERIFIED WORKING:
-         - nvidia/nemotron-4-340b-instruct ✓ (flagship, 340B)
-         - mistralai/mistral-7b-instruct-v0.3 ✓
-         - google/gemma-3-12b-it ✓ (NEW)
-         - google/gemma-3-4b-it ✓ (NEW)
-         - meta/llama-3.2-11b-vision-instruct ✓ (vision)
-         - meta/llama-3.2-90b-vision-instruct ✓ (vision) */
-      {id:'nvidia/nemotron-4-340b-instruct',provider:'nvidia',label:'Nemotron 4 340B',desc:'NVIDIA 340B — paling powerful di NIM',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'google/gemma-3-12b-it',provider:'nvidia',label:'Gemma 3 12B',desc:'Google 12B — Cerdas & stabil',tag:'Powerful',vision:false,cat:'Powerful AI',redeem:'powerful'},
-      {id:'google/gemma-3-4b-it',provider:'nvidia',label:'Gemma 3 4B',desc:'Google 4B — Cepat & ringan',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'mistralai/mistral-7b-instruct-v0.3',provider:'nvidia',label:'Mistral 7B v0.3',desc:'Mistral 7B, multibahasa',tag:'Powerful',vision:false,cat:'Powerful AI'},
-      {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI'},
+      /* ===== 5. Powerful AI — 4 models (Cloudflare only — NVIDIA removed) =====
+         NVIDIA NIM REMOVED per user request. Only Cloudflare Workers AI remains
+         (free 10K neurons/day, no API key issues, edge global). */
+      {id:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',provider:'cloudflare',label:'CF Llama 3.3 70B',desc:'Cloudflare — 70B powerful, edge cepat',tag:'CF',vision:false,cat:'Powerful AI',redeem:'powerful'},
       {id:'@cf/meta/llama-3.2-3b-instruct',provider:'cloudflare',label:'CF Llama 3.2 3B',desc:'Cloudflare — Super cepat, hemat token',tag:'CF',vision:false,cat:'Powerful AI'},
-      {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'}
+      {id:'@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',provider:'cloudflare',label:'CF DeepSeek R1 32B',desc:'Cloudflare — Reasoning, 32B powerful',tag:'CF',vision:false,cat:'Powerful AI'},
+      {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B Fast',desc:'Cloudflare — Instan, hemat token',tag:'CF',vision:false,cat:'Powerful AI'}
 
       /* ===== Image Generation (Free) ===== */
       ,{id:'pollinations/flux',provider:'pollinations',label:'Flux Image Gen',desc:'Pollinations — Generate gambar gratis, no API key',tag:'Image Gen',vision:false,cat:'Powerful AI'}
@@ -4666,6 +4664,9 @@
     document.addEventListener('DOMContentLoaded',function(){
       authInit();
       load();setModelLabel();updHist();updTop();
+      // Bug fix: clear search input on load (prevent stale account name leak)
+      var srchInput=document.getElementById('SRCH');
+      if(srchInput){srchInput.value='';updateSearchClear()}
       // If guest, force free Skelz model only
       if(isGuest()&&(selModel.cat!=='SkelzAI'||selModel.free===false)){selModel=MODELS[0];setModelLabel()}
       if(curId&&chats[curId])loadChat(curId);

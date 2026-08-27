@@ -58,11 +58,11 @@ const TIER_INFO = {
   },
   vision: {
     description: 'Unlock semua Vision AI models (analisis foto)',
-    models: ['gpt-4o-mini', 'meta/llama-3.2-90b-vision-instruct']
+    models: ['minimax/minimax-m3:free', 'google/gemma-4-31b-it:free']
   },
   powerful: {
     description: 'Unlock semua Powerful AI models',
-    models: ['nvidia/nemotron-4-340b-instruct', 'google/gemma-3-12b-it']
+    models: ['@cf/meta/llama-3.3-70b-instruct-fp8-fast']
   },
   skelz_premium: {
     description: 'Unlock semua Skelz premium models',
