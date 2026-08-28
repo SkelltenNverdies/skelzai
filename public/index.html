@@ -541,7 +541,7 @@
     }
     .new-chat-btn.nc-pulse{animation:ncPulse 1.6s ease-out 1s 3}
     /* ===== SEARCH — clear button + highlight ===== */
-    .srch-in:focus{border-color:rgba(217,119,87,.35)!important;background:rgba(38,37,36,.8)!important;box-shadow:0 0 0 3px rgba(217,119,87,.06)}
+    .srch-in:focus{border-color:rgba(217,119,87,.35)!important;background:#262524!important;box-shadow:0 0 0 3px rgba(217,119,87,.06)}
     /* Search clear button — always visible, not opacity-controlled */
     .srch-clear{color:#7C7770;transition:all .15s ease}
     .srch-clear:hover{color:#D97757;background:rgba(217,119,87,.1)}
@@ -1066,11 +1066,11 @@
       </button>
     </div>
     <div class="flex-1 overflow-y-auto px-3 pb-3 min-h-0">
-      <!-- Search bar -->
-      <div class="mb-2 px-2 relative">
+      <!-- Search bar — solid background, high z-index to prevent account name leak -->
+      <div class="mb-2 px-2 relative" style="z-index:20;position:relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
-        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch()" class="srch-in w-full bg-[#262524] border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all">
-        <button id="SRCH_CLEAR" onclick="clearSearch()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
+        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch()" class="srch-in w-full border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all" style="background:#262524 !important;position:relative;z-index:21">
+        <button id="SRCH_CLEAR" onclick="clearSearch()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" style="z-index:22" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
       </div>
       <div class="mb-2 px-2 flex items-center justify-between">
         <span class="text-[10px] uppercase tracking-[0.2em] text-[#7C7770] font-medium">Riwayat</span>
@@ -1082,7 +1082,7 @@
         <p class="text-xs text-[#7C7770]">Belum ada percakapan</p>
       </div>
     </div>
-    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918]" id="profileArea">
+    <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918] overflow-hidden" id="profileArea" style="position:relative;z-index:1">
       <div onclick="togPM(event)" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer select-none">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border-2 border-coral-400/30 flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR" style="box-shadow:0 0 0 1px rgba(217,119,87,0.15),0 2px 8px -2px rgba(217,119,87,0.3)"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.20.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.22.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1295,12 +1295,16 @@
         <button onclick="saveAcctEmail()" class="w-full px-4 py-2.5 rounded-xl text-sm bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors">Ganti Email</button>
       </div>
 
-      <!-- Section: Change Password -->
+      <!-- Section: Change Password (via email verification code, not old password) -->
       <div class="mb-4 pt-3 border-t border-white/[0.05]">
         <label class="text-[10px] uppercase tracking-[0.15em] text-[#7C7770] font-medium mb-2 block">Ganti Password</label>
-        <input id="ACCT_OLD_PASS" type="password" maxlength="50" placeholder="Password lama..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
+        <div class="flex gap-2 mb-2">
+          <input id="ACCT_PASS_CODE" type="text" maxlength="6" placeholder="Kode email (6 digit)..." class="flex-1 bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors text-center tracking-widest font-mono" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <button onclick="sendChangePassCode()" id="ACCT_PASS_SEND" class="px-3 py-2.5 rounded-xl text-xs bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors flex-shrink-0 whitespace-nowrap">Kirim Kode</button>
+        </div>
         <input id="ACCT_NEW_PASS" type="password" maxlength="50" placeholder="Password baru (min 4 karakter)..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors mb-2">
         <div id="ACCT_PASS_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mb-2"></div>
+        <div id="ACCT_PASS_SUCC" class="hidden text-xs text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-lg px-3 py-2 mb-2"></div>
         <button onclick="saveAcctPassword()" class="w-full px-4 py-2.5 rounded-xl text-sm bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors">Ganti Password</button>
       </div>
 
@@ -1449,15 +1453,11 @@
 
       <!-- Mode: Email reset -->
       <div id="FORGOT_RECOVERY_PANEL" class="space-y-3">
-        <!-- Step 1: Send code -->
+        <!-- Step 1: Send code (email only, no username needed) -->
         <div id="FORGOT_STEP1">
           <div>
-            <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Username</label>
-            <input id="FORGOT_USER" type="text" maxlength="20" placeholder="Masukkan username..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
-          </div>
-          <div>
-            <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block mt-3">Email</label>
-            <input id="FORGOT_EMAIL" type="email" maxlength="100" placeholder="nama@email.com" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors">
+            <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Email</label>
+            <input id="FORGOT_EMAIL" type="email" maxlength="100" placeholder="nama@email.com" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-colors" onkeydown="if(event.key==='Enter')sendResetCode()">
             <p class="text-[10px] text-[#7C7770] mt-1">Email yang kamu pakai saat daftar</p>
           </div>
           <div id="FORGOT_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
@@ -2132,10 +2132,13 @@
       // Clear errors
       document.getElementById('ACCT_EMAIL_ERR').classList.add('hidden');
       document.getElementById('ACCT_PASS_ERR').classList.add('hidden');
-      // Clear password fields
+      var aps=document.getElementById('ACCT_PASS_SUCC');
+      if(aps)aps.classList.add('hidden');
+      // Clear fields
       document.getElementById('ACCT_NEW_EMAIL').value='';
       document.getElementById('ACCT_EMAIL_PASS').value='';
-      document.getElementById('ACCT_OLD_PASS').value='';
+      var apc=document.getElementById('ACCT_PASS_CODE');
+      if(apc)apc.value='';
       document.getElementById('ACCT_NEW_PASS').value='';
       openM('ACCT');
     }
@@ -2186,23 +2189,61 @@
         toast(d.message||'Email berhasil diubah','success');
       }catch(e){errEl.textContent='Koneksi gagal';errEl.classList.remove('hidden')}
     }
+    // Send verification code to user's email for password change
+    async function sendChangePassCode(){
+      if(!authToken||!currentUser)return;
+      var errEl=document.getElementById('ACCT_PASS_ERR');
+      var succEl=document.getElementById('ACCT_PASS_SUCC');
+      var btn=document.getElementById('ACCT_PASS_SEND');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+      btn.disabled=true;
+      btn.textContent='Mengirim...';
+      try{
+        // Use the same send_reset_code action — server will find user by token
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'send_reset_code_by_token',token:authToken})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          errEl.textContent=d.error||'Gagal mengirim kode';
+          errEl.classList.remove('hidden');
+          btn.disabled=false;
+          btn.textContent='Kirim Kode';
+          return;
+        }
+        succEl.textContent='Kode verifikasi terkirim ke email kamu!';
+        succEl.classList.remove('hidden');
+        btn.textContent='Kirim Ulang';
+        btn.disabled=false;
+        toast('Kode terkirim ke email!','success');
+      }catch(e){
+        errEl.textContent='Koneksi gagal';
+        errEl.classList.remove('hidden');
+        btn.disabled=false;
+        btn.textContent='Kirim Kode';
+      }
+    }
+    // Change password using email verification code (NOT old password)
     async function saveAcctPassword(){
       if(!authToken||!currentUser)return;
-      var oldPass=document.getElementById('ACCT_OLD_PASS').value;
+      var code=document.getElementById('ACCT_PASS_CODE').value.trim();
       var newPass=document.getElementById('ACCT_NEW_PASS').value;
       var errEl=document.getElementById('ACCT_PASS_ERR');
       errEl.classList.add('hidden');
-      if(!oldPass){errEl.textContent='Password lama wajib diisi';errEl.classList.remove('hidden');return}
+      if(!code||code.length!==6){errEl.textContent='Kode harus 6 digit';errEl.classList.remove('hidden');return}
       if(!newPass||newPass.length<4){errEl.textContent='Password baru minimal 4 karakter';errEl.classList.remove('hidden');return}
       try{
         var r=await fetch('/api/auth',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'change_password',token:authToken,oldPassword:oldPass,newPassword:newPass})
+          body:JSON.stringify({action:'change_password_by_code',token:authToken,code:code,newPassword:newPass})
         });
         var d=await r.json();
         if(!r.ok){errEl.textContent=d.error||'Terjadi kesalahan';errEl.classList.remove('hidden');return}
-        document.getElementById('ACCT_OLD_PASS').value='';
+        document.getElementById('ACCT_PASS_CODE').value='';
         document.getElementById('ACCT_NEW_PASS').value='';
         toast(d.message||'Password berhasil diubah','success');
       }catch(e){errEl.textContent='Koneksi gagal';errEl.classList.remove('hidden')}
@@ -3190,7 +3231,9 @@
           btns[i].className='theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent';
         }
       }
-      toast('Tema diubah','success');
+      toast('Tema diubah — halaman akan refresh...','success');
+      // Auto-refresh to apply theme across all elements
+      setTimeout(function(){window.location.reload()},600);
     }
     function updateThemeColors(c1,c2,c3){
       // Force re-render by updating style elements
@@ -3247,7 +3290,9 @@
       }
       // Sync to server if logged in
       if(authToken&&currentUser){syncUserData()}
-      toast('Ukuran font: '+size,'info');
+      toast('Ukuran font: '+size+' — halaman akan refresh...','info');
+      // Auto-refresh to apply font size across all elements
+      setTimeout(function(){window.location.reload()},600);
     }
 
     /* ===== PROFILE PHOTO + CROP ===== */
@@ -3717,10 +3762,10 @@
         toast(d.message||'Berhasil!','success');
         // Load user data from server
         loadUserData(d.token);
-        // For register: show welcome modal with email confirmation instead of recovery code
+        // For register: just show toast (no recovery code modal needed — email is connected)
         if(authMode==='register'){
           setTimeout(function(){
-            showRegisterSuccessModal(user,email||d.email);
+            toast('Akun dibuat! Email '+email+' terdaftar untuk reset password.','success');
           },400);
         }
       }catch(e){
@@ -3766,19 +3811,24 @@
     var forgotMode='email';
     function openForgot(){
       closeM('AUTH');
-      // Reset form
-      document.getElementById('FORGOT_USER').value='';
+      // Reset form — no username field anymore
+      var fu=document.getElementById('FORGOT_USER');
+      if(fu)fu.value='';
       document.getElementById('FORGOT_EMAIL').value='';
       document.getElementById('FORGOT_CODE').value='';
       document.getElementById('FORGOT_NEWPASS').value='';
-      document.getElementById('FORGOT_DEL_USER').value='';
-      document.getElementById('FORGOT_DEL_CONFIRM').checked=false;
+      var fdu=document.getElementById('FORGOT_DEL_USER');
+      if(fdu)fdu.value='';
+      var fdc=document.getElementById('FORGOT_DEL_CONFIRM');
+      if(fdc)fdc.checked=false;
       document.getElementById('FORGOT_ERR').classList.add('hidden');
-      document.getElementById('FORGOT_ERR2').classList.add('hidden');
-      document.getElementById('FORGOT_DEL_ERR').classList.add('hidden');
+      var fe2=document.getElementById('FORGOT_ERR2');
+      if(fe2)fe2.classList.add('hidden');
+      var fde=document.getElementById('FORGOT_DEL_ERR');
+      if(fde)fde.classList.add('hidden');
       setForgotMode('email');
       openM('FORGOT');
-      setTimeout(function(){document.getElementById('FORGOT_USER').focus()},100);
+      setTimeout(function(){document.getElementById('FORGOT_EMAIL').focus()},100);
     }
     function setForgotMode(mode){
       forgotMode=mode||'email';
@@ -3818,14 +3868,12 @@
       err.textContent=msg;
       err.classList.remove('hidden');
     }
-    // Step 1: Send reset code to email
+    // Step 1: Send reset code to email (NO username needed — server finds user by email)
     async function sendResetCode(){
-      var user=document.getElementById('FORGOT_USER').value.trim();
       var email=document.getElementById('FORGOT_EMAIL').value.trim().toLowerCase();
       var err=document.getElementById('FORGOT_ERR');
       var btn=document.getElementById('FORGOT_BTN');
       err.classList.add('hidden');
-      if(!user||user.length<3){forgotShowError('Username minimal 3 karakter');return}
       if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){forgotShowError('Format email tidak valid');return}
       btn.disabled=true;
       btn.innerHTML='<span class="iconify" data-icon="mdi:loading"></span>Mengirim...';
@@ -3833,7 +3881,7 @@
         var r=await fetch('/api/auth',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'send_reset_code',username:user,email:email})
+          body:JSON.stringify({action:'send_reset_code',email:email})
         });
         var d=await r.json();
         if(!r.ok){
@@ -3855,9 +3903,8 @@
       btn.disabled=false;
       btn.innerHTML='<span class="iconify" data-icon="mdi:email-send-outline"></span>Kirim Kode Reset';
     }
-    // Step 2: Verify code + reset password
+    // Step 2: Verify code + reset password (NO username needed)
     async function submitForgotReset(){
-      var user=document.getElementById('FORGOT_USER').value.trim();
       var email=document.getElementById('FORGOT_EMAIL').value.trim().toLowerCase();
       var code=document.getElementById('FORGOT_CODE').value.trim();
       var newpass=document.getElementById('FORGOT_NEWPASS').value;
@@ -3872,7 +3919,7 @@
         var r=await fetch('/api/auth',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'reset_password',username:user,email:email,code:code,newPassword:newpass})
+          body:JSON.stringify({action:'reset_password',email:email,code:code,newPassword:newpass})
         });
         var d=await r.json();
         if(!r.ok){

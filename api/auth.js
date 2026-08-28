@@ -637,44 +637,75 @@ export default async function handler(req, res) {
       });
     }
 
-    // === SEND RESET CODE (email-based) ===
-    // Generates a 6-digit code, stores it in KV with 10min TTL, sends via Resend.
-    // User must then call 'reset_password' with the code + new password.
+    // === SEND RESET CODE (email-only — finds user by email) ===
+    // No username needed. Server scans users to find matching email.
     if (action === 'send_reset_code') {
       const email = (body.email || '').trim().toLowerCase();
-      if (!username) {
-        return res.status(400).json({ error: 'Username wajib diisi' });
-      }
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ error: 'Email tidak valid' });
       }
 
-      const userKey = `user:${username.toLowerCase()}`;
-      const userData = await kvGet(userKey);
-      if (!userData || typeof userData !== 'object') {
-        // SECURITY: don't reveal whether username exists
-        return res.status(404).json({ error: 'Akun tidak ditemukan. Periksa username dan email.' });
+      // Try email index first (fast path)
+      let username = null;
+      let userData = null;
+      const emailIndexKey = `email:${email}`;
+      const indexedUsername = await kvGet(emailIndexKey);
+      if (indexedUsername && typeof indexedUsername === 'string') {
+        username = indexedUsername;
+        userData = await kvGet(`user:${username.toLowerCase()}`);
       }
 
-      // Verify email matches the one on file
-      const storedEmail = (userData.email || '').trim().toLowerCase();
-      if (!storedEmail) {
-        // Legacy account without email — suggest delete + re-register
-        return res.status(400).json({
-          error: 'Akun ini tidak punya email terdaftar (dibuat sebelum fitur email aktif). Gunakan opsi "Hapus Akun" lalu daftar ulang dengan email.'
-        });
+      // If not in index, scan all users to find matching email (slow path)
+      if (!userData) {
+        try {
+          let cursor = 0;
+          const kvUrl = process.env.KV_REST_API_URL;
+          const kvToken = process.env.KV_REST_API_TOKEN;
+          if (kvUrl && kvToken) {
+            do {
+              const sr = await fetch(`${kvUrl}/scan/${cursor}?MATCH=user:*&COUNT=100`, {
+                headers: { 'Authorization': `Bearer ${kvToken}` }
+              });
+              const sd = await sr.json();
+              cursor = sd.cursor || 0;
+              if (Array.isArray(sd.result)) {
+                for (const item of sd.result) {
+                  const key = Array.isArray(item) ? item[0] : item;
+                  if (typeof key === 'string' && key.startsWith('user:')) {
+                    const u = await kvGet(key);
+                    if (u && typeof u === 'object' && (u.email || '').trim().toLowerCase() === email) {
+                      username = u.username;
+                      userData = u;
+                      // Save to index for next time (fast path)
+                      await kvSet(emailIndexKey, username);
+                      break;
+                    }
+                  }
+                }
+              }
+              if (cursor === 0) break;
+            } while (cursor !== 0 && !userData);
+          }
+        } catch (e) {
+          console.error('Scan error:', e);
+        }
       }
-      if (storedEmail !== email) {
-        return res.status(401).json({ error: 'Email tidak cocok dengan akun ini' });
+
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'Email tidak ditemukan. Periksa email kamu.' });
+      }
+
+      if (!(userData.email || '').trim().toLowerCase()) {
+        return res.status(400).json({
+          error: 'Akun ini tidak punya email terdaftar. Gunakan opsi "Hapus Akun" lalu daftar ulang dengan email.'
+        });
       }
 
       // Generate 6-digit code
       const resetCode = String(Math.floor(100000 + Math.random() * 900000));
       const resetKey = `resetcode:${username.toLowerCase()}`;
-      // Store code with 10min TTL
       await kvSet(resetKey, { code: resetCode, email: email, created: Date.now() }, 600);
 
-      // Send email via Resend
       const sendResult = await sendResetEmail(email, username, resetCode);
       if (!sendResult.success) {
         return res.status(503).json({
@@ -688,18 +719,133 @@ export default async function handler(req, res) {
       });
     }
 
-    // === RESET PASSWORD (verify code + set new password) ===
+    // === SEND RESET CODE BY TOKEN (for logged-in users changing password) ===
+    if (action === 'send_reset_code_by_token') {
+      if (!token) return res.status(401).json({ error: 'Token required' });
+      const sessionData = await kvGet(`session:${token}`);
+      if (!sessionData || typeof sessionData !== 'object' || sessionData.expires < Date.now()) {
+        return res.status(401).json({ error: 'Session expired' });
+      }
+      const userKey = `user:${sessionData.username.toLowerCase()}`;
+      const userData = await kvGet(userKey);
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      const email = (userData.email || '').trim().toLowerCase();
+      if (!email) {
+        return res.status(400).json({ error: 'Akun ini tidak punya email terdaftar' });
+      }
+
+      const resetCode = String(Math.floor(100000 + Math.random() * 900000));
+      const resetKey = `resetcode:${sessionData.username.toLowerCase()}`;
+      await kvSet(resetKey, { code: resetCode, email: email, created: Date.now() }, 600);
+
+      const sendResult = await sendResetEmail(email, sessionData.username, resetCode);
+      if (!sendResult.success) {
+        return res.status(503).json({ error: sendResult.error || 'Gagal mengirim email' });
+      }
+
+      return res.status(200).json({ success: true, message: 'Kode terkirim ke email kamu' });
+    }
+
+    // === CHANGE PASSWORD BY CODE (for logged-in users, verifies email code) ===
+    if (action === 'change_password_by_code') {
+      if (!token) return res.status(401).json({ error: 'Token required' });
+      const { code, newPassword } = body;
+      if (!code || !/^\d{6}$/.test(String(code).trim())) {
+        return res.status(400).json({ error: 'Kode harus 6 digit angka' });
+      }
+      if (!newPassword || newPassword.length < 4) {
+        return res.status(400).json({ error: 'Password baru minimal 4 karakter' });
+      }
+
+      const sessionData = await kvGet(`session:${token}`);
+      if (!sessionData || typeof sessionData !== 'object' || sessionData.expires < Date.now()) {
+        return res.status(401).json({ error: 'Session expired' });
+      }
+      const username = sessionData.username;
+
+      // Verify code
+      const resetKey = `resetcode:${username.toLowerCase()}`;
+      const storedReset = await kvGet(resetKey);
+      if (!storedReset || typeof storedReset !== 'object') {
+        return res.status(401).json({ error: 'Kode tidak ditemukan atau sudah expired. Minta kode baru.' });
+      }
+      if (String(storedReset.code) !== String(code).trim()) {
+        return res.status(401).json({ error: 'Kode salah. Cek lagi email kamu.' });
+      }
+
+      const userKey = `user:${username.toLowerCase()}`;
+      const userData = await kvGet(userKey);
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      userData.passwordHash = hashPassword(newPassword);
+      await kvSet(userKey, userData);
+      await kvDel(resetKey);
+
+      return res.status(200).json({ success: true, message: 'Password berhasil diubah' });
+    }
+
+    // === RESET PASSWORD (verify code + set new password — email only, no username) ===
     if (action === 'reset_password') {
       const { code, newPassword } = body;
       const email = (body.email || '').trim().toLowerCase();
-      if (!username) {
-        return res.status(400).json({ error: 'Username wajib diisi' });
+      if (!email) {
+        return res.status(400).json({ error: 'Email wajib diisi' });
       }
       if (!code || !/^\d{6}$/.test(String(code).trim())) {
         return res.status(400).json({ error: 'Kode harus 6 digit angka' });
       }
       if (!newPassword || newPassword.length < 4) {
         return res.status(400).json({ error: 'Password baru minimal 4 karakter' });
+      }
+
+      // Find user by email (try index first, then scan)
+      let username = null;
+      let userData = null;
+      const emailIndexKey = `email:${email}`;
+      const indexedUsername = await kvGet(emailIndexKey);
+      if (indexedUsername && typeof indexedUsername === 'string') {
+        username = indexedUsername;
+        userData = await kvGet(`user:${username.toLowerCase()}`);
+      }
+      if (!userData) {
+        // Scan to find user by email
+        try {
+          let cursor = 0;
+          const kvUrl = process.env.KV_REST_API_URL;
+          const kvToken = process.env.KV_REST_API_TOKEN;
+          if (kvUrl && kvToken) {
+            do {
+              const sr = await fetch(`${kvUrl}/scan/${cursor}?MATCH=user:*&COUNT=100`, {
+                headers: { 'Authorization': `Bearer ${kvToken}` }
+              });
+              const sd = await sr.json();
+              cursor = sd.cursor || 0;
+              if (Array.isArray(sd.result)) {
+                for (const item of sd.result) {
+                  const key = Array.isArray(item) ? item[0] : item;
+                  if (typeof key === 'string' && key.startsWith('user:')) {
+                    const u = await kvGet(key);
+                    if (u && typeof u === 'object' && (u.email || '').trim().toLowerCase() === email) {
+                      username = u.username;
+                      userData = u;
+                      await kvSet(emailIndexKey, username);
+                      break;
+                    }
+                  }
+                }
+              }
+              if (cursor === 0) break;
+            } while (cursor !== 0 && !userData);
+          }
+        } catch (e) {}
+      }
+
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'Akun tidak ditemukan' });
       }
 
       // Verify code
@@ -713,7 +859,6 @@ export default async function handler(req, res) {
       }
 
       const userKey = `user:${username.toLowerCase()}`;
-      const userData = await kvGet(userKey);
       if (!userData || typeof userData !== 'object') {
         return res.status(404).json({ error: 'Akun tidak ditemukan' });
       }
