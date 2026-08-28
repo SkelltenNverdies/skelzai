@@ -979,6 +979,161 @@ export default async function handler(req, res) {
       });
     }
 
+    // === SEND DELETE CODE (email-based, for account deletion) ===
+    // Finds user by email, sends 6-digit code, stores in KV with 10min TTL
+    if (action === 'send_delete_code') {
+      const email = (body.email || '').trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Email tidak valid' });
+      }
+
+      // Find user by email (same logic as send_reset_code)
+      let username = null;
+      let userData = null;
+      const emailIndexKey = `email:${email}`;
+      const indexedUsername = await kvGet(emailIndexKey);
+      if (indexedUsername && typeof indexedUsername === 'string') {
+        username = indexedUsername;
+        userData = await kvGet(`user:${username.toLowerCase()}`);
+      }
+      if (!userData) {
+        try {
+          let cursor = 0;
+          const kvUrl = process.env.KV_REST_API_URL;
+          const kvToken = process.env.KV_REST_API_TOKEN;
+          if (kvUrl && kvToken) {
+            do {
+              const sr = await fetch(`${kvUrl}/scan/${cursor}?MATCH=user:*&COUNT=100`, {
+                headers: { 'Authorization': `Bearer ${kvToken}` }
+              });
+              const sd = await sr.json();
+              cursor = sd.cursor || 0;
+              if (Array.isArray(sd.result)) {
+                for (const item of sd.result) {
+                  const key = Array.isArray(item) ? item[0] : item;
+                  if (typeof key === 'string' && key.startsWith('user:')) {
+                    const u = await kvGet(key);
+                    if (u && typeof u === 'object' && (u.email || '').trim().toLowerCase() === email) {
+                      username = u.username;
+                      userData = u;
+                      await kvSet(emailIndexKey, username);
+                      break;
+                    }
+                  }
+                }
+              }
+              if (cursor === 0) break;
+            } while (cursor !== 0 && !userData);
+          }
+        } catch (e) {}
+      }
+
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'Email tidak ditemukan' });
+      }
+
+      const delCode = String(Math.floor(100000 + Math.random() * 900000));
+      const delKey = `delcode:${username.toLowerCase()}`;
+      await kvSet(delKey, { code: delCode, email: email, created: Date.now() }, 600);
+
+      const sendResult = await sendResetEmail(email, username, delCode);
+      if (!sendResult.success) {
+        return res.status(503).json({ error: sendResult.error || 'Gagal mengirim email' });
+      }
+
+      return res.status(200).json({ success: true, message: 'Kode verifikasi terkirim' });
+    }
+
+    // === DELETE ACCOUNT BY CODE (verifies email code, then deletes account) ===
+    if (action === 'delete_account_by_code') {
+      const email = (body.email || '').trim().toLowerCase();
+      const { code } = body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email wajib diisi' });
+      }
+      if (!code || !/^\d{6}$/.test(String(code).trim())) {
+        return res.status(400).json({ error: 'Kode harus 6 digit angka' });
+      }
+
+      // Find user by email
+      let username = null;
+      let userData = null;
+      const emailIndexKey = `email:${email}`;
+      const indexedUsername = await kvGet(emailIndexKey);
+      if (indexedUsername && typeof indexedUsername === 'string') {
+        username = indexedUsername;
+        userData = await kvGet(`user:${username.toLowerCase()}`);
+      }
+      if (!userData) {
+        try {
+          let cursor = 0;
+          const kvUrl = process.env.KV_REST_API_URL;
+          const kvToken = process.env.KV_REST_API_TOKEN;
+          if (kvUrl && kvToken) {
+            do {
+              const sr = await fetch(`${kvUrl}/scan/${cursor}?MATCH=user:*&COUNT=100`, {
+                headers: { 'Authorization': `Bearer ${kvToken}` }
+              });
+              const sd = await sr.json();
+              cursor = sd.cursor || 0;
+              if (Array.isArray(sd.result)) {
+                for (const item of sd.result) {
+                  const key = Array.isArray(item) ? item[0] : item;
+                  if (typeof key === 'string' && key.startsWith('user:')) {
+                    const u = await kvGet(key);
+                    if (u && typeof u === 'object' && (u.email || '').trim().toLowerCase() === email) {
+                      username = u.username;
+                      userData = u;
+                      await kvSet(emailIndexKey, username);
+                      break;
+                    }
+                  }
+                }
+              }
+              if (cursor === 0) break;
+            } while (cursor !== 0 && !userData);
+          }
+        } catch (e) {}
+      }
+
+      if (!userData || typeof userData !== 'object') {
+        return res.status(404).json({ error: 'Akun tidak ditemukan' });
+      }
+
+      // Verify code
+      const delKey = `delcode:${username.toLowerCase()}`;
+      const storedDel = await kvGet(delKey);
+      if (!storedDel || typeof storedDel !== 'object') {
+        return res.status(401).json({ error: 'Kode tidak ditemukan atau sudah expired. Minta kode baru.' });
+      }
+      if (String(storedDel.code) !== String(code).trim()) {
+        return res.status(401).json({ error: 'Kode salah. Cek lagi email kamu.' });
+      }
+
+      // Delete all sessions
+      if (userData.sessions && Array.isArray(userData.sessions)) {
+        for (const s of userData.sessions) {
+          if (s && s.token) {
+            await kvDel(`session:${s.token}`);
+          }
+        }
+      }
+
+      // Delete user data
+      const userKey = `user:${username.toLowerCase()}`;
+      await kvDel(userKey);
+      // Delete email index
+      await kvDel(`email:${email}`);
+      // Delete reset/delete codes
+      await kvDel(delKey);
+      await kvDel(`resetcode:${username.toLowerCase()}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Akun berhasil dihapus permanen.'
+      });
+    }
+
     // === LEGACY: FORGOT PASSWORD via recovery code ===
     // Kept for backward compat — old clients still call this action.
     // New clients use send_reset_code + reset_password instead.

@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.23.1</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.24.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1484,22 +1484,39 @@
         <p class="text-[10px] text-[#7C7770] text-center mt-2">Semua session di device lain akan logout otomatis</p>
       </div>
 
-      <!-- Mode: Delete account -->
+      <!-- Mode: Delete account (via email + verification code) -->
       <div id="FORGOT_DELETE_PANEL" class="hidden space-y-3">
         <div class="bg-red-500/5 border border-red-500/15 rounded-lg p-3">
           <p class="text-xs text-red-300 font-medium mb-1.5 flex items-center gap-1.5"><span class="iconify" data-icon="mdi:alert-circle-outline"></span>Peringatan</p>
           <p class="text-[11px] text-red-400/80 leading-relaxed">Tindakan ini akan <strong>menghapus permanen</strong> akun beserta semua chat, riwayat, dan pengaturan. Username bisa dipakai daftar ulang. <strong>Tidak bisa dibatalkan.</strong></p>
         </div>
-        <div>
-          <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Username yang ingin dihapus</label>
-          <input id="FORGOT_DEL_USER" type="text" maxlength="20" placeholder="Masukkan username..." class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-red-400/30 transition-colors">
+        <!-- Step 1: Email + send code -->
+        <div id="DEL_STEP1">
+          <div>
+            <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Email Akun yang Dihapus</label>
+            <input id="FORGOT_DEL_EMAIL" type="email" maxlength="100" placeholder="nama@email.com" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-red-400/30 transition-colors">
+            <p class="text-[10px] text-[#7C7770] mt-1">Kode verifikasi akan dikirim ke email ini</p>
+          </div>
+          <div id="FORGOT_DEL_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
+          <button id="FORGOT_DEL_SEND" onclick="sendDeleteCode()" class="w-full mt-2 px-4 py-3 rounded-xl text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"><span class="iconify" data-icon="mdi:email-send-outline"></span>Kirim Kode Verifikasi</button>
         </div>
-        <div class="flex items-center gap-2">
-          <input id="FORGOT_DEL_CONFIRM" type="checkbox" class="w-4 h-4 rounded accent-red-400">
-          <label for="FORGOT_DEL_CONFIRM" class="text-xs text-[#C2BFB8] select-none cursor-pointer">Saya mengerti, hapus akun ini permanen</label>
+        <!-- Step 2: Enter code + confirm -->
+        <div id="DEL_STEP2" class="hidden">
+          <div class="bg-emerald-500/5 border border-emerald-500/15 rounded-lg p-3 mb-2">
+            <p class="text-[11px] text-emerald-300/90 flex items-center gap-1.5"><span class="iconify" data-icon="mdi:email-check-outline"></span>Kode terkirim ke <strong id="DEL_EMAIL_DISPLAY" class="text-emerald-300">-</strong></p>
+          </div>
+          <div>
+            <label class="text-[11px] text-[#7C7770] font-medium uppercase tracking-wider mb-1.5 block">Kode Verifikasi (6 digit)</label>
+            <input id="FORGOT_DEL_CODE" type="text" maxlength="6" placeholder="123456" class="w-full bg-[#262524]/80 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-cream-50 placeholder-[#7C7770] outline-none focus:border-red-400/30 transition-colors uppercase tracking-widest font-mono text-center" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <input id="FORGOT_DEL_CONFIRM" type="checkbox" class="w-4 h-4 rounded accent-red-400">
+            <label for="FORGOT_DEL_CONFIRM" class="text-xs text-[#C2BFB8] select-none cursor-pointer">Saya mengerti, hapus akun ini permanen</label>
+          </div>
+          <div id="FORGOT_DEL_ERR2" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2 mt-2"></div>
+          <button id="FORGOT_DEL_BTN" onclick="submitDeleteAccount()" class="w-full mt-2 px-4 py-3 rounded-xl text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"><span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen</button>
+          <button onclick="resetDeleteStep()" class="w-full mt-2 text-xs text-[#7C7770] hover:text-coral-400 transition-colors">← Ganti email</button>
         </div>
-        <div id="FORGOT_DEL_ERR" class="hidden text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded-lg px-3 py-2"></div>
-        <button id="FORGOT_DEL_BTN" onclick="submitDeleteAccount()" class="w-full px-4 py-3 rounded-xl text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"><span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen</button>
       </div>
 
       <div class="mt-4 pt-4 border-t border-white/[0.06] text-center">
@@ -3813,15 +3830,27 @@
       document.getElementById('FORGOT_EMAIL').value='';
       document.getElementById('FORGOT_CODE').value='';
       document.getElementById('FORGOT_NEWPASS').value='';
-      var fdu=document.getElementById('FORGOT_DEL_USER');
-      if(fdu)fdu.value='';
-      var fdc=document.getElementById('FORGOT_DEL_CONFIRM');
-      if(fdc)fdc.checked=false;
+      // Reset delete panel
+      var fde=document.getElementById('FORGOT_DEL_EMAIL');
+      if(fde)fde.value='';
+      var fdc=document.getElementById('FORGOT_DEL_CODE');
+      if(fdc)fdc.value='';
+      var fdcb=document.getElementById('FORGOT_DEL_CONFIRM');
+      if(fdcb)fdcb.checked=false;
+      // Reset delete step to step 1
+      var ds1=document.getElementById('DEL_STEP1'),ds2=document.getElementById('DEL_STEP2');
+      if(ds1)ds1.classList.remove('hidden');
+      if(ds2)ds2.classList.add('hidden');
+      // Reset send button text
+      var fds=document.getElementById('FORGOT_DEL_SEND');
+      if(fds){fds.disabled=false;fds.innerHTML='<span class="iconify" data-icon="mdi:email-send-outline"></span>Kirim Kode Verifikasi'}
       document.getElementById('FORGOT_ERR').classList.add('hidden');
       var fe2=document.getElementById('FORGOT_ERR2');
       if(fe2)fe2.classList.add('hidden');
-      var fde=document.getElementById('FORGOT_DEL_ERR');
-      if(fde)fde.classList.add('hidden');
+      var fde2=document.getElementById('FORGOT_DEL_ERR2');
+      if(fde2)fde2.classList.add('hidden');
+      var fde1=document.getElementById('FORGOT_DEL_ERR');
+      if(fde1)fde1.classList.add('hidden');
       setForgotMode('email');
       openM('FORGOT');
       setTimeout(function(){document.getElementById('FORGOT_EMAIL').focus()},100);
@@ -3934,37 +3963,79 @@
       btn.disabled=false;
       btn.textContent='Reset Password';
     }
-    async function submitDeleteAccount(){
-      var user=document.getElementById('FORGOT_DEL_USER').value.trim();
-      var confirm=document.getElementById('FORGOT_DEL_CONFIRM').checked;
+    // Send verification code for account deletion (via email, no username)
+    async function sendDeleteCode(){
+      var email=document.getElementById('FORGOT_DEL_EMAIL').value.trim().toLowerCase();
       var err=document.getElementById('FORGOT_DEL_ERR');
-      var btn=document.getElementById('FORGOT_DEL_BTN');
+      var btn=document.getElementById('FORGOT_DEL_SEND');
       err.classList.add('hidden');
-      if(!user||user.length<3){forgotDelShowError('Username minimal 3 karakter');return}
-      if(!confirm){forgotDelShowError('Centang konfirmasi untuk menghapus akun');return}
+      if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){forgotDelShowError('Format email tidak valid');return}
+      btn.disabled=true;
+      btn.innerHTML='<span class="iconify" data-icon="mdi:loading"></span>Mengirim...';
+      try{
+        var r=await fetch('/api/auth',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'send_delete_code',email:email})
+        });
+        var d=await r.json();
+        if(!r.ok){
+          forgotDelShowError(d.error||'Gagal mengirim kode');
+          btn.disabled=false;
+          btn.innerHTML='<span class="iconify" data-icon="mdi:email-send-outline"></span>Kirim Kode Verifikasi';
+          return;
+        }
+        // Success — show step 2
+        document.getElementById('DEL_EMAIL_DISPLAY').textContent=email;
+        document.getElementById('DEL_STEP1').classList.add('hidden');
+        document.getElementById('DEL_STEP2').classList.remove('hidden');
+        toast('Kode verifikasi terkirim!','success');
+        setTimeout(function(){document.getElementById('FORGOT_DEL_CODE').focus()},200);
+      }catch(e){
+        forgotDelShowError('Koneksi gagal. Periksa internet Anda.');
+        btn.disabled=false;
+        btn.innerHTML='<span class="iconify" data-icon="mdi:email-send-outline"></span>Kirim Kode Verifikasi';
+      }
+    }
+    function resetDeleteStep(){
+      document.getElementById('DEL_STEP1').classList.remove('hidden');
+      document.getElementById('DEL_STEP2').classList.add('hidden');
+      document.getElementById('FORGOT_DEL_CODE').value='';
+      document.getElementById('FORGOT_DEL_CONFIRM').checked=false;
+      var e2=document.getElementById('FORGOT_DEL_ERR2');
+      if(e2)e2.classList.add('hidden');
+    }
+    async function submitDeleteAccount(){
+      var email=document.getElementById('FORGOT_DEL_EMAIL').value.trim().toLowerCase();
+      var code=document.getElementById('FORGOT_DEL_CODE').value.trim();
+      var confirm=document.getElementById('FORGOT_DEL_CONFIRM').checked;
+      var err=document.getElementById('FORGOT_DEL_ERR2');
+      var btn=document.getElementById('FORGOT_DEL_BTN');
+      if(err)err.classList.add('hidden');
+      if(!code||code.length!==6){if(err){err.textContent='Kode harus 6 digit';err.classList.remove('hidden')}return}
+      if(!confirm){if(err){err.textContent='Centang konfirmasi untuk menghapus akun';err.classList.remove('hidden')}return}
       // Double confirm
-      showConfirm('Hapus Akun Permanen','Akun "'+user+'" dan SEMUA data akan dihapus permanen. Yakin?',async function(){
+      showConfirm('Hapus Akun Permanen','Akun dengan email "'+email+'" dan SEMUA data akan dihapus permanen. Yakin?',async function(){
         btn.disabled=true;
         btn.textContent='Menghapus...';
         try{
           var r=await fetch('/api/auth',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({action:'delete_account',username:user})
+            body:JSON.stringify({action:'delete_account_by_code',email:email,code:code})
           });
           var d=await r.json();
           if(!r.ok){
-            forgotDelShowError(d.error||'Terjadi kesalahan');
+            if(err){err.textContent=d.error||'Terjadi kesalahan';err.classList.remove('hidden')}
             btn.disabled=false;
             btn.innerHTML='<span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen';
             return;
           }
           closeM('FORGOT');
-          toast('Akun dihapus. Silakan daftar ulang dengan username yang sama.','success');
-          // Open register modal prefilled
-          setTimeout(function(){openAuth('register');document.getElementById('AUTH_USER').value=user},300);
+          toast('Akun dihapus permanen.','success');
+          setTimeout(function(){openAuth('register')},300);
         }catch(e){
-          forgotDelShowError('Koneksi gagal. Periksa internet Anda.');
+          if(err){err.textContent='Koneksi gagal';err.classList.remove('hidden')}
         }
         btn.disabled=false;
         btn.innerHTML='<span class="iconify" data-icon="mdi:trash-can-outline"></span>Hapus Akun Permanen';
