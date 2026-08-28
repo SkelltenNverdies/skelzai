@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.23.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.23.1</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -3232,8 +3232,6 @@
         }
       }
       toast('Tema diubah','success');
-      // Auto-refresh ONLY if user explicitly clicked (not during page init)
-      if(window._initDone){setTimeout(function(){window.location.reload()},600)}
     }
     function updateThemeColors(c1,c2,c3){
       // Force re-render by updating style elements
@@ -3291,8 +3289,6 @@
       // Sync to server if logged in
       if(authToken&&currentUser){syncUserData()}
       toast('Ukuran font: '+size,'info');
-      // Auto-refresh ONLY if user explicitly clicked (not during page init)
-      if(window._initDone){setTimeout(function(){window.location.reload()},600)}
     }
 
     /* ===== PROFILE PHOTO + CROP ===== */
@@ -4981,9 +4977,6 @@
         window.history.replaceState({},document.title,'/');
         setTimeout(function(){newChat();},100);
       }
-
-      // Mark init as done — allows auto-refresh for theme/font changes
-      window._initDone=true;
 
       // Register service worker for PWA offline support
       if('serviceWorker' in navigator){
