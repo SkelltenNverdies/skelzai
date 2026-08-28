@@ -152,7 +152,7 @@ const PROVIDERS = {
     envVar: 'SILICONFLOW_API_KEYS',
     singleKeyEnvVar: 'SILICONFLOW_API_KEY',
     fallbackKey: null,
-    url: 'https://api.siliconflow.cn/v1/chat/completions',
+    url: 'https://api.siliconflow.com/v1/chat/completions',
     headers: (k) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` })
   },
   pollinations: {

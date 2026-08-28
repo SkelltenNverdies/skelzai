@@ -1084,7 +1084,7 @@
     </div>
     <div class="p-3 border-t border-white/[0.06] flex-shrink-0 bg-[#1A1918]" id="profileArea">
       <div onclick="togPM(event)" class="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer select-none">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border-2 border-coral-400/30 flex items-center justify-center overflow-hidden flex-shrink-0" id="PROFILE_AVATAR" style="box-shadow:0 0 0 1px rgba(217,119,87,0.15),0 2px 8px -2px rgba(217,119,87,0.3)"><span class="iconify text-[#C2BFB8] text-sm" data-icon="mdi:account" id="PROFILE_AVATAR_ICON"></span></div>
         <div class="flex-1 min-w-0">
           <p class="text-sm text-[#E5E3DA] truncate" id="UN">Guest User</p>
           <p class="text-[10px] text-[#7C7770]" id="UN_PLAN">Free Plan (SkelzAI only)</p>
@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.18.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.20.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -1259,7 +1259,7 @@
       <!-- Account info card -->
       <div class="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 mb-4">
         <div class="flex items-center gap-3">
-          <div class="w-14 h-14 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border border-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0" id="ACCT_AVATAR"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:account"></span></div>
+          <div class="w-14 h-14 rounded-full bg-gradient-to-br from-coral-500 to-coral-600 border-2 border-coral-400/30 flex items-center justify-center overflow-hidden flex-shrink-0" id="ACCT_AVATAR" style="box-shadow:0 0 0 2px rgba(217,119,87,0.15),0 4px 12px -2px rgba(217,119,87,0.4)"><span class="iconify text-[#C2BFB8] text-lg" data-icon="mdi:account"></span></div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium text-cream-50 truncate" id="ACCT_USERNAME">-</div>
             <div class="text-[11px] text-[#7C7770] truncate" id="ACCT_EMAIL">-</div>
@@ -1311,6 +1311,51 @@
           <span class="iconify text-base" data-icon="mdi:trash-can-outline"></span>
           <span>Hapus Akun Permanen</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTO CROP MODAL -->
+  <div id="CROP" class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)cancelCrop()">
+    <div class="glass-s rounded-2xl p-6 w-full max-w-sm mx-4 amsi" onclick="event.stopPropagation()">
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/20 flex items-center justify-center mx-auto mb-3"><span class="iconify text-coral-400 text-2xl" data-icon="mdi:crop"></span></div>
+        <h3 class="text-lg font-semibold text-cream-50 mb-1">Crop Foto Profil</h3>
+        <p class="text-xs text-[#7C7770]">Geser & zoom untuk pas</p>
+      </div>
+      <div class="relative bg-[#161514] rounded-xl overflow-hidden mb-4" style="height:280px">
+        <canvas id="CROP_CANVAS" width="280" height="280" class="absolute inset-0 w-full h-full"></canvas>
+        <div id="CROP_OVERLAY" class="absolute inset-0 pointer-events-none" style="background:rgba(0,0,0,0.5)"></div>
+        <!-- Crop circle guide -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style="width:220px;height:220px;border-radius:50%;border:2px solid rgba(217,119,87,0.6);box-shadow:0 0 0 9999px rgba(0,0,0,0.5)"></div>
+      </div>
+      <div class="flex items-center gap-3 mb-4">
+        <button onclick="zoomCrop(-0.1)" class="w-9 h-9 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center transition-colors flex-shrink-0"><span class="iconify text-[#C2BFB8]" data-icon="mdi:minus"></span></button>
+        <input id="CROP_ZOOM" type="range" min="0.5" max="3" step="0.05" value="1" oninput="setZoom(this.value)" class="flex-1 accent-coral-400">
+        <button onclick="zoomCrop(0.1)" class="w-9 h-9 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center transition-colors flex-shrink-0"><span class="iconify text-[#C2BFB8]" data-icon="mdi:plus"></span></button>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="cancelCrop()" class="flex-1 px-4 py-2.5 rounded-xl text-sm text-[#C2BFB8] hover:bg-white/[0.03] transition-colors">Batal</button>
+        <button onclick="applyCrop()" class="flex-1 px-4 py-2.5 rounded-xl text-sm bg-coral-400 hover:bg-coral-500 text-white font-medium transition-colors">Terapkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILE PREVIEW MODAL -->
+  <div id="PVW" class="fixed inset-0 z-[115] hidden items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this)closeM('PVW')">
+    <div class="glass-s rounded-2xl p-5 w-full max-w-2xl mx-4 amsi max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-coral-400/20 to-coral-500/10 border border-coral-400/15 flex items-center justify-center flex-shrink-0"><span class="iconify text-coral-400 text-sm" data-icon="mdi:file-eye-outline"></span></div>
+          <span id="PVW_TITLE" class="text-sm font-medium text-cream-50 truncate">Preview</span>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="PVW_DL" onclick="downloadPreviewFile(this)" class="px-3 py-1.5 rounded-lg text-xs bg-coral-400/10 text-coral-400 border border-coral-400/25 hover:bg-coral-400/20 transition-colors flex items-center gap-1.5"><span class="iconify text-xs" data-icon="mdi:download"></span>Download</button>
+          <button onclick="closeM('PVW')" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-colors"><span class="iconify text-[#9C9590]" data-icon="mdi:close"></span></button>
+        </div>
+      </div>
+      <div class="flex-1 min-h-0 bg-white rounded-xl overflow-hidden">
+        <iframe id="PVW_IFRAME" class="w-full h-full border-0" style="min-height:400px" sandbox="allow-scripts"></iframe>
       </div>
     </div>
   </div>
@@ -1807,24 +1852,6 @@
       {id:'openai/gpt-oss-120b',provider:'groq',label:'GPT-OSS 120B',desc:'OpenAI open-source 120B — paling powerful',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'openai/gpt-oss-20b',provider:'groq',label:'GPT-OSS 20B',desc:'OpenAI open-source 20B — cepat & ringan',tag:'Cepat',vision:false,cat:'Fast Chat'},
       {id:'@cf/meta/llama-3.1-8b-instruct-fast',provider:'cloudflare',label:'CF Llama 3.1 8B',desc:'Cloudflare — Edge global, gratis 10K/hari',tag:'CF',vision:false,cat:'Fast Chat'},
-
-      /* ===== 2.5. SiliconFlow AI — 8 models (FREE 14.4M tokens/day!) =====
-         SiliconFlow: https://cloud.siliconflow.cn — free 14.4M tokens/day permanen.
-         Set env var: SILICONFLOW_API_KEY atau SILICONFLOW_API_KEYS=key1,key2
-         All models below are FREE (no charge). */
-      {id:'deepseek-ai/DeepSeek-V3',provider:'siliconflow',label:'DeepSeek V3',desc:'SiliconFlow — Powerful & cepat, gratis',tag:'SF',vision:false,cat:'Fast Chat'},
-      {id:'Qwen/Qwen2.5-72B-Instruct',provider:'siliconflow',label:'Qwen 2.5 72B',desc:'SiliconFlow — 72B powerful, multibahasa',tag:'SF',vision:false,cat:'Fast Chat'},
-      {id:'meta-llama/Llama-3.3-70B-Instruct',provider:'siliconflow',label:'Llama 3.3 70B',desc:'SiliconFlow — Meta 70B, stabil',tag:'SF',vision:false,cat:'Fast Chat'},
-      {id:'Qwen/Qwen2.5-7B-Instruct',provider:'siliconflow',label:'Qwen 2.5 7B',desc:'SiliconFlow — Cepat & ringan',tag:'SF',vision:false,cat:'Fast Chat'},
-      {id:'google/gemma-2-9b-it',provider:'siliconflow',label:'Gemma 2 9B',desc:'SiliconFlow — Google 9B, cepat',tag:'SF',vision:false,cat:'Fast Chat'},
-      {id:'deepseek-ai/DeepSeek-R1',provider:'siliconflow',label:'DeepSeek R1',desc:'SiliconFlow — Reasoning, super cerdas',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
-      {id:'Qwen/Qwen2.5-Coder-32B-Instruct',provider:'siliconflow',label:'Qwen Coder 32B',desc:'SiliconFlow — Khusus coding, 32B',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
-      {id:'Qwen/QwQ-32B-Preview',provider:'siliconflow',label:'QwQ 32B',desc:'SiliconFlow — Reasoning + logika',tag:'SF',vision:false,cat:'Fast Chat',redeem:'premium'},
-
-      /* ===== 2.6. SiliconFlow Vision — 3 models (FREE vision) ===== */
-      {id:'Qwen/Qwen2.5-VL-7B-Instruct',provider:'siliconflow',label:'SF Qwen VL 7B',desc:'SiliconFlow — Vision, analisis foto',tag:'SF Vision',vision:true,cat:'Vision AI'},
-      {id:'Qwen/Qwen2.5-VL-32B-Instruct',provider:'siliconflow',label:'SF Qwen VL 32B',desc:'SiliconFlow — Vision 32B, powerful',tag:'SF Vision',vision:true,cat:'Vision AI',redeem:'vision'},
-      {id:'Qwen/Qwen2-VL-72B-Instruct',provider:'siliconflow',label:'SF Qwen VL 72B',desc:'SiliconFlow — Vision 72B, paling akurat',tag:'SF Vision',vision:true,cat:'Vision AI',redeem:'vision'},
 
       /* ===== 3. Premium AI — 9 models (OpenRouter free — VERIFIED Aug 27 2026) =====
          NVIDIA NIM REMOVED per user request (too many 404 errors).
@@ -3142,17 +3169,26 @@
       root.style.setProperty('--coral-300',c2);
       root.style.setProperty('--coral-600',c3);
       // Update Tailwind config
-      tailwind.config.theme.extend.colors.coral['400']=c1;
-      tailwind.config.theme.extend.colors.coral['300']=c2;
-      tailwind.config.theme.extend.colors.coral['600']=c3;
+      try{
+        tailwind.config.theme.extend.colors.coral['400']=c1;
+        tailwind.config.theme.extend.colors.coral['300']=c2;
+        tailwind.config.theme.extend.colors.coral['600']=c3;
+      }catch(e){}
       // Save to localStorage
       localStorage.setItem('sk_theme_color',JSON.stringify({c1,c2,c3}));
       // Update all coral elements
       updateThemeColors(c1,c2,c3);
-      // Update button borders
+      // Update button borders — use data-color attribute for reliable matching
       var btns=document.querySelectorAll('.theme-color-btn');
       for(var i=0;i<btns.length;i++){
-        btns[i].className='theme-color-btn w-10 h-10 rounded-lg border-2 '+(btns[i].style.backgroundColor.includes(c1.toLowerCase().replace('#',''))?'border-coral-400':'border-transparent');
+        var btnColor=btns[i].getAttribute('data-color');
+        // Compare button's first color (from onclick) with c1
+        var btnC1=btns[i].getAttribute('style')||'';
+        if(btnC1.indexOf(c1)!==-1){
+          btns[i].className='theme-color-btn w-10 h-10 rounded-lg border-2 border-coral-400';
+        }else{
+          btns[i].className='theme-color-btn w-10 h-10 rounded-lg border-2 border-transparent';
+        }
       }
       toast('Tema diubah','success');
     }
@@ -3198,20 +3234,27 @@
       if(old)old.remove();
       style.textContent=`.md{font-size:${size}!important}.msg-pad p{font-size:${size}!important}`;
       document.head.appendChild(style);
-      // Update button highlights
+      // Update button highlights — compare data-size with size (both may or may not have 'px')
       var btns=document.querySelectorAll('.theme-font-btn');
+      var sizeNum=size.replace('px','');
       for(var i=0;i<btns.length;i++){
         var s=btns[i].getAttribute('data-size');
-        if((''+s+'px')===size){
+        if(s===sizeNum||s===size){
           btns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-coral-400 bg-coral-400/10 border border-coral-400/20 transition-colors';
         }else{
           btns[i].className='theme-font-btn flex-1 py-2 rounded-lg text-xs text-[#C2BFB8] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-colors';
         }
       }
+      // Sync to server if logged in
+      if(authToken&&currentUser){syncUserData()}
       toast('Ukuran font: '+size,'info');
     }
 
-    /* ===== PROFILE PHOTO ===== */
+    /* ===== PROFILE PHOTO + CROP ===== */
+    // Crop state
+    var _cropImg=null;
+    var _cropState={zoom:1,offsetX:0,offsetY:0,isDragging:false,dragStartX:0,dragStartY:0,startOffsetX:0,startOffsetY:0};
+
     function handleProfilePhoto(e){
       // Guard: guests cannot upload profile photo
       if(!currentUser){
@@ -3225,26 +3268,15 @@
       var r=new FileReader();
       r.onload=function(ev){
         var photo=ev.target.result;
-        // Compress image to max 200x200 JPEG quality 0.7 to avoid
-        // Vercel FUNCTION_PAYLOAD_TOO_LARGE (4.5MB body limit).
-        // Base64 of a 200x200 JPEG at 0.7 quality ≈ 5-15KB (well under limit).
         var img=new Image();
         img.onload=function(){
-          var canvas=document.createElement('canvas');
-          var maxDim=200;
-          var w=img.width,h=img.height;
-          if(w>h){if(w>maxDim){h=h*maxDim/w;w=maxDim}}else{if(h>maxDim){w=w*maxDim/h;h=maxDim}}
-          canvas.width=w;canvas.height=h;
-          var ctx=canvas.getContext('2d');
-          ctx.drawImage(img,0,0,w,h);
-          var compressed=canvas.toDataURL('image/jpeg',0.7);
-          localStorage.setItem('sk_photo',compressed);
-          updateProfilePhoto();
-          // Sync to server if logged in
-          if(authToken&&currentUser){
-            syncUserData();
-          }
-          toast('Foto profil diperbarui!','success');
+          _cropImg=img;
+          _cropState={zoom:1,offsetX:0,offsetY:0,isDragging:false,dragStartX:0,dragStartY:0,startOffsetX:0,startOffsetY:0};
+          // Close any open modals first
+          try{closeM('ACCT')}catch(e){}
+          try{closePM()}catch(e){}
+          openM('CROP');
+          setTimeout(drawCrop,50);
         };
         img.onerror=function(){toast('Gagal memproses foto','error')};
         img.src=photo;
@@ -3253,6 +3285,121 @@
       r.readAsDataURL(f);
       e.target.value='';
     }
+
+    function drawCrop(){
+      if(!_cropImg)return;
+      var canvas=document.getElementById('CROP_CANVAS');
+      if(!canvas)return;
+      var ctx=canvas.getContext('2d');
+      var cw=canvas.width,ch=canvas.height;
+      // Clear
+      ctx.fillStyle='#161514';
+      ctx.fillRect(0,0,cw,ch);
+      // Calculate image draw dimensions (fit to canvas with zoom)
+      var img=_cropImg;
+      var scale=_cropState.zoom;
+      // Base scale: fit image to canvas
+      var baseScale=Math.min(cw/img.width,ch/img.height);
+      var drawW=img.width*baseScale*scale;
+      var drawH=img.height*baseScale*scale;
+      // Center + offset
+      var x=(cw-drawW)/2+_cropState.offsetX;
+      var y=(ch-drawH)/2+_cropState.offsetY;
+      ctx.drawImage(img,x,y,drawW,drawH);
+    }
+
+    function setZoom(v){
+      _cropState.zoom=parseFloat(v);
+      drawCrop();
+    }
+
+    function zoomCrop(delta){
+      var newZoom=Math.max(0.5,Math.min(3,_cropState.zoom+delta));
+      _cropState.zoom=newZoom;
+      var slider=document.getElementById('CROP_ZOOM');
+      if(slider)slider.value=newZoom;
+      drawCrop();
+    }
+
+    function applyCrop(){
+      if(!_cropImg){toast('Foto tidak ada','error');return}
+      var canvas=document.getElementById('CROP_CANVAS');
+      if(!canvas)return;
+      var ctx=canvas.getContext('2d');
+      var cw=canvas.width,ch=canvas.height;
+      // Crop circle: center 220x220 area (scale to canvas 280x280)
+      var cropSize=220;
+      var cropX=(cw-cropSize)/2;
+      var cropY=(ch-cropSize)/2;
+      // Create output canvas (200x200 for compression)
+      var outCanvas=document.createElement('canvas');
+      var outSize=200;
+      outCanvas.width=outSize;
+      outCanvas.height=outSize;
+      var outCtx=outCanvas.getContext('2d');
+      // Draw circular clip
+      outCtx.save();
+      outCtx.beginPath();
+      outCtx.arc(outSize/2,outSize/2,outSize/2,0,Math.PI*2);
+      outCtx.clip();
+      // Calculate source region from crop canvas
+      // Scale factor: output canvas (200) / crop area (220)
+      var scale=outSize/cropSize;
+      outCtx.drawImage(canvas,cropX,cropY,cropSize,cropSize,0,0,outSize,outSize);
+      outCtx.restore();
+      // Convert to JPEG (no transparency for smaller size)
+      var compressed=outCanvas.toDataURL('image/jpeg',0.85);
+      localStorage.setItem('sk_photo',compressed);
+      updateProfilePhoto();
+      // Update ACCT avatar too if modal is open
+      var acctAv=document.getElementById('ACCT_AVATAR');
+      if(acctAv)acctAv.innerHTML='<img src="'+compressed+'" class="w-full h-full object-cover" alt="Profile">';
+      // Sync to server if logged in
+      if(authToken&&currentUser){
+        syncUserData();
+      }
+      closeM('CROP');
+      _cropImg=null;
+      toast('Foto profil diperbarui!','success');
+    }
+
+    function cancelCrop(){
+      closeM('CROP');
+      _cropImg=null;
+    }
+
+    // Mouse/touch drag for crop canvas
+    document.addEventListener('DOMContentLoaded',function(){
+      var canvas=document.getElementById('CROP_CANVAS');
+      if(!canvas)return;
+      function startDrag(e){
+        _cropState.isDragging=true;
+        var pt=e.touches?e.touches[0]:e;
+        _cropState.dragStartX=pt.clientX;
+        _cropState.dragStartY=pt.clientY;
+        _cropState.startOffsetX=_cropState.offsetX;
+        _cropState.startOffsetY=_cropState.offsetY;
+        e.preventDefault();
+      }
+      function moveDrag(e){
+        if(!_cropState.isDragging)return;
+        var pt=e.touches?e.touches[0]:e;
+        _cropState.offsetX=_cropState.startOffsetX+(pt.clientX-_cropState.dragStartX);
+        _cropState.offsetY=_cropState.startOffsetY+(pt.clientY-_cropState.dragStartY);
+        drawCrop();
+        e.preventDefault();
+      }
+      function endDrag(){
+        _cropState.isDragging=false;
+      }
+      canvas.addEventListener('mousedown',startDrag);
+      canvas.addEventListener('touchstart',startDrag,{passive:false});
+      document.addEventListener('mousemove',moveDrag);
+      document.addEventListener('touchmove',moveDrag,{passive:false});
+      document.addEventListener('mouseup',endDrag);
+      document.addEventListener('touchend',endDrag);
+    });
+
     function updateProfilePhoto(){
       var photo=localStorage.getItem('sk_photo');
       var avatar=document.getElementById('PROFILE_AVATAR');
@@ -4007,7 +4154,7 @@
       function codeBlockHTML(idx){
         var cb=codeBlocks[parseInt(idx)];
         if(!cb)return '';
-        return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(cb.lang)+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(cb.code)+'</div></div>';
+        return '<div class="cb"><div class="chdr"><span class="lang-label">'+esc(cb.lang)+'</span><div class="flex items-center gap-1"><button onclick="cpCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:content-copy"></span><span class="cpl">Salin</span></button><button onclick="previewCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer" title="Preview file"><span class="iconify text-xs" data-icon="mdi:eye-outline"></span><span>Preview</span></button><button onclick="dlCode(this)" class="flex items-center gap-1 hover:text-[#E5E3DA] transition-colors cursor-pointer"><span class="iconify text-xs" data-icon="mdi:download"></span><span>Download</span></button></div></div><div class="cc">'+hlCode(cb.code)+'</div></div>';
       }
       function imageHTML(idx){
         var im=imageBlocks[parseInt(idx)];
@@ -4112,6 +4259,67 @@
       var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;
       document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
       toast('Code di-download: '+filename,'success');
+    }
+    // Preview file — render HTML/CSS/JS/image in iframe, show text for others
+    function previewCode(btn){
+      var cb=btn.closest('.cb');var code=cb.querySelector('.cc').textContent;
+      var lang=cb.querySelector('.lang-label').textContent.toLowerCase();
+      var ext=getExtForLang(lang);
+      var filename='skelzai-'+lang+'.'+ext;
+      // For HTML — render in iframe
+      if(lang==='html'||lang==='htm'){
+        showFilePreview(code,'html',filename);
+      }else if(lang==='css'){
+        // Wrap CSS in HTML for preview
+        var html='<html><head><style>'+code+'</style></head><body><div style="padding:20px;font-family:sans-serif"><h1>Preview CSS</h1><p>Contoh text dengan CSS di atas.</p><button>Button</button><a href="#">Link</a></div></body></html>';
+        showFilePreview(html,'html',filename);
+      }else if(lang==='js'||lang==='javascript'||lang==='jsx'||lang==='ts'||lang==='typescript'){
+        // Wrap JS in HTML — execute in sandboxed iframe
+        var html='<html><head><style>body{font-family:monospace;padding:20px;background:#fff;color:#000}</style></head><body><div id="output"></div><script>var console={log:function(){var o=document.getElementById("output");for(var i=0;i<arguments.length;i++){o.innerHTML+=arguments[i]+"<br>"}}};try{'+code+'}catch(e){document.getElementById("output").innerHTML="<span style=color:red>Error: "+e.message+"</span>"}<\/script></body></html>';
+        showFilePreview(html,'html',filename);
+      }else if(lang==='json'){
+        // Pretty print JSON
+        try{
+          var parsed=JSON.parse(code);
+          var pretty=JSON.stringify(parsed,null,2);
+          showFilePreview('<pre style="padding:20px;font-family:monospace;background:#fff;color:#000;white-space:pre-wrap">'+esc(pretty)+'</pre>','text',filename);
+        }catch(e){
+          showFilePreview(code,'text',filename);
+        }
+      }else if(lang==='md'||lang==='markdown'){
+        // Render markdown as HTML (simple)
+        var html='<html><head><style>body{font-family:sans-serif;padding:20px;background:#fff;color:#000;line-height:1.6}h1,h2,h3{color:#333}code{background:#f0f0f0;padding:2px 6px;border-radius:3px}pre{background:#f0f0f0;padding:12px;border-radius:6px;overflow-x:auto}</style></head><body>'+code.replace(/\n/g,'<br>')+'</body></html>';
+        showFilePreview(html,'html',filename);
+      }else{
+        // Text preview
+        showFilePreview('<pre style="padding:20px;font-family:monospace;background:#fff;color:#000;white-space:pre-wrap">'+esc(code)+'</pre>','text',filename);
+      }
+    }
+    function showFilePreview(content,type,filename){
+      var modal=document.getElementById('PVW');
+      if(!modal)return;
+      var iframe=document.getElementById('PVW_IFRAME');
+      var titleEl=document.getElementById('PVW_TITLE');
+      var dlBtn=document.getElementById('PVW_DL');
+      if(titleEl)titleEl.textContent=filename||'Preview';
+      if(dlBtn)dlBtn.setAttribute('data-filename',filename||'preview.txt');
+      if(dlBtn)dlBtn.setAttribute('data-content',content);
+      if(type==='html'){
+        iframe.srcdoc=content;
+        iframe.style.display='block';
+      }else{
+        iframe.srcdoc='<!DOCTYPE html><html><body style="margin:0">'+content+'</body></html>';
+        iframe.style.display='block';
+      }
+      openM('PVW');
+    }
+    function downloadPreviewFile(btn){
+      var filename=btn.getAttribute('data-filename')||'preview.txt';
+      var content=btn.getAttribute('data-content')||'';
+      var blob=new Blob([content],{type:'text/html;charset=utf-8'});
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+      toast('File di-download: '+filename,'success');
     }
     function dlImg(btnOrUrl){
       var url=typeof btnOrUrl==='string'?btnOrUrl:(btnOrUrl&&btnOrUrl.getAttribute?btnOrUrl.getAttribute('data-url'):'');

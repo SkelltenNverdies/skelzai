@@ -54,11 +54,11 @@ const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 30 chars
 const TIER_INFO = {
   premium: {
     description: 'Unlock semua Premium AI models',
-    models: ['nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free', 'deepseek-ai/DeepSeek-R1', 'Qwen/Qwen2.5-Coder-32B-Instruct', 'Qwen/QwQ-32B-Preview']
+    models: ['nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free']
   },
   vision: {
     description: 'Unlock semua Vision AI models (analisis foto)',
-    models: ['minimax/minimax-m3:free', 'google/gemma-4-31b-it:free', 'Qwen/Qwen2.5-VL-32B-Instruct', 'Qwen/Qwen2-VL-72B-Instruct']
+    models: ['minimax/minimax-m3:free', 'google/gemma-4-31b-it:free']
   },
   powerful: {
     description: 'Unlock semua Powerful AI models',

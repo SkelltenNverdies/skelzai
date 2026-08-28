@@ -700,15 +700,15 @@ const PROVIDERS = {
     }
   },
   siliconflow: {
-    // SiliconFlow — OpenAI-compatible API aggregator (api.siliconflow.cn)
-    // Free 14.4M tokens/day (gratis permanen!). 200+ open-source models.
+    // SiliconFlow — OpenAI-compatible API aggregator
+    // IMPORTANT: Use .com (international) NOT .cn — .cn returns "Api key is invalid"
+    // Free tier was discontinued — models now require paid credits.
+    // Top up at: https://cloud.siliconflow.cn → Billing → Recharge
     // Supports multi-key: SILICONFLOW_API_KEYS=key1,key2 (2x limit)
-    // Get key: https://cloud.siliconflow.cn → API Keys
-    // Free models include: DeepSeek R1, DeepSeek V3, Qwen 2.5 72B, Llama 3.3 70B, etc.
     envVar: 'SILICONFLOW_API_KEYS',
     singleKeyEnvVar: 'SILICONFLOW_API_KEY',
     fallbackKey: null,
-    url: 'https://api.siliconflow.cn/v1/chat/completions',
+    url: 'https://api.siliconflow.com/v1/chat/completions',
     timeout: 55000,
     buildRequest(apiKey, model, messages) {
       return {
@@ -1717,6 +1717,20 @@ export default async function handler(req, res) {
     return res.status(429).json({
       error: 'OpenRouter rate limit tercapai (free tier). Tunggu 1 menit atau coba model lain. Detail: ' + errDetail,
       fallback: true
+    });
+  }
+
+  // SiliconFlow 402 — insufficient balance (free tier discontinued, need paid credits)
+  if (provider === 'siliconflow' && response.status === 402) {
+    return res.status(402).json({
+      error: 'Saldo SiliconFlow tidak cukup. Free tier sudah tidak tersedia — top up credit di https://cloud.siliconflow.cn → Billing → Recharge. Atau pakai model lain (Groq, OpenRouter, Cloudflare). Detail: ' + errDetail
+    });
+  }
+
+  // SiliconFlow 401 — API key invalid (wrong endpoint or expired key)
+  if (provider === 'siliconflow' && (response.status === 401 || response.status === 403)) {
+    return res.status(401).json({
+      error: 'SiliconFlow API key tidak valid. Pastikan: (1) Key dari https://cloud.siliconflow.cn, (2) Set env var SILICONFLOW_API_KEY=sk-xxx, (3) Key belum expired. Detail: ' + errDetail
     });
   }
 
