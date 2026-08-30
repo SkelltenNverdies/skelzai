@@ -1069,7 +1069,7 @@
       <!-- Search bar — solid background, high z-index to prevent account name leak -->
       <div class="mb-2 px-2 relative" style="z-index:20;position:relative">
         <span class="iconify text-[#7C7770] text-sm absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" data-icon="mdi:magnify"></span>
-        <input id="SRCH" type="text" placeholder="Cari chat atau pesan..." oninput="debounceSearch()" class="srch-in w-full border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all" style="background:#262524 !important;position:relative;z-index:21">
+        <input id="SRCH" type="text" autocomplete="off" name="search-chat-query" placeholder="Cari chat atau pesan..." oninput="debounceSearch()" class="srch-in w-full border border-white/[0.06] rounded-lg pl-9 pr-8 py-2 text-xs text-cream-50 placeholder-[#7C7770] outline-none focus:border-coral-400/30 transition-all" style="background:#262524 !important;position:relative;z-index:21">
         <button id="SRCH_CLEAR" onclick="clearSearch()" class="srch-clear absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center" style="z-index:22" title="Hapus pencarian"><span class="iconify text-xs" data-icon="mdi:close"></span></button>
       </div>
       <div class="mb-2 px-2 flex items-center justify-between">
@@ -1146,7 +1146,7 @@
       <div class="text-center mb-5 relative">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-coral-400/15">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.24.0</span>
+          <span class="footer-brand font-semibold text-sm tracking-wide">SkelzAI v6.26.0</span>
           <span class="text-[#7C7770] text-xs">·</span>
           <span class="text-[#C2BFB8] text-xs">by Gabriel Arjun Pangestu</span>
         </div>
@@ -2072,6 +2072,9 @@
         var m=localStorage.getItem('sk_m');if(m)for(var i=0;i<MODELS.length;i++)if(MODELS[i].id===m){selModel=MODELS[i];break}
         var cv=localStorage.getItem('sk_caveman');if(cv!==null)cavemanEnabled=cv==='1';
         var cvl=localStorage.getItem('sk_caveman_level');if(cvl&&['lite','full','ultra','wenyan'].indexOf(cvl)!==-1)cavemanLevel=cvl;
+        // CRITICAL: Clear search input on every load — prevent browser autofill / stale text
+        var srchEl=document.getElementById('SRCH');
+        if(srchEl){srchEl.value=''}
       }catch(e){}
     }
 
@@ -2564,14 +2567,19 @@
           lockedClass=' opacity-40 grayscale';
         }
         // Row: icon column + content + tag column
-        var visionIcon=m.vision?'<span class="iconify text-[11px] text-coral-400/80 flex-shrink-0" data-icon="mdi:camera-outline" title="Support foto"></span>':'';
+        // Vision icon — model can analyze photos
+        var visionIcon=m.vision?'<span class="iconify text-[11px] text-coral-400/80 flex-shrink-0" data-icon="mdi:image-text" title="Bisa baca foto/gambar"></span>':'';
+        // File icon — all models can read uploaded files (PDF, DOCX, txt) since the app extracts text before sending
+        var fileIcon='<span class="iconify text-[11px] text-[#9C9590]/60 flex-shrink-0" data-icon="mdi:file-document-outline" title="Bisa baca file (PDF, DOCX, txt)"></span>';
+        // Combine capability icons
+        var capIcons='<span class="flex items-center gap-0.5 flex-shrink-0">'+visionIcon+fileIcon+'</span>';
         // Status badge — updated by checkModelStatus(). Default: unknown (gray dot)
         var statusBadge='<span class="mo-status ms-unknown flex-shrink-0" data-mid-status="'+m.id+'" title="Klik Cek Status untuk cek online">'+
           '<span class="status-dot"></span><span class="status-text"></span>'+
         '</span>';
         html+='<div class="mo flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg'+(isSel?' sel':'')+lockedClass+'" data-mid="'+m.id+'">';
         html+='<div class="flex-1 min-w-0">';
-        html+='<div class="flex items-center gap-1.5 mb-0.5"><p class="text-sm text-cream-50 truncate font-medium">'+esc(m.label)+'</p>'+lockIcon+visionIcon+statusBadge+'</div>';
+        html+='<div class="flex items-center gap-1.5 mb-0.5"><p class="text-sm text-cream-50 truncate font-medium">'+esc(m.label)+'</p>'+lockIcon+capIcons+statusBadge+'</div>';
         html+='<p class="text-[11px] text-[#7C7770] truncate">'+esc(m.desc)+'</p>';
         html+='</div>';
         html+='<span class="mo-tag flex-shrink-0">'+m.tag+'</span>';
@@ -3535,6 +3543,9 @@
           // Replace local chats entirely with server copy (auto-sync across devices).
           var serverChats=d.chats||{};
           chats=serverChats;
+          // CRITICAL: Clear search input after loading user data (prevent stale text)
+          var srchEl=document.getElementById('SRCH');
+          if(srchEl){srchEl.value=''}
           // Pick a sensible current chat: existing curId if still present, else newest, else null
           if(!curId||!chats[curId]){
             var ids=Object.keys(chats).sort(function(a,b){return (chats[b].created||0)-(chats[a].created||0)});
@@ -4307,9 +4318,16 @@
           out.push(line.replace(/\u0001IMG(\d+)\u0001/g,function(_,idx){return imageHTML(idx)}));
           i++;continue;
         }
-        // Heading
+        // Heading — support #, ##, ### 
+        var h1Match=line.match(/^# (.+)$/);
+        if(h1Match){flushPara();out.push('<h3>'+h1Match[1]+'</h3>');i++;continue}
+        var h2Match=line.match(/^## (.+)$/);
+        if(h2Match){flushPara();out.push('<h3>'+h2Match[1]+'</h3>');i++;continue}
         var hMatch=line.match(/^### (.+)$/);
         if(hMatch){flushPara();out.push('<h3>'+hMatch[1]+'</h3>');i++;continue}
+        // Bold-only line (like **Title:**)
+        var bMatch=line.match(/^\*\*(.+):\*\*$/);
+        if(bMatch){flushPara();out.push('<p><strong>'+bMatch[1]+':</strong></p>');i++;continue}
         // Blockquote
         var qMatch=line.match(/^&gt; (.+)$/);
         if(qMatch){flushPara();out.push('<blockquote>'+qMatch[1]+'</blockquote>');i++;continue}
@@ -5049,6 +5067,20 @@
         setTimeout(function(){newChat();},100);
       }
 
+      // Anti-autofill guard: clear search input every 2 seconds if it contains
+      // the current username (browser autofill puts username in first text input)
+      setInterval(function(){
+        var s=document.getElementById('SRCH');
+        if(!s)return;
+        var un=document.getElementById('UN');
+        var unText=un?un.textContent.trim():'';
+        // If search contains the username exactly, clear it
+        if(unText&&unText!=='Guest User'&&s.value.trim()===unText){
+          s.value='';
+          debounceSearch();
+        }
+      },2000);
+
       // Register service worker for PWA offline support
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('/sw.js').then(function(reg){
@@ -5110,6 +5142,9 @@
             // Only replace if server has different/newer data (avoid clobbering in-flight edits)
             if(serverKeys.join(',')!==localKeys.join(',')){
               chats=d.chats;
+              // Clear search to prevent stale text
+              var srchEl=document.getElementById('SRCH');
+              if(srchEl){srchEl.value=''}
               if(!curId||!chats[curId]){
                 var ids=Object.keys(chats).sort(function(a,b){return (chats[b].created||0)-(chats[a].created||0)});
                 curId=ids.length>0?ids[0]:null;
